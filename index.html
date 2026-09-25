@@ -83,6 +83,22 @@ button{cursor:pointer}
 .unidad .n{display:flex;justify-content:space-between;gap:10px;font-size:15px}
 .prog{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin-top:4px}
 .prog span{display:block;height:100%;background:var(--tinta)}
+.prox{list-style:none;margin:0 0 14px;padding:0}
+.prox button{width:100%;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;
+  background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:9px 12px;margin-bottom:6px}
+.prox .cuando{font-weight:700;color:var(--tinta);font-size:15px;min-width:64px}
+.prox .cuando.cerca{color:var(--rojo)}
+.prox .que{font-size:15px}
+.prox .que small{display:block;color:var(--gris);font-size:13px}
+.etq{display:inline-block;font-size:12px;font-weight:700;color:var(--rojo);border:1.5px solid var(--rojo);
+  border-radius:10px;padding:0 6px;margin-left:6px;line-height:18px;vertical-align:1px}
+.ev{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px;width:100%;text-align:left}
+.ev h4{margin:0 0 4px;font-size:16px}
+.ev .t{font-size:13px;color:var(--gris)}
+.ev ul{list-style:none;margin:6px 0 0;padding:0}
+.ev li{font-size:14px;margin:3px 0}
+.g-fecha{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin-top:8px}
+.recons{border:1px dashed var(--gris);border-radius:12px;padding:10px 12px;background:var(--hoja)}
 .registro{font-size:13px;color:var(--gris);margin:18px 0 0;border-top:1px dashed var(--linea);padding-top:10px}
 .u-fila{display:grid;grid-template-columns:1fr 70px 40px;gap:6px;margin-bottom:6px;align-items:center}
 .u-fila button{height:40px;border:0;background:none;color:var(--rojo);font-size:20px}
@@ -112,7 +128,7 @@ button{cursor:pointer}
 /* barra inferior */
 .barra{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);
   padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-.barra nav{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.barra nav{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 .barra button{background:none;border:0;padding:9px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
   font-size:13px;color:var(--gris)}
 .barra button[aria-current="page"]{color:var(--tinta);font-weight:700}
@@ -213,6 +229,7 @@ h3{font-size:17px;margin:18px 0 8px}
   <button data-v="dia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>Día</button>
   <button data-v="grupos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Grupos</button>
   <button data-v="exportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>Exportar</button>
+  <button data-v="fechas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M12 11v4M12 17.6v.2"/></svg>Fechas</button>
   <button data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2 1.2M17.8 15.3l2 1.2M4.2 16.5l2-1.2M17.8 8.7l2-1.2"/></svg>Ajustes</button>
 </nav></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -279,14 +296,15 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.1';
-let store = {cfg:cfgInicial(), ses:{}};
+const VERSION_APP = '1.2';
+let store = {cfg:cfgInicial(), ses:{}, ev:{}};
 const clon = o => JSON.parse(JSON.stringify(o));
 function leerLocal(){
   try{
     const j = JSON.parse(localStorage.getItem(LS) || 'null');
     if(j && j.store){ store = j.store; const c0 = cfgInicial(); store.cfg = Object.assign(c0, store.cfg||{}); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, store.cfg.alumnos||{}); }
     if(!store.cfg.unidades[4]) store.cfg.unidades[4] = [];
+    if(!store.ev) store.ev = {};
   }catch(e){}
 }
 let avisado = false;
@@ -297,7 +315,7 @@ function guardarLocal(){
 // Cada registro guarda cuándo se creó y un historial de qué campos se
 // cambiaron y cuándo: es lo que pide una auditoría para fiarse de un
 // registro que se puede editar.
-const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','pt','ptNotas','cambio','observacion','notas'];
+const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','pt','ptNotas','cambio','observacion','notas','reconstruido','fuente'];
 function guardarSesion(id, datos){
   const ahora = new Date().toISOString(), prev = store.ses[id];
   const hist = prev ? clon(prev.historial||[]) : [];
@@ -435,6 +453,46 @@ function climaPorFranja(desde, hasta){
 const pct = (a,b) => b ? Math.round(100*a/b) : 0;
 const fechaHora = iso => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
+/* Fechas previstas: pruebas escritas, entregas… Una misma prueba puede tener
+   una fecha distinta en cada grupo (los tres primeros no tienen clase el
+   mismo día). Se guardan en store.ev y van en la copia de seguridad. */
+const TIPOS = {examen:'Prueba escrita', entrega:'Entrega', otro:'Otra fecha'};
+const FUENTES = ['Aules','Fichas entregadas','Programación','Cuaderno en papel','Memoria'];
+const diasHasta = k => Math.round((deClave(k) - deClave(hoyK())) / 86400000);
+// clases de un grupo que quedan antes de una fecha (sin contar las de hoy ya terminadas)
+function clasesAntes(g, k){
+  let n = 0;
+  for(let d = deClave(hoyK()); clave(d) < k; d = masDias(d,1)){
+    const c = clave(d); if(!esLectivo(c)) continue;
+    const h = franjasDe(c);
+    for(const f in h) if(h[f].g===g && !haTerminado(c, Number(f))) n++;
+  }
+  return n;
+}
+function siguienteClase(g, desde){
+  let d = deClave(desde);
+  for(let i=0; i<90; i++, d = masDias(d,1)){
+    const k = clave(d); if(!esLectivo(k)) continue;
+    const h = franjasDe(k); for(const f in h) if(h[f].g===g) return k;
+  }
+  return desde;
+}
+function proximas(dias){
+  const out = [];
+  for(const [id,e] of Object.entries(store.ev||{})) for(const [g,k] of Object.entries(e.fechas||{})){
+    const falta = diasHasta(k);
+    if(falta>=0 && (dias===undefined || falta<=dias)) out.push({id, g, k, falta, tipo:e.tipo, titulo:e.titulo});
+  }
+  return out.sort((a,b)=> a.k<b.k ? -1 : a.k>b.k ? 1 : a.g<b.g ? -1 : 1);
+}
+const fechasDe = (g, k) => Object.values(store.ev||{}).filter(e=>e.fechas && e.fechas[g]===k);
+function cuenta(x){
+  if(x.falta===0) return 'hoy';
+  if(x.falta===1) return 'mañana';
+  const c = clasesAntes(x.g, x.k);
+  return `faltan ${x.falta} días · ${c===0?'no te quedan clases antes':c===1?'te queda 1 clase antes':'te quedan '+c+' clases antes'}`;
+}
+
 /* ═══════════════════════════ PANTALLA ═══════════════════════════ */
 let vista = 'dia';
 let dia = hoyK();
@@ -460,6 +518,7 @@ function pintar(){
   const app = $('#app');
   if(vista==='dia') app.innerHTML = vDia();
   else if(vista==='grupos') app.innerHTML = vGrupos();
+  else if(vista==='fechas') app.innerHTML = vFechas();
   else if(vista==='exportar') app.innerHTML = vExportar();
   else app.innerHTML = vAjustes();
   pintarSync();
@@ -485,6 +544,14 @@ function vDia(){
     h += `<button class="aviso copia" data-a="copia"><span>Toca la copia de seguridad de la semana
       <small>Un toque: elige OneDrive y la carpeta de copias</small></span><span aria-hidden="true">›</span></button>`;
   }
+  const px = proximas(14);
+  if(px.length){
+    h += `<ul class="prox" aria-label="Próximas fechas">${px.slice(0,5).map(x=>`<li><button data-a="ir-fecha" data-id="${x.id}">
+      <span class="cuando${x.falta<=2?' cerca':''}">${x.falta===0?'Hoy':x.falta===1?'Mañana':corta(x.k)}</span>
+      <span class="que"><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre.replace(' ESO','')}</span> ${TIPOS[x.tipo]}: ${esc(x.titulo)}
+      <small>${cuenta(x)}</small></span></button></li>`).join('')}
+      ${px.length>5?`<li class="leyenda">y ${px.length-5} más en Fechas</li>`:''}</ul>`;
+  }
   if(!Object.keys(store.ses).length){
     h += `<div class="panel" style="margin-bottom:14px"><p><b>¿Tienes una copia de seguridad?</b><br>
       <span class="nota">Si vienes de otro móvil o se han borrado los datos de Chrome, recupéralo todo desde tu última copia.</span></p>
@@ -507,7 +574,8 @@ function vDia(){
     const id = idSes(dia,f.n), s = store.ses[id];
     const ahora = dia===hoyK() && ahoraMin()>=minutos(f.ini) && ahoraMin()<minutos(f.fin);
     if(x.g){
-      let marca = '', sub = `Aula ${x.aula}${x.pt?'<span class="pt">con PT</span>':''}`;
+      const fx = fechasDe(x.g, dia).map(e=>`<span class="etq">${TIPOS[e.tipo]}</span>`).join('');
+      let marca = '', sub = `Aula ${x.aula}${x.pt?'<span class="pt">con PT</span>':''}${fx}`;
       if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
       else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
       else if(haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
@@ -574,7 +642,7 @@ function vGrupos(){
         return `Deberes del ${f}: ${r.no && r.no.length ? 'no los traen '+r.no.join(', ') : 'los traen todos'}`;
       }).join(' · ');
       h += `<li><button data-a="ir" data-id="${id}">
-        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}</div>
+        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
         <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
         ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
         ${s.pt?`<div class="f">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}
@@ -585,6 +653,56 @@ function vGrupos(){
     h += `</ul>`;
   }
   return h;
+}
+
+function vFechas(){
+  const hoy = hoyK();
+  const evs = Object.entries(store.ev||{}).map(([id,e])=>{
+    const ks = Object.values(e.fechas||{}).sort(); return {id, e, primera: ks[0]||'', ultima: ks[ks.length-1]||''};
+  });
+  const futuras = evs.filter(x=>x.ultima>=hoy).sort((a,b)=>a.primera<b.primera?-1:1);
+  const pasadas = evs.filter(x=>x.ultima<hoy).sort((a,b)=>a.ultima>b.ultima?-1:1);
+  const tarjeta = ({id,e}) => `<button class="ev" data-a="ir-fecha" data-id="${id}"><h4>${TIPOS[e.tipo]}: ${esc(e.titulo)}</h4>
+    <ul>${Object.entries(e.fechas).sort((a,b)=>a[1]<b[1]?-1:1).map(([g,k])=>{ const f = diasHasta(k);
+      return `<li><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span> ${larga(k)}${f>=0?` <span class="t">· ${cuenta({g,k,falta:f})}</span>`:''}</li>`; }).join('')}</ul>
+    ${e.notas?`<div class="t" style="margin-top:4px">${esc(e.notas)}</div>`:''}</button>`;
+  let h = `<h1 class="titulo">Fechas</h1><p class="estado-sync" id="sync"></p>
+    <button class="bloque-btn lleno" data-a="nueva-fecha" style="margin:0 0 16px">Añadir prueba o entrega</button>`;
+  h += futuras.length ? futuras.map(tarjeta).join('') : `<div class="vacio">No hay fechas próximas.<br>Apunta pruebas y entregas en cuanto las fijes: la app te dirá cuántas clases te quedan.</div>`;
+  if(pasadas.length) h += `<details style="margin-top:14px"><summary>Pasadas (${pasadas.length})</summary><div style="margin-top:8px">${pasadas.map(tarjeta).join('')}</div></details>`;
+  return h;
+}
+let evBorr = null, evId = null;
+function abrirFecha(id){
+  evId = id || ('e' + Date.now().toString(36));
+  evBorr = id && store.ev[id] ? clon(store.ev[id]) : {tipo:'examen', titulo:'', notas:'', fechas:{}};
+  pintarHojaFecha();
+  $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
+}
+function pintarHojaFecha(){
+  const e = evBorr;
+  let h = `<div class="hoja-in"><div class="hoja-cab"><div><h2 id="hoja-titulo">${store.ev[evId]?'Editar fecha':'Nueva fecha'}</h2>
+    <div class="quando">Prueba escrita, entrega o lo que quieras recordar</div></div>
+    <button class="cerrar" data-e="cerrar">Cerrar</button></div>
+    <div class="campo"><span class="et">Tipo</span><div class="seg">
+      ${Object.entries(TIPOS).map(([k,v])=>`<button data-e="tipo" data-v="${k}" aria-pressed="${e.tipo===k}">${v}</button>`).join('')}</div></div>
+    <div class="campo"><label for="e-tit">Qué</label><input type="text" id="e-tit" data-ef="titulo" value="${esc(e.titulo)}" placeholder="Por ejemplo: prueba de divisibilidad"></div>
+    <div class="campo"><span class="et">Grupos y fecha de cada uno</span>
+      <div class="chips">${Object.keys(GRUPOS).map(g=>`<button class="chip" data-e="grupo" data-g="${g}" aria-pressed="${!!e.fechas[g]}" style="${e.fechas[g]?'border-color:var(--grafito);box-shadow:inset 0 -5px 0 '+gc(g)+';font-weight:700':''}">${GRUPOS[g].nombre}</button>`).join('')}</div>
+      ${Object.keys(e.fechas).map(g=>`<div class="g-fecha"><label for="e-f-${g}"><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span></label>
+        <input type="date" id="e-f-${g}" data-eg="${g}" value="${e.fechas[g]}"></div>`).join('')}
+      ${Object.keys(e.fechas).length?'<p class="leyenda" style="margin-top:6px">Te propone la primera clase de cada grupo dentro de una semana; cámbiala si hace falta.</p>':''}
+    </div>
+    <div class="campo"><label for="e-not">Notas <span class="ayuda">— temario, material permitido…</span></label>
+      <textarea id="e-not" data-ef="notas" style="min-height:64px">${esc(e.notas)}</textarea></div>
+  </div><div class="acciones"><div>
+    ${store.ev[evId]?'<button class="secundario peligro" data-e="borrar">Borrar</button>':''}
+    <button class="primario" data-e="guardar">Guardar</button></div></div>`;
+  const hoja = $('#hoja'), y = hoja.scrollTop; hoja.innerHTML = h; hoja.scrollTop = y;
+}
+function leerFecha(){
+  document.querySelectorAll('#hoja [data-ef]').forEach(el=>{ evBorr[el.dataset.ef] = el.value; });
+  document.querySelectorAll('#hoja [data-eg]').forEach(el=>{ if(el.value) evBorr.fechas[el.dataset.eg] = el.value; });
 }
 
 function vExportar(){
@@ -676,7 +794,9 @@ function abrir(k, n){
     fecha:k, franja:n, grupo:x.g||null, otra:x.o||null, aula:x.aula||'',
     estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', cambio:'', observacion:'', notas:'',
     ...(x.pt ? {pt:'si', ptNotas:''} : {}),
-    unidad: x.g ? ultimaUnidad(x.g) : ''
+    unidad: x.g ? ultimaUnidad(x.g) : '',
+    // una sesión de hace dos días o más se está reconstruyendo después
+    reconstruido: diasHasta(k) <= -2, fuente:''
   };
   if(x.pt && borrador.pt===undefined){ borrador.pt='si'; borrador.ptNotas=''; }
   pintarHoja();
@@ -703,6 +823,18 @@ function pintarHoja(){
     h += `<div class="campo"><span class="et">¿Se dio la clase?</span>
       <div class="seg dos"><button data-h="estado" data-v="si" aria-pressed="${b.estado!=='no'}">Sí</button>
       <button data-h="estado" data-v="no" aria-pressed="${b.estado==='no'}">No se impartió</button></div></div>`;
+    const hoyEv = fechasDe(b.grupo, b.fecha);
+    if(hoyEv.length) h += `<p class="leyenda" style="margin:-6px 0 0">Este día: ${hoyEv.map(e=>TIPOS[e.tipo]+' — '+esc(e.titulo)).join('; ')}</p>`;
+    if(b.reconstruido || diasHasta(b.fecha) <= -2){
+      h += `<div class="campo recons"><div class="deber-cab"><div><b>Registro reconstruido después</b><br>
+        <span class="leyenda">Se escribe más tarde, a partir de lo que consta.</span></div>
+        <button class="tog" data-h="recons" aria-pressed="${!!b.reconstruido}">${b.reconstruido?'Sí':'No'}</button></div>
+        ${b.reconstruido ? `<label for="h-fuente" style="display:block;margin-top:10px;font-weight:700">A partir de</label>
+          <input type="text" id="h-fuente" data-f="fuente" value="${esc(b.fuente||'')}" placeholder="Aules, fichas entregadas…">
+          <div class="chips">${FUENTES.map(x=>`<button class="chip" data-h="fuente" data-v="${x}">${x}</button>`).join('')}</div>
+          <p class="leyenda" style="margin-top:8px">Apunta solo lo que recuerdes con seguridad; lo demás, en blanco.</p>` : ''}
+      </div>`;
+    }
     if(b.estado==='no'){
       h += `<div class="campo"><span class="et">Motivo</span><div class="chips">
         ${MOTIVOS.map(m=>`<button class="chip" data-h="motivo" data-v="${m}" aria-pressed="${b.motivo===m}" style="${b.motivo===m?'border-color:var(--tinta);color:var(--tinta);font-weight:700':''}">${m}</button>`).join('')}
@@ -810,12 +942,22 @@ const textoRev = s => (s.revisiones||[]).map(r=>{
 }).join('; ');
 function csv(){
   const f = filasExport();
-  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios'];
+  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
   const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
   const filas = f.map(s=>[s.fecha, DIAS[deClave(s.fecha).getDay()], `${FR[s.franja].ini}-${FR[s.franja].fin}`,
     s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'', s.grupo?nombreUnidad(s.grupo,s.unidad):'',
-    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length].map(q).join(';'));
+    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length, s.reconstruido?'Sí':'', s.reconstruido?(s.fuente||''):''].map(q).join(';'));
   return '\ufeff' + [cab.map(q).join(';'), ...filas].join('\r\n');
+}
+function calendarioInforme(desde, hasta, gs){
+  const filas = [];
+  for(const [id,e] of Object.entries(store.ev||{})) for(const [g,k] of Object.entries(e.fechas||{}))
+    if(gs.includes(g) && k>=desde && k<=hasta) filas.push({g,k,e});
+  if(!filas.length) return '';
+  filas.sort((a,b)=>a.k<b.k?-1:1);
+  return `<h2>Calendario de pruebas y entregas</h2><table><thead><tr><th>Fecha</th><th>Grupo</th><th>Tipo</th><th>Qué</th><th>Fijada el</th></tr></thead><tbody>
+    ${filas.map(x=>`<tr><td>${corta(x.k)}</td><td>${GRUPOS[x.g].nombre}</td><td>${TIPOS[x.e.tipo]}</td><td>${esc(x.e.titulo)}${x.e.notas?`<div class="mat">${esc(x.e.notas)}</div>`:''}</td><td class="reg">${fechaHora(x.e.creado)}</td></tr>`).join('')}
+  </tbody></table>`;
 }
 function informe(){
   const f = filasExport(), c = store.cfg;
@@ -832,7 +974,8 @@ function informe(){
       <td>${I.climaN?`${pct(I.clima.bien,I.climaN)} / ${pct(I.clima.regular,I.climaN)} / ${pct(I.clima.mal,I.climaN)} %`:'—'}</td>
       <td>${I.pt?`${I.ptSi} de ${I.pt}`:'—'}</td></tr>`;
   }
-  resumen += `</tbody></table><p class="meta">«Previstas»: sesiones del horario en días lectivos del periodo que ya han pasado.
+  const nRec = f.filter(s=>s.reconstruido).length;
+  resumen += `</tbody></table>${nRec?`<p class="meta">${nRec} ${nRec===1?'sesión se registró después, reconstruida':'sesiones se registraron después, reconstruidas'} a partir de lo indicado en cada una.</p>`:''}<p class="meta">«Previstas»: sesiones del horario en días lectivos del periodo que ya han pasado.
     «Entrega de deberes»: porcentaje de alumnado que los trae, sobre las revisiones registradas.</p>`;
   // 2. clima por franja horaria
   const cf = climaPorFranja(desde, hasta);
@@ -862,7 +1005,7 @@ function informe(){
     }
     cuerpo += `<table><thead><tr><th>Fecha</th><th>Hora</th>${g==='otras'?'<th>Tarea</th><th>Notas</th>':'<th>Unidad</th><th>Qué se ha hecho</th><th>Deberes</th><th>Revisión</th><th>Clima</th>'}<th>Registro</th></tr></thead><tbody>`;
     for(const s of filas){
-      const reg = `${fechaHora(s.creado||s.actualizado)}${(s.historial||[]).length?`<br>${s.historial.length} cambio${s.historial.length>1?'s':''}`:''}`;
+      const reg = `${fechaHora(s.creado||s.actualizado)}${(s.historial||[]).length?`<br>${s.historial.length} cambio${s.historial.length>1?'s':''}`:''}${s.reconstruido?`<br><i>reconstruido${s.fuente?' a partir de: '+esc(s.fuente):''}</i>`:''}`;
       if(g==='otras'){
         cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${OTRAS[s.otra]}</td><td>${esc(s.notas)}</td><td class="reg">${reg}</td></tr>`;
       }else if(s.estado==='no'){
@@ -896,7 +1039,7 @@ tr.no td{color:#777;font-style:italic}.pie{margin-top:8mm;color:#666;font-size:8
 @page{size:A4;margin:12mm}@media print{body{margin:0}}</style></head><body>
 <h1>Registro de aula</h1>
 <div class="cab">${[c.docente, c.centro, c.curso?'Curso '+c.curso:''].filter(Boolean).map(esc).join(' · ')}<br>
-Del ${larga(desde)} al ${larga(hasta)}</div>${resumen}${cuerpo}${borr}
+Del ${larga(desde)} al ${larga(hasta)}</div>${resumen}${calendarioInforme(desde, hasta, gs)}${cuerpo}${borr}
 <p class="pie">Generado el ${larga(hoyK())} a las ${fechaHora(new Date().toISOString()).split(' ')[1]} con el cuaderno de aula (versión ${VERSION_APP}).
 Cada sesión indica cuándo se registró y cuántas veces se ha modificado; los registros borrados quedan listados.</p></body></html>`;
 }
@@ -920,6 +1063,8 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
   else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
   else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
+  else if(a==='nueva-fecha'){ abrirFecha(null); }
+  else if(a==='ir-fecha'){ abrirFecha(b.dataset.id); }
   else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
   else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
   else if(a==='ex-csv'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.csv`, csv(), 'text/csv'); }
@@ -960,6 +1105,7 @@ document.getElementById('app').addEventListener('change', e=>{
       const n = Object.keys(j.store.ses).length;
       if(!confirm(`La copia tiene ${n} sesiones. Se añadirán a las que ya hay; si una sesión está en los dos sitios, se queda la de la copia. ¿Seguir?`)) return;
       for(const [id,s] of Object.entries(j.store.ses)){ store.ses[id]=s; }
+      store.ev = Object.assign(store.ev||{}, j.store.ev||{});
       if(j.store.cfg){ store.cfg = Object.assign(cfgInicial(), j.store.cfg); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, j.store.cfg.alumnos||{}); }
       guardarLocal(); pintar(); toast(`Copia restaurada: ${n} sesiones`);
     }catch(err){ toast('Ese archivo no es una copia del cuaderno'); }
@@ -977,6 +1123,11 @@ document.getElementById('hoja').addEventListener('click', e=>{
   else if(h==='motivo'){ borrador.motivo = b.dataset.v; }
   else if(h==='clima'){ borrador.clima = borrador.clima===b.dataset.v ? '' : b.dataset.v; }
   else if(h==='unidad'){ borrador.unidad = borrador.unidad===b.dataset.v ? '' : b.dataset.v; }
+  else if(h==='recons'){ borrador.reconstruido = !borrador.reconstruido; }
+  else if(h==='fuente'){
+    const v = b.dataset.v, cur = (borrador.fuente||'').trim();
+    borrador.fuente = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
+  }
   else if(h==='mat'){
     const v = b.dataset.v; const cur = (borrador.material||'').trim();
     borrador.material = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
@@ -1033,6 +1184,29 @@ document.getElementById('hoja').addEventListener('click', e=>{
   if(b.dataset.f2==='cerrar'){ cerrar(); return; }
   const k = b.dataset.k, n = Number(b.dataset.n);
   dia = k; vista='dia'; pintar(); abrir(k, n);
+});
+document.getElementById('hoja').addEventListener('click', ev=>{
+  const b = ev.target.closest('[data-e]'); if(!b || !evBorr) return;
+  const a = b.dataset.e; leerFecha();
+  if(a==='cerrar'){ evBorr=null; cerrar(); return; }
+  if(a==='tipo') evBorr.tipo = b.dataset.v;
+  else if(a==='grupo'){
+    const g = b.dataset.g;
+    if(evBorr.fechas[g]) delete evBorr.fechas[g];
+    else evBorr.fechas[g] = siguienteClase(g, clave(masDias(deClave(hoyK()), 7)));
+  }
+  else if(a==='guardar'){
+    if(!evBorr.titulo.trim()){ toast('Escribe qué es'); return; }
+    if(!Object.keys(evBorr.fechas).length){ toast('Elige al menos un grupo'); return; }
+    const ahora = new Date().toISOString(), prev = store.ev[evId];
+    evBorr.creado = prev ? (prev.creado||ahora) : ahora; evBorr.actualizado = ahora;
+    store.ev[evId] = clon(evBorr); guardarLocal(); evBorr = null; cerrar(); toast('Fecha guardada'); pintar(); return;
+  }
+  else if(a==='borrar'){
+    if(confirm('¿Borrar esta fecha?')){ delete store.ev[evId]; guardarLocal(); evBorr=null; cerrar(); toast('Fecha borrada'); pintar(); }
+    return;
+  }
+  pintarHojaFecha();
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
 // al volver a la app (cambio de pestaña o de hora) se repinta: la franja «ahora» se mueve sola
