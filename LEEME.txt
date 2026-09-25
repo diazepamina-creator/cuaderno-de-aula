@@ -31,3 +31,21 @@ Si cambias algo más que el index.html, sube también sw.js con VERSION nueva
 
 OJO: el repositorio es público, así que el horario (grupos y aulas) se puede
 leer en el código. Ningún dato de alumnos ni de sesiones está ahí.
+
+VERSIONES
+1.2  Fechas: pruebas escritas, entregas y otras fechas, con una fecha por
+     grupo; aviso en el Día con los días que faltan y las clases que te
+     quedan con ese grupo; etiqueta en la franja de ese día; calendario en el
+     registro imprimible. Registro reconstruido: las sesiones que se escriben
+     dos días o más después se marcan como reconstruidas, con la fuente
+     (Aules, fichas…), y así salen en el registro.
+     Para actualizar: sube index.html y sw.js (cambia a cuaderno-v3).
+1.1  Aviso fijo de copia de seguridad (por defecto, el viernes a las 14:10;
+     se cambia en Ajustes). Si la app está vacía, ofrece restaurar una copia
+     nada más abrirla. Unidades o situaciones de aprendizaje con sesiones
+     previstas: seguimiento de la programación. Cada registro guarda cuándo
+     se creó y el historial de cambios; lo borrado queda listado. Resumen de
+     indicadores por grupo (previstas, impartidas, entrega de deberes, clima,
+     PT) y clima por franja horaria, en Grupos y en el registro imprimible.
+     Para actualizar: sube index.html y sw.js (cambia a cuaderno-v2).
+1.0  Primera versión.
