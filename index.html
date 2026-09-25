@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuaderno de aula</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1D3A8A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── Cuaderno de aula ─────────────────────────────────────────────────────
+   Un cuaderno de profesor de matemáticas: papel cuadriculado, tinta de
+   bolígrafo azul, el rojo de corregir, y cada grupo subrayado con el color
+   que tiene en el horario del centro. */
+:root{
+  --papel:#FBFCFD; --cuad:#DDE7F1; --tinta:#1D3A8A; --grafito:#262A31;
+  --gris:#687180; --linea:#C8D5E2; --rojo:#C8322B; --hoja:#FFFFFF;
+  --sombra:0 1px 0 rgba(29,58,138,.08), 0 6px 18px -10px rgba(29,58,138,.35);
+  --g1A:#D2CE5C; --g1B:#6BB3EE; --g1D:#F59C63; --g2B:#44C35A; --gR4:#3BBDB7; --gX:#C9CED6;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#11151B; --cuad:#1A212B; --tinta:#93B2FF; --grafito:#E7EAEF;
+    --gris:#9AA4B2; --linea:#2B3542; --rojo:#FF7064; --hoja:#171C24;
+    --sombra:0 1px 0 rgba(0,0,0,.4), 0 8px 20px -12px rgba(0,0,0,.8);
+    --g1A:#A9A640; --g1B:#3F86C2; --g1D:#C9763F; --g2B:#2E9A42; --gR4:#23928D; --gX:#4A5360;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#11151B; --cuad:#1A212B; --tinta:#93B2FF; --grafito:#E7EAEF;
+  --gris:#9AA4B2; --linea:#2B3542; --rojo:#FF7064; --hoja:#171C24;
+  --sombra:0 1px 0 rgba(0,0,0,.4), 0 8px 20px -12px rgba(0,0,0,.8);
+  --g1A:#A9A640; --g1B:#3F86C2; --g1D:#C9763F; --g2B:#2E9A42; --gR4:#23928D; --gX:#4A5360;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.45;color:var(--grafito);
+  background-color:var(--papel);
+  background-image:linear-gradient(var(--cuad) 1px,transparent 1px),linear-gradient(90deg,var(--cuad) 1px,transparent 1px);
+  background-size:22px 22px;
+  min-height:100vh;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--tinta);outline-offset:2px;border-radius:6px}
+.app{max-width:680px;margin:0 auto;padding:14px 16px 110px}
+
+/* cabecera: la fecha es lo grande, escrita en tinta */
+.cab{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 0 4px}
+.fecha{color:var(--tinta);line-height:1.05}
+.fecha .dia{font-size:15px;font-weight:700;display:block;margin-bottom:2px}
+.fecha .num{font-size:44px;font-weight:700;letter-spacing:-.5px}
+.fecha .mes{font-size:22px;font-weight:400;margin-left:6px}
+.nav{display:flex;gap:6px}
+.btn-r{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--linea);background:var(--hoja);
+  display:grid;place-items:center;color:var(--tinta);font-size:22px;line-height:1}
+.hoy{height:44px;padding:0 14px;border-radius:22px;border:1.5px solid var(--tinta);background:var(--hoja);color:var(--tinta);font-weight:700}
+.estado-sync{font-size:13px;color:var(--gris);margin:0 0 12px}
+.estado-sync b{color:var(--grafito);font-weight:700}
+
+.aviso{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--hoja);border:1.5px solid var(--rojo);color:var(--rojo);
+  border-radius:12px;padding:10px 12px;margin:8px 0 14px;font-weight:700;width:100%;text-align:left}
+.aviso small{font-weight:400;color:var(--gris);display:block}
+
+/* las franjas: renglones del día */
+.franjas{list-style:none;margin:0;padding:0}
+.fr{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:10px;
+  background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px;
+  width:100%;text-align:left;box-shadow:var(--sombra)}
+.fr.otra{box-shadow:none;background:transparent;border-style:dashed}
+.fr.ahora{border:2px solid var(--tinta)}
+.hora{font-variant-numeric:tabular-nums;font-size:14px;color:var(--gris);line-height:1.2}
+.hora b{display:block;color:var(--grafito);font-size:16px}
+.grupo{font-weight:700;font-size:18px;display:inline;padding:0 3px;
+  background:linear-gradient(transparent 52%,var(--gc,var(--gX)) 52%,var(--gc,var(--gX)) 92%,transparent 92%)}
+.sub{font-size:14px;color:var(--gris);margin-top:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.marca{font-size:13px;font-weight:700;white-space:nowrap}
+.marca.ok{color:var(--tinta)}
+.marca.pend{color:var(--rojo)}
+.marca.no{color:var(--gris);text-decoration:line-through}
+.recreo{font-size:13px;color:var(--gris);text-align:center;margin:2px 0 10px;letter-spacing:.3px}
+.pt{display:inline-block;font-size:12px;font-weight:700;color:var(--tinta);border:1.5px solid var(--tinta);
+  border-radius:10px;padding:0 6px;margin-left:6px;line-height:18px;vertical-align:1px}
+.vacio{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:18px;text-align:center;color:var(--gris)}
+.vacio b{color:var(--grafito)}
+
+/* barra inferior */
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);
+  padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.barra nav{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.barra button{background:none;border:0;padding:9px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:13px;color:var(--gris)}
+.barra button[aria-current="page"]{color:var(--tinta);font-weight:700}
+.barra svg{width:24px;height:24px}
+
+/* la hoja de la sesión */
+.velo{position:fixed;inset:0;background:rgba(10,14,20,.45);z-index:10;display:none}
+.velo.abierto{display:block}
+.hoja{position:fixed;left:0;right:0;bottom:0;top:0;z-index:11;background:var(--papel);
+  overflow:auto;transform:translateY(100%);transition:transform .22s ease-out;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.hoja.abierta{transform:none}
+@media (prefers-reduced-motion: reduce){.hoja{transition:none}}
+.hoja-in{max-width:680px;margin:0 auto;padding:12px 16px 120px}
+.hoja-cab{position:sticky;top:0;background:var(--papel);padding:10px 0 10px;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--linea)}
+.hoja-cab h2{margin:0;font-size:20px;color:var(--tinta)}
+.hoja-cab .quando{font-size:14px;color:var(--gris)}
+.cerrar{height:44px;padding:0 14px;border-radius:22px;border:1.5px solid var(--linea);background:var(--hoja)}
+.campo{margin:16px 0}
+.campo > label,.campo > .et{display:block;font-weight:700;margin-bottom:6px}
+.campo .ayuda{font-size:14px;color:var(--gris);font-weight:400}
+textarea,input[type=text],input[type=date],input[type=number]{
+  width:100%;border:1.5px solid var(--linea);background:var(--hoja);border-radius:10px;padding:10px 12px;font-size:17px}
+textarea{min-height:84px;resize:vertical}
+textarea:focus,input:focus{border-color:var(--tinta);outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{border:1.5px solid var(--linea);background:var(--hoja);border-radius:18px;padding:6px 12px;font-size:15px}
+.chip.igual{border-color:var(--tinta);color:var(--tinta)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{border:1.5px solid var(--linea);background:var(--hoja);border-radius:10px;padding:10px 6px;font-size:15px;line-height:1.2}
+.seg button[aria-pressed="true"]{border-color:var(--tinta);background:var(--tinta);color:var(--hoja);font-weight:700}
+.seg.dos{grid-template-columns:repeat(2,1fr)}
+.deber{border:1px solid var(--linea);background:var(--hoja);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.deber-cab{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.deber-cab p{margin:0}
+.deber-cab .de{font-size:13px;color:var(--gris)}
+.tog{border:1.5px solid var(--linea);background:var(--hoja);border-radius:18px;padding:6px 12px;font-size:14px;white-space:nowrap}
+.tog[aria-pressed="true"]{border-color:var(--tinta);color:var(--tinta);font-weight:700}
+.lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin-top:10px}
+.lista button{height:42px;border:1.5px solid var(--linea);background:var(--hoja);border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px}
+.lista button[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff;font-weight:700}
+.lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
+details{border:1px dashed var(--linea);border-radius:12px;padding:8px 12px;background:var(--hoja)}
+summary{font-weight:700;cursor:pointer;padding:4px 0}
+.acciones{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);z-index:12;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.acciones div{max-width:680px;margin:0 auto;display:flex;gap:10px}
+.primario{flex:1;height:50px;border-radius:12px;border:0;background:var(--tinta);color:var(--hoja);font-weight:700;font-size:18px}
+.secundario{height:50px;border-radius:12px;border:1.5px solid var(--linea);background:var(--hoja);padding:0 16px}
+.peligro{color:var(--rojo);border-color:var(--rojo)}
+
+/* grupos */
+h1.titulo{font-size:28px;color:var(--tinta);margin:8px 0 12px;line-height:1.1}
+.sel-grupo{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sel-grupo button{border:1.5px solid var(--linea);background:var(--hoja);border-radius:20px;padding:8px 14px;font-weight:700}
+.sel-grupo button[aria-pressed="true"]{border-color:var(--grafito);box-shadow:inset 0 -6px 0 var(--gc)}
+.cifras{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.cifra{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px}
+.cifra b{display:block;font-size:26px;color:var(--tinta);font-variant-numeric:tabular-nums;line-height:1.1}
+.cifra span{font-size:13px;color:var(--gris)}
+h3{font-size:17px;margin:18px 0 8px}
+.hist{list-style:none;margin:0;padding:0}
+.hist button{width:100%;text-align:left;background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.hist .f{font-size:13px;color:var(--gris);font-variant-numeric:tabular-nums}
+.hist .c{margin:2px 0 0}
+.hist .d{font-size:14px;color:var(--tinta);margin-top:4px}
+.hist .r{font-size:14px;color:var(--rojo);margin-top:2px}
+
+/* exportar y ajustes */
+.panel{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:14px;margin-bottom:14px}
+.panel p{margin:0 0 10px}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.checks{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.checks label{display:flex;align-items:center;gap:6px;border:1.5px solid var(--linea);border-radius:18px;padding:6px 12px}
+.bloque-btn{display:block;width:100%;margin-top:10px;height:50px;border-radius:12px;border:1.5px solid var(--tinta);
+  background:var(--hoja);color:var(--tinta);font-weight:700;font-size:16px}
+.bloque-btn.lleno{background:var(--tinta);color:var(--hoja)}
+.alumnos{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:center}
+.nolect{list-style:none;padding:0;margin:8px 0 0}
+.nolect li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--linea)}
+.nolect button{border:0;background:none;color:var(--rojo);font-weight:700}
+.nota{font-size:14px;color:var(--gris)}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  background:var(--grafito);color:var(--papel);padding:10px 16px;border-radius:22px;font-size:15px;z-index:20;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.si{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<div class="velo" id="velo"></div>
+<section class="hoja" id="hoja" aria-modal="true" role="dialog" aria-labelledby="hoja-titulo"></section>
+
+<div class="barra"><nav id="barra" aria-label="Secciones">
+  <button data-v="dia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>Día</button>
+  <button data-v="grupos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Grupos</button>
+  <button data-v="exportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>Exportar</button>
+  <button data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2 1.2M17.8 15.3l2 1.2M4.2 16.5l2-1.2M17.8 8.7l2-1.2"/></svg>Ajustes</button>
+</nav></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ═══════════════════════════ DATOS FIJOS ═══════════════════════════ */
+const FRANJAS = [
+  {n:1, ini:'8:15',  fin:'9:10'},
+  {n:2, ini:'9:10',  fin:'10:05'},
+  {n:3, ini:'10:05', fin:'11:00'},
+  {recreo:true},
+  {n:4, ini:'11:25', fin:'12:20'},
+  {n:5, ini:'12:20', fin:'13:15'},
+  {n:6, ini:'13:15', fin:'14:10'},
+];
+const FR = Object.fromEntries(FRANJAS.filter(f=>f.n).map(f=>[f.n,f]));
+const GRUPOS = {
+  '1A':{nombre:'1.º ESO A', nivel:1},
+  '1B':{nombre:'1.º ESO B', nivel:1},
+  '1D':{nombre:'1.º ESO D', nivel:1},
+  '2B':{nombre:'2.º ESO B', nivel:2},
+  'R4':{nombre:'Refuerzo 4.º ESO', nivel:4},
+};
+const OTRAS = {G:'Guardia', C:'Complementarias', RM:'Reunión de departamento', AF:'Atención a familias'};
+// HORARIO[día de la semana 1..5][franja] — del horario del centro.
+// pt: sesión con la PT en el aula (POR6 en el horario; solo en 1.º A y 1.º B).
+const HORARIO = {
+  1:{1:{g:'1B',aula:'A114'}, 2:{g:'1A',aula:'A114',pt:true}, 3:{o:'C'}},
+  2:{3:{g:'1D',aula:'A100'}, 4:{g:'1A',aula:'A114'}, 5:{g:'1B',aula:'A114',pt:true}, 6:{g:'2B',aula:'A114'}},
+  3:{1:{o:'G'}, 2:{g:'1D',aula:'A104'}, 3:{o:'RM'}, 4:{g:'2B',aula:'A100'}, 5:{o:'AF'}, 6:{g:'R4',aula:'A200'}},
+  4:{1:{g:'2B',aula:'A100'}, 2:{g:'1B',aula:'A100',pt:true}, 3:{o:'G'}, 4:{g:'1A',aula:'A100',pt:true}, 5:{g:'1D',aula:'A100'}, 6:{o:'C'}},
+  5:{1:{g:'2B',aula:'A100'}, 2:{o:'G'}, 3:{g:'1D',aula:'A100'}, 4:{g:'R4',aula:'A114'}, 5:{g:'1A',aula:'A114'}, 6:{g:'1B',aula:'A114'}},
+};
+const CLIMA = {bien:'Se ha podido trabajar', regular:'A ratos', mal:'No se ha podido'};
+const MOTIVOS = ['Festivo','Excursión o actividad','Ausencia del docente','Examen de otra materia','Otro'];
+const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+/* ═══════════════════════════ FECHAS ═══════════════════════════ */
+const pad = n => String(n).padStart(2,'0');
+const clave = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const deClave = k => { const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); };
+const masDias = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const corta = k => { const d=deClave(k); return `${DIAS[d.getDay()].slice(0,3)} ${d.getDate()}/${d.getMonth()+1}`; };
+const larga = k => { const d=deClave(k); return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
+const minutos = h => { const [a,b]=h.split(':').map(Number); return a*60+b; };
+const ahoraMin = () => { const n=new Date(); return n.getHours()*60+n.getMinutes(); };
+const hoyK = () => clave(new Date());
+const idSes = (fecha,n) => `${fecha}_${n}`;
+
+/* ═══════════════════════════ ALMACÉN ═══════════════════════════
+   Todo se guarda en el propio móvil (localStorage). No sale a ningún
+   servidor: la copia de seguridad se hace a mano, desde Exportar, y se
+   manda a Drive, al correo o donde se quiera con el menú de compartir.  */
+const LS = 'cuaderno-de-aula.v1';
+const cfgInicial = () => ({
+  inicio: hoyK(), docente:'', centro:'', curso:'2026-27', ultimaCopia:'',
+  alumnos:{'1A':25,'1B':25,'1D':25,'2B':25,'R4':15},
+  nolectivos:[], materiales:['Las piezas de Miut','Ficha 1','Ficha 2','Ficha 3','Ficha 4','Aules','Pizarra digital'],
+});
+let store = {cfg:cfgInicial(), ses:{}};
+const clon = o => JSON.parse(JSON.stringify(o));
+function leerLocal(){
+  try{
+    const j = JSON.parse(localStorage.getItem(LS) || 'null');
+    if(j && j.store){ store = j.store; const c0 = cfgInicial(); store.cfg = Object.assign(c0, store.cfg||{}); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, store.cfg.alumnos||{}); }
+  }catch(e){}
+}
+let avisado = false;
+function guardarLocal(){
+  try{ localStorage.setItem(LS, JSON.stringify({store})); }
+  catch(e){ if(!avisado){ avisado = true; alert('El móvil no ha dejado guardar. Haz una copia de seguridad desde Exportar.'); } }
+}
+function guardarSesion(id, datos){
+  datos.actualizado = new Date().toISOString();
+  if(!datos.creado) datos.creado = datos.actualizado;
+  store.ses[id] = datos; guardarLocal();
+}
+function borrarSesion(id){ delete store.ses[id]; guardarLocal(); }
+function guardarCfg(){ guardarLocal(); }
+let instalable = null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); instalable = e; if(vista==='ajustes') pintar(); });
+const instalada = () => window.matchMedia('(display-mode: standalone)').matches;
+async function conectar(){
+  // que el navegador no borre los datos si se queda sin espacio
+  try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){}
+  if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js'); }catch(e){} }
+}
+
+/* ═══════════════════════════ LÓGICA ═══════════════════════════ */
+function esLectivo(k){
+  const d = deClave(k), w = d.getDay();
+  return w>=1 && w<=5 && !store.cfg.nolectivos.includes(k);
+}
+function franjasDe(k){
+  const w = deClave(k).getDay();
+  return HORARIO[w] || {};
+}
+function haTerminado(k,n){
+  const h = hoyK();
+  if(k < h) return true;
+  if(k > h) return false;
+  return ahoraMin() >= minutos(FR[n].fin);
+}
+function sinRegistrar(){
+  const out = [];
+  const hoy = hoyK();
+  let d = deClave(store.cfg.inicio || hoy);
+  const fin = deClave(hoy);
+  while(d <= fin){
+    const k = clave(d);
+    if(esLectivo(k)){
+      const h = franjasDe(k);
+      for(const n in h){
+        if(h[n].g && haTerminado(k, Number(n)) && !store.ses[idSes(k,n)]) out.push({k, n:Number(n), g:h[n].g});
+      }
+    }
+    d = masDias(d,1);
+  }
+  return out;
+}
+function sesionesDe(g){
+  return Object.entries(store.ses).filter(([,s])=>s.grupo===g).sort((a,b)=>a[0]<b[0]?-1:1);
+}
+// deberes puestos antes de «actual» que no se han revisado en otra sesión
+function deberesPendientes(g, actual){
+  const revisados = new Set();
+  for(const [id,s] of Object.entries(store.ses)){
+    if(id===actual) continue;
+    (s.revisiones||[]).forEach(r=>revisados.add(r.de));
+  }
+  return sesionesDe(g).filter(([id,s])=> id<actual && s.deberes && s.deberes.trim() && !revisados.has(id));
+}
+function igualQue(g, actual){
+  const nivel = GRUPOS[g].nivel, out = [];
+  for(const og of Object.keys(GRUPOS)){
+    if(og===g || GRUPOS[og].nivel!==nivel) continue;
+    const ult = sesionesDe(og).filter(([id,s])=>s.estado!=='no' && (s.contenido||'').trim()).pop();
+    if(ult) out.push({g:og, id:ult[0], s:ult[1]});
+  }
+  return out;
+}
+
+/* ═══════════════════════════ PANTALLA ═══════════════════════════ */
+let vista = 'dia';
+let dia = hoyK();
+let grupoSel = '1A';
+const $ = s => document.querySelector(s);
+const esc = t => String(t??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const gc = g => `var(--g${g})`;
+
+const diasDesde = k => k ? Math.round((deClave(hoyK()) - deClave(k)) / 86400000) : null;
+function pintarSync(){
+  const el = document.getElementById('sync');
+  if(!el) return;
+  const d = diasDesde(store.cfg.ultimaCopia);
+  el.innerHTML = 'Guardado en este móvil · ' + (d===null ? '<b>sin copia de seguridad todavía</b>'
+    : d===0 ? 'copia de seguridad de hoy' : `última copia hace ${d} ${d===1?'día':'días'}`);
+}
+function toast(t){
+  const el = $('#toast'); el.textContent = t; el.classList.add('si');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('si'), 1800);
+}
+function pintar(){
+  document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===vista?'page':'false'));
+  const app = $('#app');
+  if(vista==='dia') app.innerHTML = vDia();
+  else if(vista==='grupos') app.innerHTML = vGrupos();
+  else if(vista==='exportar') app.innerHTML = vExportar();
+  else app.innerHTML = vAjustes();
+  pintarSync();
+}
+
+function vDia(){
+  const d = deClave(dia), w = d.getDay();
+  const faltan = sinRegistrar();
+  let h = `<header class="cab">
+    <div class="fecha"><span class="dia">${DIAS[w]}${dia===hoyK()?' · hoy':''}</span>
+      <span class="num">${d.getDate()}</span><span class="mes">${MESES[d.getMonth()]}</span></div>
+    <div class="nav">
+      <button class="btn-r" data-a="prev" aria-label="Día anterior">‹</button>
+      ${dia!==hoyK()?'<button class="hoy" data-a="hoy">Hoy</button>':''}
+      <button class="btn-r" data-a="next" aria-label="Día siguiente">›</button>
+    </div></header>
+  <p class="estado-sync" id="sync"></p>`;
+  if(faltan.length){
+    h += `<button class="aviso" data-a="faltan"><span>${faltan.length} ${faltan.length===1?'sesión':'sesiones'} sin registrar
+      <small>Toca para verlas</small></span><span aria-hidden="true">›</span></button>`;
+  }
+  const dc = diasDesde(store.cfg.ultimaCopia);
+  if(Object.keys(store.ses).length >= 5 && (dc===null || dc>=7)){
+    h += `<button class="aviso" data-a="copia" style="border-color:var(--tinta);color:var(--tinta)"><span>${dc===null?'Todavía no has hecho ninguna copia':'Hace '+dc+' días de la última copia'}
+      <small>Toca para guardarla en Drive o donde quieras</small></span><span aria-hidden="true">›</span></button>`;
+  }
+  if(w===0 || w===6){
+    return h + `<div class="vacio"><b>Fin de semana.</b><br>No hay clases en el horario.</div>`;
+  }
+  if(store.cfg.nolectivos.includes(dia)){
+    return h + `<div class="vacio"><b>Día no lectivo.</b><br>Las sesiones de hoy no cuentan como pendientes.<br><br>
+      <button class="chip" data-a="lectivo">Marcar como lectivo</button></div>`;
+  }
+  const hor = franjasDe(dia);
+  h += '<ul class="franjas">';
+  for(const f of FRANJAS){
+    if(f.recreo){ h += `<li class="recreo">recreo</li>`; continue; }
+    const x = hor[f.n];
+    if(!x) continue;
+    const id = idSes(dia,f.n), s = store.ses[id];
+    const ahora = dia===hoyK() && ahoraMin()>=minutos(f.ini) && ahoraMin()<minutos(f.fin);
+    if(x.g){
+      let marca = '', sub = `Aula ${x.aula}${x.pt?'<span class="pt">con PT</span>':''}`;
+      if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
+      else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
+      else if(haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
+      h += `<li><button class="fr${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
+        <span class="hora"><b>${f.ini}</b>${f.fin}</span>
+        <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span><div class="sub">${sub}</div></span>
+        ${marca}</button></li>`;
+    }else{
+      const marca = s ? `<span class="marca ok">✓ anotada</span>` : '';
+      const sub = s && s.notas ? esc(s.notas) : 'Toca para anotar';
+      h += `<li><button class="fr otra${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
+        <span class="hora"><b>${f.ini}</b>${f.fin}</span>
+        <span><span class="grupo" style="--gc:var(--gX)">${OTRAS[x.o]}</span><div class="sub">${sub}</div></span>
+        ${marca}</button></li>`;
+    }
+  }
+  h += '</ul>';
+  if(!Object.keys(hor).length) h += `<div class="vacio">Hoy no tienes nada en el horario.</div>`;
+  h += `<p class="nota" style="margin-top:14px"><button class="chip" data-a="nolectivo">Marcar el día como no lectivo</button></p>`;
+  return h;
+}
+
+function vGrupos(){
+  const g = grupoSel;
+  const ses = sesionesDe(g);
+  const dadas = ses.filter(([,s])=>s.estado!=='no').length;
+  const noDadas = ses.filter(([,s])=>s.estado==='no').length;
+  const pendDeb = deberesPendientes(g, '9999');
+  let h = `<h1 class="titulo">Grupos</h1><div class="sel-grupo">`;
+  for(const k in GRUPOS) h += `<button data-a="grupo" data-g="${k}" aria-pressed="${k===g}" style="--gc:${gc(k)}">${GRUPOS[k].nombre}</button>`;
+  h += `</div><p class="estado-sync" id="sync"></p>
+  <div class="cifras">
+    <div class="cifra"><b>${dadas}</b><span>sesiones impartidas</span></div>
+    <div class="cifra"><b>${noDadas}</b><span>no impartidas</span></div>
+    <div class="cifra"><b>${pendDeb.length}</b><span>deberes por revisar</span></div>
+  </div>`;
+  if(pendDeb.length){
+    h += `<h3>Deberes por revisar</h3><ul class="hist">`;
+    for(const [id,s] of pendDeb) h += `<li><button data-a="ir" data-id="${id}"><div class="f">Puestos el ${corta(s.fecha)}</div><div class="d">${esc(s.deberes)}</div></button></li>`;
+    h += `</ul>`;
+  }
+  h += `<h3>Historial</h3>`;
+  if(!ses.length) h += `<div class="vacio">Todavía no hay sesiones de este grupo.<br>Se registran desde <b>Día</b>.</div>`;
+  else{
+    h += `<ul class="hist">`;
+    for(const [id,s] of [...ses].reverse()){
+      const rev = (s.revisiones||[]).map(r=>{
+        const o = store.ses[r.de]; const f = o ? corta(o.fecha) : '';
+        return `Deberes del ${f}: ${r.no && r.no.length ? 'no los traen '+r.no.join(', ') : 'los traen todos'}`;
+      }).join(' · ');
+      h += `<li><button data-a="ir" data-id="${id}">
+        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}</div>
+        <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
+        ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
+        ${s.pt?`<div class="f">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}
+        ${s.deberes?`<div class="d">Deberes: ${esc(s.deberes)}</div>`:''}
+        ${rev?`<div class="r">${esc(rev)}</div>`:''}
+      </button></li>`;
+    }
+    h += `</ul>`;
+  }
+  return h;
+}
+
+function vExportar(){
+  const hoy = hoyK();
+  let h = `<h1 class="titulo">Exportar</h1><p class="estado-sync" id="sync"></p>
+  <div class="panel">
+    <p>El registro de aula de las fechas y grupos que elijas, listo para imprimir o enseñar en una auditoría.</p>
+    <div class="fila2">
+      <label>Desde<input type="date" id="ex-desde" value="${store.cfg.inicio||hoy}"></label>
+      <label>Hasta<input type="date" id="ex-hasta" value="${hoy}"></label>
+    </div>
+    <div class="checks">`;
+  for(const k in GRUPOS) h += `<label><input type="checkbox" class="ex-g" value="${k}" checked> ${GRUPOS[k].nombre}</label>`;
+  h += `<label><input type="checkbox" class="ex-g" value="otras" checked> Guardias y otras</label></div>
+    <button class="bloque-btn lleno" data-a="ex-html">Descargar el registro (para imprimir)</button>
+    <button class="bloque-btn" data-a="ex-csv">Descargar la tabla (CSV)</button>
+  </div>
+  <div class="panel">
+    <p>Una copia de todo el cuaderno. Los datos solo están en este móvil: guárdala en Drive cada semana.
+      Sirve para recuperarlo si cambias de móvil o se borra el navegador.</p>
+    <button class="bloque-btn lleno" data-a="ex-json">Guardar copia de seguridad</button>
+    <label class="bloque-btn" style="display:grid;place-items:center">Restaurar una copia
+      <input type="file" id="im-json" accept=".txt,.json,text/plain,application/json" class="sr"></label>
+    <p class="nota" style="margin-top:10px">También restaura las copias del cuaderno de Claude.</p>
+  </div>`;
+  return h;
+}
+
+function vAjustes(){
+  const c = store.cfg;
+  let h = `<h1 class="titulo">Ajustes</h1><p class="estado-sync" id="sync"></p>
+  <div class="panel">
+    <div class="campo" style="margin-top:0"><label for="aj-doc">Docente</label><input type="text" id="aj-doc" value="${esc(c.docente)}" placeholder="Aparece en el registro que se descarga"></div>
+    <div class="fila2">
+      <div class="campo" style="margin:0"><label for="aj-centro">Centro</label><input type="text" id="aj-centro" value="${esc(c.centro)}"></div>
+      <div class="campo" style="margin:0"><label for="aj-curso">Curso</label><input type="text" id="aj-curso" value="${esc(c.curso)}"></div>
+    </div>
+    <div class="campo"><label for="aj-inicio">Primer día de clase</label><input type="date" id="aj-inicio" value="${c.inicio}">
+      <div class="nota">Desde aquí se cuentan las sesiones sin registrar.</div></div>
+  </div>
+  <div class="panel"><p><b>Alumnos por grupo</b><br><span class="nota">Para la cuadrícula de números de lista.</span></p><div class="alumnos">`;
+  for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
+  h += `</div></div>
+  <div class="panel"><p><b>Días no lectivos</b><br><span class="nota">Festivos y días sin clase: no cuentan como sesiones sin registrar.</span></p>
+    <div class="fila2"><input type="date" id="aj-nl"><button class="secundario" data-a="add-nl">Añadir</button></div>
+    <ul class="nolect">${[...c.nolectivos].sort().map(k=>`<li>${larga(k)}<button data-a="del-nl" data-k="${k}">Quitar</button></li>`).join('') || '<li class="nota">Ninguno todavía.</li>'}</ul>
+  </div>
+  <div class="panel"><p><b>En el móvil</b></p>
+    ${instalada() ? '<p class="nota" style="margin:0">Instalada como app.</p>'
+      : instalable ? '<button class="bloque-btn lleno" data-a="instalar" style="margin-top:0">Instalar en este móvil</button>'
+      : '<p class="nota" style="margin:0">Para instalarla: menú ⋮ de Chrome → «Instalar aplicación» o «Añadir a pantalla de inicio».</p>'}
+  </div>
+  <div class="panel"><p><b>Protección de datos</b></p>
+    <p class="nota">Apunta al alumnado solo por número de lista, nunca por nombre. Las notas de sesión son para el
+    seguimiento del grupo; los datos personales van en ITACA y Aules. Nada de este cuaderno sale del móvil
+    salvo las copias que tú mandes.</p></div>
+  <button class="bloque-btn lleno" data-a="guardar-aj">Guardar ajustes</button>`;
+  return h;
+}
+
+/* ═══════════════════════════ LA HOJA DE UNA SESIÓN ═══════════════════════════ */
+let borrador = null, abiertoId = null;
+function abrir(k, n){
+  const x = (franjasDe(k))[n];
+  if(!x) return;
+  abiertoId = idSes(k,n);
+  const s = store.ses[abiertoId];
+  borrador = s ? clon(s) : {
+    fecha:k, franja:n, grupo:x.g||null, otra:x.o||null, aula:x.aula||'',
+    estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', cambio:'', observacion:'', notas:'',
+    ...(x.pt ? {pt:'si', ptNotas:''} : {})
+  };
+  if(x.pt && borrador.pt===undefined){ borrador.pt='si'; borrador.ptNotas=''; }
+  pintarHoja();
+  $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{ const t = $('#hoja textarea'); if(t && !s) t.focus(); }, 250);
+}
+function cerrar(){
+  $('#velo').classList.remove('abierto'); $('#hoja').classList.remove('abierta');
+  document.body.style.overflow=''; borrador=null; abiertoId=null;
+  setTimeout(()=>{ if(!borrador) $('#hoja').innerHTML=''; }, 260);
+}
+function pintarHoja(){
+  const b = borrador, f = FR[b.franja];
+  const titulo = b.grupo ? GRUPOS[b.grupo].nombre : OTRAS[b.otra];
+  let h = `<div class="hoja-in"><div class="hoja-cab"><div>
+      <h2 id="hoja-titulo"><span class="grupo" style="--gc:${b.grupo?gc(b.grupo):'var(--gX)'}">${titulo}</span></h2>
+      <div class="quando">${larga(b.fecha)} · ${f.ini}–${f.fin}${b.aula?' · '+b.aula:''}${b.pt?' · con PT':''}</div></div>
+      <button class="cerrar" data-h="cerrar">Cerrar</button></div>`;
+  if(!b.grupo){
+    h += `<div class="campo"><label for="h-notas">Notas <span class="ayuda">— incidencias, a quién se atendió…</span></label>
+      <textarea id="h-notas" data-f="notas">${esc(b.notas)}</textarea></div>`;
+  }else{
+    h += `<div class="campo"><span class="et">¿Se dio la clase?</span>
+      <div class="seg dos"><button data-h="estado" data-v="si" aria-pressed="${b.estado!=='no'}">Sí</button>
+      <button data-h="estado" data-v="no" aria-pressed="${b.estado==='no'}">No se impartió</button></div></div>`;
+    if(b.estado==='no'){
+      h += `<div class="campo"><span class="et">Motivo</span><div class="chips">
+        ${MOTIVOS.map(m=>`<button class="chip" data-h="motivo" data-v="${m}" aria-pressed="${b.motivo===m}" style="${b.motivo===m?'border-color:var(--tinta);color:var(--tinta);font-weight:700':''}">${m}</button>`).join('')}
+      </div></div>
+      <div class="campo"><label for="h-notas">Notas</label><textarea id="h-notas" data-f="notas">${esc(b.notas)}</textarea></div>`;
+    }else{
+      const iguales = igualQue(b.grupo, abiertoId);
+      h += `<div class="campo"><label for="h-cont">Qué se ha hecho</label>
+        <textarea id="h-cont" data-f="contenido" placeholder="Por ejemplo: corrección de la ficha 2; mcm con piezas en la pizarra">${esc(b.contenido)}</textarea>
+        ${iguales.length?`<div class="chips">${iguales.map(i=>`<button class="chip igual" data-h="igual" data-id="${i.id}">Igual que ${GRUPOS[i.g].nombre.replace(' ESO','')} (${corta(i.s.fecha)})</button>`).join('')}</div>`:''}
+      </div>
+      <div class="campo"><label for="h-mat">Material</label>
+        <input type="text" id="h-mat" data-f="material" value="${esc(b.material)}" placeholder="App, ficha, libro…">
+        <div class="chips">${store.cfg.materiales.map(m=>`<button class="chip" data-h="mat" data-v="${esc(m)}">${esc(m)}</button>`).join('')}</div>
+      </div>`;
+      // deberes por revisar
+      const pd = deberesPendientes(b.grupo, abiertoId);
+      const yaRev = (b.revisiones||[]).map(r=>r.de);
+      const mostrar = pd.map(([id])=>id);
+      yaRev.forEach(id=>{ if(!mostrar.includes(id) && store.ses[id]) mostrar.push(id); });
+      if(mostrar.length){
+        h += `<div class="campo"><span class="et">Deberes para revisar</span>`;
+        for(const id of mostrar){
+          const s = store.ses[id]; const r = (b.revisiones||[]).find(x=>x.de===id);
+          h += `<div class="deber"><div class="deber-cab"><div><p>${esc(s.deberes)}</p><span class="de">Puestos el ${corta(s.fecha)}</span></div>
+            <button class="tog" data-h="rev" data-id="${id}" aria-pressed="${!!r}">${r?'Revisados':'Revisar hoy'}</button></div>`;
+          if(r){
+            const N = store.cfg.alumnos[b.grupo]||25;
+            h += `<div class="lista" role="group" aria-label="Números de lista que no los traen">`;
+            for(let i=1;i<=N;i++) h += `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`;
+            h += `</div><div class="lista-nota">Toca los números de quien <b>no</b> los trae. ${r.no.length? 'No los traen: '+r.no.join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
+          }
+          h += `</div>`;
+        }
+        h += `</div>`;
+      }
+      h += `<div class="campo"><label for="h-deb">Deberes para la próxima <span class="ayuda">— si hay</span></label>
+        <input type="text" id="h-deb" data-f="deberes" value="${esc(b.deberes)}" placeholder="Por ejemplo: reverso de la ficha 3">
+      </div>
+      ${b.pt ? `<div class="campo"><span class="et">Apoyo de PT en el aula</span>
+        <div class="seg dos"><button data-h="pt" data-v="si" aria-pressed="${b.pt!=='no'}">Ha estado</button>
+        <button data-h="pt" data-v="no" aria-pressed="${b.pt==='no'}">No ha venido</button></div>
+        ${b.pt!=='no' ? `<textarea id="h-pt" data-f="ptNotas" style="min-height:64px;margin-top:8px" placeholder="Qué se ha hecho con la PT: apoyo a un grupo, adaptación de la ficha…">${esc(b.ptNotas||'')}</textarea>` : ''}
+      </div>` : ''}
+      <div class="campo"><span class="et">¿Cómo ha ido el aula?</span><div class="seg">
+        ${Object.entries(CLIMA).map(([k,v])=>`<button data-h="clima" data-v="${k}" aria-pressed="${b.clima===k}">${v}</button>`).join('')}
+      </div></div>
+      <details ${b.cambio||b.observacion?'open':''}><summary>Pilotaje <span class="ayuda" style="font-weight:400">— para el diario de mejora</span></summary>
+        <div class="campo"><label for="h-camb">Qué cambié respecto al grupo anterior</label>
+          <textarea id="h-camb" data-f="cambio" style="min-height:64px">${esc(b.cambio)}</textarea></div>
+        <div class="campo"><label for="h-obs">Qué observé</label>
+          <textarea id="h-obs" data-f="observacion" style="min-height:64px" placeholder="Errores típicos, qué funcionó, qué no">${esc(b.observacion)}</textarea></div>
+      </details>
+      <div class="campo"><label for="h-notas">Otras notas</label><textarea id="h-notas" data-f="notas" style="min-height:56px">${esc(b.notas)}</textarea></div>`;
+    }
+  }
+  h += `</div><div class="acciones"><div>
+    ${store.ses[abiertoId]?'<button class="secundario peligro" data-h="borrar">Borrar</button>':''}
+    <button class="primario" data-h="guardar">Guardar</button></div></div>`;
+  const hoja = $('#hoja');
+  const y = hoja.scrollTop;
+  hoja.innerHTML = h;
+  hoja.scrollTop = y;
+}
+function leerCampos(){
+  document.querySelectorAll('#hoja [data-f]').forEach(el=>{ borrador[el.dataset.f] = el.value; });
+}
+
+/* ═══════════════════════════ EXPORTAR ═══════════════════════════ */
+// Con el menú de compartir de Android se puede mandar a Drive, al correo…;
+// si el navegador no lo permite, se descarga en la carpeta de Descargas.
+async function descargar(nombre, datos, tipo){
+  const f = new File([datos], nombre, {type:tipo});
+  if(navigator.canShare && navigator.canShare({files:[f]})){
+    try{ await navigator.share({files:[f], title:nombre}); toast('Enviado'); return true; }
+    catch(e){ if(e && e.name==='AbortError'){ toast('Cancelado'); return false; } }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(f); a.download = nombre; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  toast('Descargado en Descargas'); return true;
+}
+async function copiaSeguridad(){
+  // .txt porque Android no deja compartir archivos .json; dentro va el cuaderno entero
+  const ok = await descargar(`cuaderno-de-aula_copia_${hoyK()}.txt`, JSON.stringify({version:1, store}, null, 1), 'text/plain');
+  if(ok){ store.cfg.ultimaCopia = hoyK(); guardarLocal(); pintar(); }
+}
+function filasExport(){
+  const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
+  const sel = [...document.querySelectorAll('.ex-g:checked')].map(i=>i.value);
+  return Object.entries(store.ses)
+    .filter(([id,s])=> s.fecha>=desde && s.fecha<=hasta && (s.grupo ? sel.includes(s.grupo) : sel.includes('otras')))
+    .sort((a,b)=>a[0]<b[0]?-1:1).map(([id,s])=>({id,...s}));
+}
+const textoRev = s => (s.revisiones||[]).map(r=>{
+  const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):'?'}: ${r.no&&r.no.length?'no los traen nº '+r.no.join(', '):'los traen todos'}`;
+}).join('; ');
+function csv(){
+  const f = filasExport();
+  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas'];
+  const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const filas = f.map(s=>[s.fecha, DIAS[deClave(s.fecha).getDay()], `${FR[s.franja].ini}-${FR[s.franja].fin}`,
+    s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'',
+    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||''].map(q).join(';'));
+  return '\ufeff' + [cab.map(q).join(';'), ...filas].join('\r\n');
+}
+function informe(){
+  const f = filasExport(), c = store.cfg;
+  const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
+  const grupos = [...Object.keys(GRUPOS), 'otras'];
+  let cuerpo = '';
+  for(const g of grupos){
+    const filas = f.filter(s => g==='otras' ? !s.grupo : s.grupo===g);
+    if(!filas.length) continue;
+    const titulo = g==='otras' ? 'Guardias y otras tareas' : GRUPOS[g].nombre;
+    const dadas = filas.filter(s=>s.grupo && s.estado!=='no').length;
+    cuerpo += `<h2>${titulo}</h2>${g!=='otras'?`<p class="meta">${dadas} sesiones impartidas · ${filas.length-dadas} no impartidas</p>`:''}
+    <table><thead><tr><th>Fecha</th><th>Hora</th>${g==='otras'?'<th>Tarea</th><th>Notas</th>':'<th>Qué se ha hecho</th><th>Deberes</th><th>Revisión</th><th>Clima</th>'}</tr></thead><tbody>`;
+    for(const s of filas){
+      if(g==='otras'){
+        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${OTRAS[s.otra]}</td><td>${esc(s.notas)}</td></tr>`;
+      }else if(s.estado==='no'){
+        cuerpo += `<tr class="no"><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td colspan="4">No impartida: ${esc(s.motivo)}${s.notas?' — '+esc(s.notas):''}</td></tr>`;
+      }else{
+        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
+          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}</td></tr>`;
+      }
+    }
+    cuerpo += `</tbody></table>`;
+  }
+  if(!cuerpo) cuerpo = '<p>No hay sesiones registradas en esas fechas.</p>';
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Registro de aula</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;color:#111;margin:18mm}
+h1{font-size:16pt;margin:0 0 2mm}h2{font-size:12.5pt;margin:8mm 0 1mm;border-bottom:1.5px solid #1D3A8A;color:#1D3A8A}
+.cab{color:#444;margin-bottom:4mm}.meta{color:#555;margin:0 0 2mm;font-size:9.5pt}
+table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}
+th,td{border:1px solid #bbb;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef2f8;font-size:9.5pt}
+td:nth-child(1),td:nth-child(2){white-space:nowrap}.mat{color:#555;font-size:9pt;margin-top:2px}
+tr.no td{color:#777;font-style:italic}.pie{margin-top:8mm;color:#666;font-size:9pt}
+@page{size:A4;margin:14mm}@media print{body{margin:0}}</style></head><body>
+<h1>Registro de aula</h1>
+<div class="cab">${esc(c.docente||'')}${c.centro?' · '+esc(c.centro):''}${c.curso?' · Curso '+esc(c.curso):''}<br>
+Del ${larga(desde)} al ${larga(hasta)}</div>${cuerpo}
+<p class="pie">Generado el ${larga(hoyK())} con el cuaderno de aula.</p></body></html>`;
+}
+
+/* ═══════════════════════════ EVENTOS ═══════════════════════════ */
+document.getElementById('barra').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  vista = b.dataset.v; pintar(); window.scrollTo(0,0);
+});
+document.getElementById('app').addEventListener('click', async e=>{
+  const b = e.target.closest('[data-a]'); if(!b) return;
+  const a = b.dataset.a;
+  if(a==='prev' || a==='next'){
+    let d = deClave(dia);
+    do{ d = masDias(d, a==='prev'?-1:1); } while(d.getDay()===0 || d.getDay()===6);
+    dia = clave(d); pintar();
+  }
+  else if(a==='hoy'){ dia = hoyK(); pintar(); }
+  else if(a==='abrir'){ abrir(dia, Number(b.dataset.n)); }
+  else if(a==='faltan'){ hojaFaltan(); }
+  else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
+  else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
+  else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
+  else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
+  else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
+  else if(a==='ex-csv'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.csv`, csv(), 'text/csv'); }
+  else if(a==='ex-json' || a==='copia'){ await copiaSeguridad(); }
+  else if(a==='instalar'){ if(instalable){ instalable.prompt(); instalable = null; } }
+  else if(a==='add-nl'){ const v = $('#aj-nl').value; if(v && !store.cfg.nolectivos.includes(v)){ store.cfg.nolectivos.push(v); guardarCfg(); pintar(); } }
+  else if(a==='del-nl'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==b.dataset.k); guardarCfg(); pintar(); }
+  else if(a==='guardar-aj'){
+    const c = store.cfg;
+    c.docente = $('#aj-doc').value.trim(); c.centro = $('#aj-centro').value.trim(); c.curso = $('#aj-curso').value.trim();
+    if($('#aj-inicio').value) c.inicio = $('#aj-inicio').value;
+    document.querySelectorAll('.aj-n').forEach(i=>{ const n = Math.max(1, Math.min(40, parseInt(i.value)||25)); c.alumnos[i.dataset.g] = n; });
+    guardarCfg(); toast('Ajustes guardados'); pintar();
+  }
+});
+document.getElementById('app').addEventListener('change', e=>{
+  if(e.target.id!=='im-json') return;
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const j = JSON.parse(r.result);
+      if(!j.store || !j.store.ses) throw 0;
+      const n = Object.keys(j.store.ses).length;
+      if(!confirm(`La copia tiene ${n} sesiones. Se añadirán a las que ya hay; si una sesión está en los dos sitios, se queda la de la copia. ¿Seguir?`)) return;
+      for(const [id,s] of Object.entries(j.store.ses)){ store.ses[id]=s; }
+      if(j.store.cfg){ store.cfg = Object.assign(cfgInicial(), j.store.cfg); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, j.store.cfg.alumnos||{}); }
+      guardarLocal(); pintar(); toast(`Copia restaurada: ${n} sesiones`);
+    }catch(err){ toast('Ese archivo no es una copia del cuaderno'); }
+  };
+  r.readAsText(f);
+});
+document.getElementById('velo').addEventListener('click', cerrar);
+document.getElementById('hoja').addEventListener('click', e=>{
+  const b = e.target.closest('[data-h]'); if(!b || !borrador) return;
+  const h = b.dataset.h;
+  leerCampos();
+  if(h==='cerrar'){ cerrar(); return; }
+  if(h==='estado'){ borrador.estado = b.dataset.v; }
+  else if(h==='pt'){ borrador.pt = b.dataset.v; }
+  else if(h==='motivo'){ borrador.motivo = b.dataset.v; }
+  else if(h==='clima'){ borrador.clima = borrador.clima===b.dataset.v ? '' : b.dataset.v; }
+  else if(h==='mat'){
+    const v = b.dataset.v; const cur = (borrador.material||'').trim();
+    borrador.material = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
+  }
+  else if(h==='igual'){
+    const o = store.ses[b.dataset.id];
+    if(o){ borrador.contenido = o.contenido||''; borrador.material = o.material||''; borrador.deberes = o.deberes||''; toast('Copiado: revísalo antes de guardar'); }
+  }
+  else if(h==='rev'){
+    const id = b.dataset.id; borrador.revisiones = borrador.revisiones||[];
+    const i = borrador.revisiones.findIndex(r=>r.de===id);
+    if(i>=0) borrador.revisiones.splice(i,1); else borrador.revisiones.push({de:id, no:[]});
+  }
+  else if(h==='no'){
+    const r = borrador.revisiones.find(x=>x.de===b.dataset.id); const n = Number(b.dataset.i);
+    if(r){ r.no = r.no.includes(n) ? r.no.filter(x=>x!==n) : [...r.no, n].sort((x,y)=>x-y); }
+  }
+  else if(h==='guardar'){
+    const b2 = borrador;
+    if(b2.grupo && b2.estado==='no' && !b2.motivo){ toast('Elige el motivo'); return; }
+    if(b2.grupo && b2.estado!=='no' && !b2.contenido.trim() && !b2.material.trim()){ toast('Escribe qué se ha hecho'); return; }
+    if(b2.material){
+      const nuevos = b2.material.split(/,\s*/).map(x=>x.trim()).filter(Boolean);
+      const m = store.cfg.materiales; let cambio = false;
+      nuevos.forEach(x=>{ if(!m.includes(x)){ m.unshift(x); cambio = true; } });
+      if(cambio){ store.cfg.materiales = m.slice(0,12); guardarCfg(); }
+    }
+    guardarSesion(abiertoId, clon(b2)); cerrar(); toast('Sesión guardada'); pintar(); return;
+  }
+  else if(h==='borrar'){
+    if(confirm('¿Borrar el registro de esta sesión?')){ borrarSesion(abiertoId); cerrar(); toast('Registro borrado'); pintar(); }
+    return;
+  }
+  pintarHoja();
+});
+function hojaFaltan(){
+  const lista = sinRegistrar();
+  borrador = {}; abiertoId = null;
+  let h = `<div class="hoja-in"><div class="hoja-cab"><div><h2 id="hoja-titulo">Sin registrar</h2>
+    <div class="quando">${lista.length} ${lista.length===1?'sesión':'sesiones'} desde el ${larga(store.cfg.inicio)}</div></div>
+    <button class="cerrar" data-f2="cerrar">Cerrar</button></div><ul class="hist" style="margin-top:12px">`;
+  for(const x of [...lista].reverse()){
+    h += `<li><button data-f2="ir" data-k="${x.k}" data-n="${x.n}"><div class="f">${larga(x.k)} · ${FR[x.n].ini}</div>
+      <p class="c"><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span></p></button></li>`;
+  }
+  h += `</ul><p class="nota">Si un día fue festivo, márcalo como no lectivo desde Día o Ajustes y dejará de salir aquí.</p></div>`;
+  $('#hoja').innerHTML = h;
+  $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
+}
+document.getElementById('hoja').addEventListener('click', e=>{
+  const b = e.target.closest('[data-f2]'); if(!b) return;
+  if(b.dataset.f2==='cerrar'){ cerrar(); return; }
+  const k = b.dataset.k, n = Number(b.dataset.n);
+  dia = k; vista='dia'; pintar(); abrir(k, n);
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
+// al volver a la app (cambio de pestaña o de hora) se repinta: la franja «ahora» se mueve sola
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && !borrador) pintar(); });
+setInterval(()=>{ if(!borrador && vista==='dia') pintar(); }, 60000);
+
+/* ═══════════════════════════ ARRANQUE ═══════════════════════════ */
+leerLocal();
+if(!esLectivo(dia) && [0,6].includes(deClave(dia).getDay())){
+  let d = deClave(dia); while(d.getDay()===0||d.getDay()===6) d = masDias(d,1); dia = clave(d);
+}
+pintar();
+conectar();
+</script>
+</body>
+</html>
