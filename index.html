@@ -74,6 +74,18 @@ button{cursor:pointer}
   background:var(--hoja);border:1.5px solid var(--rojo);color:var(--rojo);
   border-radius:12px;padding:10px 12px;margin:8px 0 14px;font-weight:700;width:100%;text-align:left}
 .aviso small{font-weight:400;color:var(--gris);display:block}
+.aviso.copia{background:var(--tinta);border-color:var(--tinta);color:var(--hoja)}
+.aviso.copia small{color:var(--hoja);opacity:.85}
+.barras{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--linea);margin:6px 0 2px}
+.barras span{display:block;height:100%}
+.leyenda{font-size:13px;color:var(--gris)}
+.unidad{margin-bottom:10px}
+.unidad .n{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.prog{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin-top:4px}
+.prog span{display:block;height:100%;background:var(--tinta)}
+.registro{font-size:13px;color:var(--gris);margin:18px 0 0;border-top:1px dashed var(--linea);padding-top:10px}
+.u-fila{display:grid;grid-template-columns:1fr 70px 40px;gap:6px;margin-bottom:6px;align-items:center}
+.u-fila button{height:40px;border:0;background:none;color:var(--rojo);font-size:20px}
 
 /* las franjas: renglones del día */
 .franjas{list-style:none;margin:0;padding:0}
@@ -260,13 +272,21 @@ const cfgInicial = () => ({
   inicio: hoyK(), docente:'', centro:'', curso:'2026-27', ultimaCopia:'',
   alumnos:{'1A':25,'1B':25,'1D':25,'2B':25,'R4':15},
   nolectivos:[], materiales:['Las piezas de Miut','Ficha 1','Ficha 2','Ficha 3','Ficha 4','Aules','Pizarra digital'],
+  ultimaCopiaT:'', copia:{dia:5, hora:'14:10'},   // aviso de copia: el viernes al acabar la última clase
+  borrados:[],                                     // rastro de los registros borrados
+  // unidades o situaciones de aprendizaje, por nivel, con las sesiones previstas
+  unidades:{1:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:12}],
+            2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
+            4:[]},
 });
+const VERSION_APP = '1.1';
 let store = {cfg:cfgInicial(), ses:{}};
 const clon = o => JSON.parse(JSON.stringify(o));
 function leerLocal(){
   try{
     const j = JSON.parse(localStorage.getItem(LS) || 'null');
     if(j && j.store){ store = j.store; const c0 = cfgInicial(); store.cfg = Object.assign(c0, store.cfg||{}); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, store.cfg.alumnos||{}); }
+    if(!store.cfg.unidades[4]) store.cfg.unidades[4] = [];
   }catch(e){}
 }
 let avisado = false;
@@ -274,12 +294,29 @@ function guardarLocal(){
   try{ localStorage.setItem(LS, JSON.stringify({store})); }
   catch(e){ if(!avisado){ avisado = true; alert('El móvil no ha dejado guardar. Haz una copia de seguridad desde Exportar.'); } }
 }
+// Cada registro guarda cuándo se creó y un historial de qué campos se
+// cambiaron y cuándo: es lo que pide una auditoría para fiarse de un
+// registro que se puede editar.
+const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','pt','ptNotas','cambio','observacion','notas'];
 function guardarSesion(id, datos){
-  datos.actualizado = new Date().toISOString();
-  if(!datos.creado) datos.creado = datos.actualizado;
-  store.ses[id] = datos; guardarLocal();
+  const ahora = new Date().toISOString(), prev = store.ses[id];
+  const hist = prev ? clon(prev.historial||[]) : [];
+  if(prev){
+    const c = CAMPOS.filter(k => JSON.stringify(prev[k]??'') !== JSON.stringify(datos[k]??''));
+    if(!c.length) return false;
+    hist.push({t:ahora, c});
+  }
+  datos.creado = prev ? (prev.creado || prev.actualizado || ahora) : ahora;
+  datos.historial = hist.slice(-30);
+  datos.actualizado = ahora;
+  store.ses[id] = datos; guardarLocal(); return true;
 }
-function borrarSesion(id){ delete store.ses[id]; guardarLocal(); }
+function borrarSesion(id){
+  const s = store.ses[id];
+  if(s) store.cfg.borrados.push({id, grupo:s.grupo||s.otra, fecha:s.fecha, franja:s.franja, t:new Date().toISOString(),
+    resumen:(s.contenido||s.motivo||s.notas||'').slice(0,80)});
+  delete store.ses[id]; guardarLocal();
+}
 function guardarCfg(){ guardarLocal(); }
 let instalable = null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); instalable = e; if(vista==='ajustes') pintar(); });
@@ -344,6 +381,60 @@ function igualQue(g, actual){
   return out;
 }
 
+// El «momento de copia» más reciente que ya ha pasado (p. ej. el último viernes a las 14:10)
+function momentoCopia(){
+  const {dia:dc, hora} = store.cfg.copia, [hh,mm] = hora.split(':').map(Number), now = new Date();
+  const d = new Date(now); d.setHours(hh, mm, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() - dc + 7) % 7));
+  if(d > now) d.setDate(d.getDate() - 7);
+  return d;
+}
+function tocaCopia(){
+  if(!Object.keys(store.ses).length) return false;
+  const u = store.cfg.ultimaCopiaT ? new Date(store.cfg.ultimaCopiaT) : null;
+  return !u || u < momentoCopia();
+}
+const unidadesDe = g => store.cfg.unidades[GRUPOS[g].nivel] || [];
+const nombreUnidad = (g, id) => (unidadesDe(g).find(u=>u.id===id)||{}).nombre || '';
+function ultimaUnidad(g){
+  const s = sesionesDe(g).filter(([,s])=>s.unidad).pop();
+  return s ? s[1].unidad : '';
+}
+// Indicadores de un grupo entre dos fechas
+function indicadores(g, desde, hasta){
+  const hoy = hoyK(), ini = desde > store.cfg.inicio ? desde : store.cfg.inicio, fin = hasta < hoy ? hasta : hoy;
+  let previstas = 0, conPT = 0;
+  for(let d = deClave(ini); clave(d) <= fin; d = masDias(d,1)){
+    const k = clave(d); if(!esLectivo(k)) continue;
+    const h = franjasDe(k);
+    for(const n in h) if(h[n].g===g && haTerminado(k, Number(n))) previstas++;
+  }
+  const ses = sesionesDe(g).map(([,s])=>s).filter(s=>s.fecha>=desde && s.fecha<=hasta);
+  const dadas = ses.filter(s=>s.estado!=='no');
+  const N = store.cfg.alumnos[g] || 25;
+  let revisadas = 0, traen = 0, total = 0;
+  dadas.forEach(s=>(s.revisiones||[]).forEach(r=>{ revisadas++; total += N; traen += N - (r.no||[]).length; }));
+  const clima = {bien:0, regular:0, mal:0};
+  dadas.forEach(s=>{ if(clima[s.clima]!==undefined) clima[s.clima]++; });
+  const pt = dadas.filter(s=>s.pt); const ptSi = pt.filter(s=>s.pt!=='no').length;
+  const porUnidad = unidadesDe(g).map(u=>({...u, dadas: dadas.filter(s=>s.unidad===u.id).length}));
+  const sinUnidad = dadas.filter(s=>!s.unidad).length;
+  return {previstas, registradas: ses.filter(s=>s.fecha<=fin).length, dadas: dadas.length, noDadas: ses.length - dadas.length,
+    sinRegistrar: sinRegistrar().filter(x=>x.g===g && x.k>=desde && x.k<=hasta).length,
+    puestos: dadas.filter(s=>s.deberes && s.deberes.trim()).length, revisadas,
+    entrega: total ? Math.round(100*traen/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
+    pt: pt.length, ptSi, porUnidad, sinUnidad};
+}
+// Clima por franja horaria, sumando todos los grupos
+function climaPorFranja(desde, hasta){
+  const out = {};
+  for(const n of [1,2,3,4,5,6]) out[n] = {bien:0, regular:0, mal:0};
+  Object.values(store.ses).forEach(s=>{ if(s.grupo && s.estado!=='no' && s.clima && s.fecha>=desde && s.fecha<=hasta) out[s.franja][s.clima]++; });
+  return out;
+}
+const pct = (a,b) => b ? Math.round(100*a/b) : 0;
+const fechaHora = iso => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
 /* ═══════════════════════════ PANTALLA ═══════════════════════════ */
 let vista = 'dia';
 let dia = hoyK();
@@ -390,10 +481,15 @@ function vDia(){
     h += `<button class="aviso" data-a="faltan"><span>${faltan.length} ${faltan.length===1?'sesión':'sesiones'} sin registrar
       <small>Toca para verlas</small></span><span aria-hidden="true">›</span></button>`;
   }
-  const dc = diasDesde(store.cfg.ultimaCopia);
-  if(Object.keys(store.ses).length >= 5 && (dc===null || dc>=7)){
-    h += `<button class="aviso" data-a="copia" style="border-color:var(--tinta);color:var(--tinta)"><span>${dc===null?'Todavía no has hecho ninguna copia':'Hace '+dc+' días de la última copia'}
-      <small>Toca para guardarla en Drive o donde quieras</small></span><span aria-hidden="true">›</span></button>`;
+  if(tocaCopia()){
+    h += `<button class="aviso copia" data-a="copia"><span>Toca la copia de seguridad de la semana
+      <small>Un toque: elige OneDrive y la carpeta de copias</small></span><span aria-hidden="true">›</span></button>`;
+  }
+  if(!Object.keys(store.ses).length){
+    h += `<div class="panel" style="margin-bottom:14px"><p><b>¿Tienes una copia de seguridad?</b><br>
+      <span class="nota">Si vienes de otro móvil o se han borrado los datos de Chrome, recupéralo todo desde tu última copia.</span></p>
+      <label class="bloque-btn" style="display:grid;place-items:center;margin-top:0">Restaurar una copia
+      <input type="file" id="im-json" accept=".txt,.json,text/plain,application/json" class="sr"></label></div>`;
   }
   if(w===0 || w===6){
     return h + `<div class="vacio"><b>Fin de semana.</b><br>No hay clases en el horario.</div>`;
@@ -442,12 +538,27 @@ function vGrupos(){
   const pendDeb = deberesPendientes(g, '9999');
   let h = `<h1 class="titulo">Grupos</h1><div class="sel-grupo">`;
   for(const k in GRUPOS) h += `<button data-a="grupo" data-g="${k}" aria-pressed="${k===g}" style="--gc:${gc(k)}">${GRUPOS[k].nombre}</button>`;
+  const I = indicadores(g, store.cfg.inicio, hoyK());
   h += `</div><p class="estado-sync" id="sync"></p>
   <div class="cifras">
-    <div class="cifra"><b>${dadas}</b><span>sesiones impartidas</span></div>
-    <div class="cifra"><b>${noDadas}</b><span>no impartidas</span></div>
+    <div class="cifra"><b>${I.dadas}</b><span>impartidas de ${I.previstas} previstas</span></div>
+    <div class="cifra"><b>${I.entrega===null?'—':I.entrega+' %'}</b><span>entrega de deberes</span></div>
     <div class="cifra"><b>${pendDeb.length}</b><span>deberes por revisar</span></div>
   </div>`;
+  if(I.climaN){
+    h += `<h3>Clima del aula</h3><div class="barras" role="img" aria-label="Se ha podido trabajar ${pct(I.clima.bien,I.climaN)} %, a ratos ${pct(I.clima.regular,I.climaN)} %, no se ha podido ${pct(I.clima.mal,I.climaN)} %">
+      <span style="width:${pct(I.clima.bien,I.climaN)}%;background:var(--tinta)"></span>
+      <span style="width:${pct(I.clima.regular,I.climaN)}%;background:var(--gris)"></span>
+      <span style="width:${pct(I.clima.mal,I.climaN)}%;background:var(--rojo)"></span></div>
+      <div class="leyenda">Se ha podido trabajar ${pct(I.clima.bien,I.climaN)} % · a ratos ${pct(I.clima.regular,I.climaN)} % · no se ha podido ${pct(I.clima.mal,I.climaN)} %</div>`;
+  }
+  if(I.porUnidad.length){
+    h += `<h3>Seguimiento de la programación</h3>`;
+    I.porUnidad.forEach(u=>{ h += `<div class="unidad"><div class="n"><span>${esc(u.nombre)}</span><span>${u.dadas}${u.previstas?' / '+u.previstas:''}</span></div>
+      ${u.previstas?`<div class="prog"><span style="width:${Math.min(100,pct(u.dadas,u.previstas))}%"></span></div>`:''}</div>`; });
+    if(I.sinUnidad) h += `<p class="leyenda">${I.sinUnidad} ${I.sinUnidad===1?'sesión':'sesiones'} sin unidad asignada.</p>`;
+  }
+  if(I.pt) h += `<p class="leyenda" style="margin-top:10px">Sesiones con PT: ${I.ptSi} de ${I.pt} con la PT en el aula.</p>`;
   if(pendDeb.length){
     h += `<h3>Deberes por revisar</h3><ul class="hist">`;
     for(const [id,s] of pendDeb) h += `<li><button data-a="ir" data-id="${id}"><div class="f">Puestos el ${corta(s.fecha)}</div><div class="d">${esc(s.deberes)}</div></button></li>`;
@@ -459,11 +570,11 @@ function vGrupos(){
     h += `<ul class="hist">`;
     for(const [id,s] of [...ses].reverse()){
       const rev = (s.revisiones||[]).map(r=>{
-        const o = store.ses[r.de]; const f = o ? corta(o.fecha) : '';
+        const o = store.ses[r.de]; const f = o ? corta(o.fecha) : corta(r.de.split('_')[0]);
         return `Deberes del ${f}: ${r.no && r.no.length ? 'no los traen '+r.no.join(', ') : 'los traen todos'}`;
       }).join(' · ');
       h += `<li><button data-a="ir" data-id="${id}">
-        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}</div>
+        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}</div>
         <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
         ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
         ${s.pt?`<div class="f">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}
@@ -502,6 +613,12 @@ function vExportar(){
   return h;
 }
 
+function leerUnidades(){
+  document.querySelectorAll('.aj-u').forEach(i=>{
+    const u = (store.cfg.unidades[i.dataset.nv]||[])[Number(i.dataset.i)]; if(!u) return;
+    if(i.dataset.k==='nombre') u.nombre = i.value.trim(); else u.previstas = Math.max(0, parseInt(i.value)||0);
+  });
+}
 function vAjustes(){
   const c = store.cfg;
   let h = `<h1 class="titulo">Ajustes</h1><p class="estado-sync" id="sync"></p>
@@ -513,6 +630,19 @@ function vAjustes(){
     </div>
     <div class="campo"><label for="aj-inicio">Primer día de clase</label><input type="date" id="aj-inicio" value="${c.inicio}">
       <div class="nota">Desde aquí se cuentan las sesiones sin registrar.</div></div>
+  </div>
+  <div class="panel"><p><b>Aviso de copia de seguridad</b><br><span class="nota">Cada semana, a partir de ese momento, el cuaderno te pide la copia hasta que la hagas.</span></p>
+    <div class="fila2"><label>Día<select id="aj-cdia" style="width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px">
+      ${[1,2,3,4,5].map(d=>`<option value="${d}" ${store.cfg.copia.dia===d?'selected':''}>${DIAS[d]}</option>`).join('')}</select></label>
+      <label>Hora<input type="time" id="aj-chora" value="${store.cfg.copia.hora}"></label></div>
+  </div>
+  <div class="panel"><p><b>Unidades y situaciones de aprendizaje</b><br><span class="nota">Con las sesiones previstas de cada una sale el seguimiento de la programación.</span></p>
+    ${[[1,'1.º ESO'],[2,'2.º ESO'],[4,'Refuerzo 4.º ESO']].map(([nv,tit])=>`
+      <p style="margin:12px 0 6px"><b>${tit}</b></p>
+      ${(c.unidades[nv]||[]).map((u,i)=>`<div class="u-fila"><input type="text" class="aj-u" data-nv="${nv}" data-i="${i}" data-k="nombre" value="${esc(u.nombre)}" aria-label="Nombre">
+        <input type="number" min="0" max="99" class="aj-u" data-nv="${nv}" data-i="${i}" data-k="previstas" value="${u.previstas||''}" aria-label="Sesiones previstas" placeholder="ses.">
+        <button data-a="del-u" data-nv="${nv}" data-i="${i}" aria-label="Quitar">×</button></div>`).join('')}
+      <button class="chip" data-a="add-u" data-nv="${nv}">Añadir unidad</button>`).join('')}
   </div>
   <div class="panel"><p><b>Alumnos por grupo</b><br><span class="nota">Para la cuadrícula de números de lista.</span></p><div class="alumnos">`;
   for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
@@ -530,7 +660,8 @@ function vAjustes(){
     <p class="nota">Apunta al alumnado solo por número de lista, nunca por nombre. Las notas de sesión son para el
     seguimiento del grupo; los datos personales van en ITACA y Aules. Nada de este cuaderno sale del móvil
     salvo las copias que tú mandes.</p></div>
-  <button class="bloque-btn lleno" data-a="guardar-aj">Guardar ajustes</button>`;
+  <button class="bloque-btn lleno" data-a="guardar-aj">Guardar ajustes</button>
+  <p class="nota" style="text-align:center;margin-top:14px">Cuaderno de aula · versión ${VERSION_APP}</p>`;
   return h;
 }
 
@@ -544,7 +675,8 @@ function abrir(k, n){
   borrador = s ? clon(s) : {
     fecha:k, franja:n, grupo:x.g||null, otra:x.o||null, aula:x.aula||'',
     estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', cambio:'', observacion:'', notas:'',
-    ...(x.pt ? {pt:'si', ptNotas:''} : {})
+    ...(x.pt ? {pt:'si', ptNotas:''} : {}),
+    unidad: x.g ? ultimaUnidad(x.g) : ''
   };
   if(x.pt && borrador.pt===undefined){ borrador.pt='si'; borrador.ptNotas=''; }
   pintarHoja();
@@ -577,7 +709,10 @@ function pintarHoja(){
       </div></div>
       <div class="campo"><label for="h-notas">Notas</label><textarea id="h-notas" data-f="notas">${esc(b.notas)}</textarea></div>`;
     }else{
-      const iguales = igualQue(b.grupo, abiertoId);
+      const iguales = igualQue(b.grupo, abiertoId), us = unidadesDe(b.grupo);
+      if(us.length) h += `<div class="campo"><span class="et">Unidad o situación de aprendizaje</span><div class="chips">
+        ${us.map(u=>`<button class="chip" data-h="unidad" data-v="${u.id}" aria-pressed="${b.unidad===u.id}" style="${b.unidad===u.id?'border-color:var(--tinta);color:var(--tinta);font-weight:700':''}">${esc(u.nombre)}</button>`).join('')}
+      </div></div>`;
       h += `<div class="campo"><label for="h-cont">Qué se ha hecho</label>
         <textarea id="h-cont" data-f="contenido" placeholder="Por ejemplo: corrección de la ficha 2; mcm con piezas en la pizarra">${esc(b.contenido)}</textarea>
         ${iguales.length?`<div class="chips">${iguales.map(i=>`<button class="chip igual" data-h="igual" data-id="${i.id}">Igual que ${GRUPOS[i.g].nombre.replace(' ESO','')} (${corta(i.s.fecha)})</button>`).join('')}</div>`:''}
@@ -627,6 +762,11 @@ function pintarHoja(){
       <div class="campo"><label for="h-notas">Otras notas</label><textarea id="h-notas" data-f="notas" style="min-height:56px">${esc(b.notas)}</textarea></div>`;
     }
   }
+  const orig = store.ses[abiertoId];
+  if(orig && orig.creado){
+    const hs = orig.historial||[];
+    h += `<p class="registro">Registrada el ${fechaHora(orig.creado)}${hs.length ? ` · ${hs.length} ${hs.length===1?'cambio':'cambios'}, el último el ${fechaHora(hs[hs.length-1].t)}` : ' · sin cambios'}</p>`;
+  }
   h += `</div><div class="acciones"><div>
     ${store.ses[abiertoId]?'<button class="secundario peligro" data-h="borrar">Borrar</button>':''}
     <button class="primario" data-h="guardar">Guardar</button></div></div>`;
@@ -656,7 +796,7 @@ async function descargar(nombre, datos, tipo){
 async function copiaSeguridad(){
   // .txt porque Android no deja compartir archivos .json; dentro va el cuaderno entero
   const ok = await descargar(`cuaderno-de-aula_copia_${hoyK()}.txt`, JSON.stringify({version:1, store}, null, 1), 'text/plain');
-  if(ok){ store.cfg.ultimaCopia = hoyK(); guardarLocal(); pintar(); }
+  if(ok){ store.cfg.ultimaCopia = hoyK(); store.cfg.ultimaCopiaT = new Date().toISOString(); guardarLocal(); pintar(); }
 }
 function filasExport(){
   const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
@@ -666,55 +806,99 @@ function filasExport(){
     .sort((a,b)=>a[0]<b[0]?-1:1).map(([id,s])=>({id,...s}));
 }
 const textoRev = s => (s.revisiones||[]).map(r=>{
-  const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):'?'}: ${r.no&&r.no.length?'no los traen nº '+r.no.join(', '):'los traen todos'}`;
+  const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])}: ${r.no&&r.no.length?'no los traen nº '+r.no.join(', '):'los traen todos'}`;
 }).join('; ');
 function csv(){
   const f = filasExport();
-  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas'];
+  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios'];
   const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
   const filas = f.map(s=>[s.fecha, DIAS[deClave(s.fecha).getDay()], `${FR[s.franja].ini}-${FR[s.franja].fin}`,
-    s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'',
-    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||''].map(q).join(';'));
+    s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'', s.grupo?nombreUnidad(s.grupo,s.unidad):'',
+    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length].map(q).join(';'));
   return '\ufeff' + [cab.map(q).join(';'), ...filas].join('\r\n');
 }
 function informe(){
   const f = filasExport(), c = store.cfg;
   const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
-  const grupos = [...Object.keys(GRUPOS), 'otras'];
+  const sel = [...document.querySelectorAll('.ex-g:checked')].map(i=>i.value);
+  const gs = Object.keys(GRUPOS).filter(g=>sel.includes(g));
+  // 1. resumen de indicadores
+  let resumen = `<h2>Resumen</h2><table><thead><tr><th>Grupo</th><th>Previstas</th><th>Impartidas</th><th>No impartidas</th>
+    <th>Sin registrar</th><th>Entrega de deberes</th><th>Clima: bien / a ratos / no</th><th>Con PT</th></tr></thead><tbody>`;
+  for(const g of gs){
+    const I = indicadores(g, desde, hasta);
+    resumen += `<tr><td>${GRUPOS[g].nombre}</td><td>${I.previstas}</td><td>${I.dadas}</td><td>${I.noDadas}</td><td>${I.sinRegistrar}</td>
+      <td>${I.entrega===null?'—':I.entrega+' % ('+I.revisadas+' revisiones)'}</td>
+      <td>${I.climaN?`${pct(I.clima.bien,I.climaN)} / ${pct(I.clima.regular,I.climaN)} / ${pct(I.clima.mal,I.climaN)} %`:'—'}</td>
+      <td>${I.pt?`${I.ptSi} de ${I.pt}`:'—'}</td></tr>`;
+  }
+  resumen += `</tbody></table><p class="meta">«Previstas»: sesiones del horario en días lectivos del periodo que ya han pasado.
+    «Entrega de deberes»: porcentaje de alumnado que los trae, sobre las revisiones registradas.</p>`;
+  // 2. clima por franja horaria
+  const cf = climaPorFranja(desde, hasta);
+  const hayClima = Object.values(cf).some(x=>x.bien+x.regular+x.mal);
+  if(hayClima){
+    resumen += `<h2>Clima del aula por franja horaria</h2><table><thead><tr><th>Franja</th><th>Sesiones</th><th>Se ha podido trabajar</th><th>A ratos</th><th>No se ha podido</th></tr></thead><tbody>`;
+    for(const n of [1,2,3,4,5,6]){ const x = cf[n], t = x.bien+x.regular+x.mal; if(!t) continue;
+      resumen += `<tr><td>${FR[n].ini}–${FR[n].fin}</td><td>${t}</td><td>${pct(x.bien,t)} %</td><td>${pct(x.regular,t)} %</td><td>${pct(x.mal,t)} %</td></tr>`; }
+    resumen += `</tbody></table>`;
+  }
+  // 3. por grupo: programación y sesiones
   let cuerpo = '';
-  for(const g of grupos){
+  for(const g of [...gs, 'otras']){
+    if(g==='otras' && !sel.includes('otras')) continue;
     const filas = f.filter(s => g==='otras' ? !s.grupo : s.grupo===g);
     if(!filas.length) continue;
     const titulo = g==='otras' ? 'Guardias y otras tareas' : GRUPOS[g].nombre;
-    const dadas = filas.filter(s=>s.grupo && s.estado!=='no').length;
-    cuerpo += `<h2>${titulo}</h2>${g!=='otras'?`<p class="meta">${dadas} sesiones impartidas · ${filas.length-dadas} no impartidas</p>`:''}
-    <table><thead><tr><th>Fecha</th><th>Hora</th>${g==='otras'?'<th>Tarea</th><th>Notas</th>':'<th>Qué se ha hecho</th><th>Deberes</th><th>Revisión</th><th>Clima</th>'}</tr></thead><tbody>`;
+    cuerpo += `<h2>${titulo}</h2>`;
+    if(g!=='otras'){
+      const I = indicadores(g, desde, hasta);
+      if(I.porUnidad.length){
+        cuerpo += `<table class="prog"><thead><tr><th>Unidad o situación de aprendizaje</th><th>Sesiones</th><th>Previstas</th><th>Cumplimiento</th></tr></thead><tbody>`;
+        I.porUnidad.forEach(u=>{ cuerpo += `<tr><td>${esc(u.nombre)}</td><td>${u.dadas}</td><td>${u.previstas||'—'}</td><td>${u.previstas?Math.min(100,pct(u.dadas,u.previstas))+' %':'—'}</td></tr>`; });
+        if(I.sinUnidad) cuerpo += `<tr><td><i>Sin unidad asignada</i></td><td>${I.sinUnidad}</td><td></td><td></td></tr>`;
+        cuerpo += `</tbody></table>`;
+      }
+    }
+    cuerpo += `<table><thead><tr><th>Fecha</th><th>Hora</th>${g==='otras'?'<th>Tarea</th><th>Notas</th>':'<th>Unidad</th><th>Qué se ha hecho</th><th>Deberes</th><th>Revisión</th><th>Clima</th>'}<th>Registro</th></tr></thead><tbody>`;
     for(const s of filas){
+      const reg = `${fechaHora(s.creado||s.actualizado)}${(s.historial||[]).length?`<br>${s.historial.length} cambio${s.historial.length>1?'s':''}`:''}`;
       if(g==='otras'){
-        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${OTRAS[s.otra]}</td><td>${esc(s.notas)}</td></tr>`;
+        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${OTRAS[s.otra]}</td><td>${esc(s.notas)}</td><td class="reg">${reg}</td></tr>`;
       }else if(s.estado==='no'){
-        cuerpo += `<tr class="no"><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td colspan="4">No impartida: ${esc(s.motivo)}${s.notas?' — '+esc(s.notas):''}</td></tr>`;
+        cuerpo += `<tr class="no"><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td colspan="5">No impartida: ${esc(s.motivo)}${s.notas?' — '+esc(s.notas):''}</td><td class="reg">${reg}</td></tr>`;
       }else{
-        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
-          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}</td></tr>`;
+        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(nombreUnidad(g,s.unidad))}</td>
+          <td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
+          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}</td><td class="reg">${reg}</td></tr>`;
       }
     }
     cuerpo += `</tbody></table>`;
   }
   if(!cuerpo) cuerpo = '<p>No hay sesiones registradas en esas fechas.</p>';
+  // 4. registros borrados en el periodo
+  const bor = (c.borrados||[]).filter(x=>x.fecha>=desde && x.fecha<=hasta);
+  let borr = '';
+  if(bor.length){
+    borr = `<h2>Registros borrados</h2><table><thead><tr><th>Sesión</th><th>Grupo o tarea</th><th>Borrado el</th><th>Contenido</th></tr></thead><tbody>`;
+    bor.forEach(x=>{ borr += `<tr><td>${corta(x.fecha)} ${FR[x.franja]?FR[x.franja].ini:''}</td><td>${GRUPOS[x.grupo]?GRUPOS[x.grupo].nombre:(OTRAS[x.grupo]||'')}</td><td>${fechaHora(x.t)}</td><td>${esc(x.resumen)}</td></tr>`; });
+    borr += `</tbody></table>`;
+  }
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Registro de aula</title>
-<style>body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;color:#111;margin:18mm}
-h1{font-size:16pt;margin:0 0 2mm}h2{font-size:12.5pt;margin:8mm 0 1mm;border-bottom:1.5px solid #1D3A8A;color:#1D3A8A}
-.cab{color:#444;margin-bottom:4mm}.meta{color:#555;margin:0 0 2mm;font-size:9.5pt}
-table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}
-th,td{border:1px solid #bbb;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef2f8;font-size:9.5pt}
-td:nth-child(1),td:nth-child(2){white-space:nowrap}.mat{color:#555;font-size:9pt;margin-top:2px}
-tr.no td{color:#777;font-style:italic}.pie{margin-top:8mm;color:#666;font-size:9pt}
-@page{size:A4;margin:14mm}@media print{body{margin:0}}</style></head><body>
+<style>body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;margin:18mm}
+h1{font-size:16pt;margin:0 0 2mm}h2{font-size:12pt;margin:7mm 0 2mm;border-bottom:1.5px solid #1D3A8A;color:#1D3A8A}
+.cab{color:#444;margin-bottom:3mm}.meta{color:#555;margin:1mm 0 0;font-size:8.5pt}
+table{width:100%;border-collapse:collapse;margin-bottom:3mm}tr{page-break-inside:avoid}
+th,td{border:1px solid #bbb;padding:3px 5px;text-align:left;vertical-align:top}th{background:#eef2f8;font-size:9pt}
+td:nth-child(1),td:nth-child(2){white-space:nowrap}.mat{color:#555;font-size:8.5pt;margin-top:2px}
+td.reg{font-size:8pt;color:#666;white-space:nowrap}table.prog{width:auto;min-width:60%}
+tr.no td{color:#777;font-style:italic}.pie{margin-top:8mm;color:#666;font-size:8.5pt}
+@page{size:A4;margin:12mm}@media print{body{margin:0}}</style></head><body>
 <h1>Registro de aula</h1>
-<div class="cab">${esc(c.docente||'')}${c.centro?' · '+esc(c.centro):''}${c.curso?' · Curso '+esc(c.curso):''}<br>
-Del ${larga(desde)} al ${larga(hasta)}</div>${cuerpo}
-<p class="pie">Generado el ${larga(hoyK())} con el cuaderno de aula.</p></body></html>`;
+<div class="cab">${[c.docente, c.centro, c.curso?'Curso '+c.curso:''].filter(Boolean).map(esc).join(' · ')}<br>
+Del ${larga(desde)} al ${larga(hasta)}</div>${resumen}${cuerpo}${borr}
+<p class="pie">Generado el ${larga(hoyK())} a las ${fechaHora(new Date().toISOString()).split(' ')[1]} con el cuaderno de aula (versión ${VERSION_APP}).
+Cada sesión indica cuándo se registró y cuántas veces se ha modificado; los registros borrados quedan listados.</p></body></html>`;
 }
 
 /* ═══════════════════════════ EVENTOS ═══════════════════════════ */
@@ -743,8 +927,22 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='instalar'){ if(instalable){ instalable.prompt(); instalable = null; } }
   else if(a==='add-nl'){ const v = $('#aj-nl').value; if(v && !store.cfg.nolectivos.includes(v)){ store.cfg.nolectivos.push(v); guardarCfg(); pintar(); } }
   else if(a==='del-nl'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==b.dataset.k); guardarCfg(); pintar(); }
+  else if(a==='add-u' || a==='del-u'){
+    leerUnidades();
+    const nv = b.dataset.nv, L = store.cfg.unidades[nv] = store.cfg.unidades[nv] || [];
+    if(a==='add-u') L.push({id:'u'+Date.now().toString(36), nombre:'', previstas:0});
+    else{
+      const u = L[Number(b.dataset.i)];
+      const usada = u && Object.values(store.ses).some(s=>s.grupo && GRUPOS[s.grupo].nivel==nv && s.unidad===u.id);
+      if(usada && !confirm('Hay sesiones registradas en esta unidad. Si la quitas, esas sesiones se quedarán sin unidad. ¿Quitarla?')) return;
+      L.splice(Number(b.dataset.i), 1);
+    }
+    guardarCfg(); pintar();
+  }
   else if(a==='guardar-aj'){
     const c = store.cfg;
+    leerUnidades();
+    c.copia = {dia: Number($('#aj-cdia').value), hora: $('#aj-chora').value || '14:10'};
     c.docente = $('#aj-doc').value.trim(); c.centro = $('#aj-centro').value.trim(); c.curso = $('#aj-curso').value.trim();
     if($('#aj-inicio').value) c.inicio = $('#aj-inicio').value;
     document.querySelectorAll('.aj-n').forEach(i=>{ const n = Math.max(1, Math.min(40, parseInt(i.value)||25)); c.alumnos[i.dataset.g] = n; });
@@ -778,13 +976,16 @@ document.getElementById('hoja').addEventListener('click', e=>{
   else if(h==='pt'){ borrador.pt = b.dataset.v; }
   else if(h==='motivo'){ borrador.motivo = b.dataset.v; }
   else if(h==='clima'){ borrador.clima = borrador.clima===b.dataset.v ? '' : b.dataset.v; }
+  else if(h==='unidad'){ borrador.unidad = borrador.unidad===b.dataset.v ? '' : b.dataset.v; }
   else if(h==='mat'){
     const v = b.dataset.v; const cur = (borrador.material||'').trim();
     borrador.material = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
   }
   else if(h==='igual'){
     const o = store.ses[b.dataset.id];
-    if(o){ borrador.contenido = o.contenido||''; borrador.material = o.material||''; borrador.deberes = o.deberes||''; toast('Copiado: revísalo antes de guardar'); }
+    if(o){ borrador.contenido = o.contenido||''; borrador.material = o.material||''; borrador.deberes = o.deberes||'';
+      if(o.unidad && unidadesDe(borrador.grupo).some(u=>u.id===o.unidad)) borrador.unidad = o.unidad;
+      toast('Copiado: revísalo antes de guardar'); }
   }
   else if(h==='rev'){
     const id = b.dataset.id; borrador.revisiones = borrador.revisiones||[];
@@ -805,10 +1006,10 @@ document.getElementById('hoja').addEventListener('click', e=>{
       nuevos.forEach(x=>{ if(!m.includes(x)){ m.unshift(x); cambio = true; } });
       if(cambio){ store.cfg.materiales = m.slice(0,12); guardarCfg(); }
     }
-    guardarSesion(abiertoId, clon(b2)); cerrar(); toast('Sesión guardada'); pintar(); return;
+    const hubo = guardarSesion(abiertoId, clon(b2)); cerrar(); toast(hubo ? 'Sesión guardada' : 'Sin cambios'); pintar(); return;
   }
   else if(h==='borrar'){
-    if(confirm('¿Borrar el registro de esta sesión?')){ borrarSesion(abiertoId); cerrar(); toast('Registro borrado'); pintar(); }
+    if(confirm('¿Borrar el registro de esta sesión? Quedará constancia de que se borró.')){ borrarSesion(abiertoId); cerrar(); toast('Registro borrado'); pintar(); }
     return;
   }
   pintarHoja();
