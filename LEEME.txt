@@ -1,0 +1,33 @@
+CUADERNO DE AULA · app para el móvil
+
+Qué es: el registro diario de clases (qué se ha hecho, material, deberes,
+revisión por número de lista, clima del aula, PT y pilotaje) como aplicación
+web instalable. Funciona sin conexión y los datos se guardan SOLO en el móvil.
+
+PUBLICARLA (una vez)
+1. En GitHub, crea un repositorio nuevo, por ejemplo «cuaderno-de-aula».
+2. Sube estos seis archivos a la raíz: index.html, manifest.webmanifest,
+   sw.js, icon-192.png, icon-512.png, icon-maskable-512.png.
+3. Settings → Pages → Branch: main, carpeta / (root) → Save.
+4. Queda en https://diazepamina-creator.github.io/cuaderno-de-aula/
+
+INSTALARLA EN ANDROID
+Abre esa dirección en Chrome → menú ⋮ → «Instalar aplicación» (o «Añadir a
+pantalla de inicio»). Sale el icono y se abre a pantalla completa.
+
+LOS DATOS
+- Están en el almacenamiento de Chrome del móvil. Nada va a GitHub ni a
+  ningún servidor: el repositorio solo contiene la app vacía.
+- Si desinstalas la app o borras los datos de Chrome, se pierden. Por eso:
+  Exportar → «Guardar copia de seguridad» → Drive, una vez por semana.
+  La app te avisa cuando hace 7 días de la última copia.
+- «Restaurar una copia» recupera una copia (también las del cuaderno de Claude).
+
+ACTUALIZARLA
+Sube el index.html nuevo al repositorio. La próxima vez que abras la app con
+conexión, carga la versión nueva; los datos no se tocan.
+Si cambias algo más que el index.html, sube también sw.js con VERSION nueva
+(cuaderno-v2, v3…).
+
+OJO: el repositorio es público, así que el horario (grupos y aulas) se puede
+leer en el código. Ningún dato de alumnos ni de sesiones está ahí.
