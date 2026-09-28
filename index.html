@@ -233,6 +233,10 @@ h3{font-size:17px;margin:18px 0 8px}
   <button data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2 1.2M17.8 15.3l2 1.2M4.2 16.5l2-1.2M17.8 8.7l2-1.2"/></svg>Ajustes</button>
 </nav></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- El selector de la copia vive fuera de #app: al elegir un archivo, Android deja la
+     app en segundo plano y, al volver, la vista se repinta; si el selector estuviera
+     dentro, se sustituiría y el archivo elegido se perdería. -->
+<input type="file" id="archivo-copia" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
 
 <script>
 /* ═══════════════════════════ DATOS FIJOS ═══════════════════════════ */
@@ -296,7 +300,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.2';
+const VERSION_APP = '1.2.2';
 let store = {cfg:cfgInicial(), ses:{}, ev:{}};
 const clon = o => JSON.parse(JSON.stringify(o));
 function leerLocal(){
@@ -555,8 +559,7 @@ function vDia(){
   if(!Object.keys(store.ses).length){
     h += `<div class="panel" style="margin-bottom:14px"><p><b>¿Tienes una copia de seguridad?</b><br>
       <span class="nota">Si vienes de otro móvil o se han borrado los datos de Chrome, recupéralo todo desde tu última copia.</span></p>
-      <label class="bloque-btn" style="display:grid;place-items:center;margin-top:0">Restaurar una copia
-      <input type="file" id="im-json" accept=".txt,.json,text/plain,application/json" class="sr"></label></div>`;
+      <button class="bloque-btn" data-a="restaurar" style="margin-top:0">Restaurar una copia</button></div>`;
   }
   if(w===0 || w===6){
     return h + `<div class="vacio"><b>Fin de semana.</b><br>No hay clases en el horario.</div>`;
@@ -645,6 +648,8 @@ function vGrupos(){
         <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
         <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
         ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
+        ${s.cambio?`<div class="f">Cambio: ${esc(s.cambio)}</div>`:''}
+        ${s.observacion?`<div class="f">Observación: ${esc(s.observacion)}</div>`:''}
         ${s.pt?`<div class="f">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}
         ${s.deberes?`<div class="d">Deberes: ${esc(s.deberes)}</div>`:''}
         ${rev?`<div class="r">${esc(rev)}</div>`:''}
@@ -724,8 +729,7 @@ function vExportar(){
     <p>Una copia de todo el cuaderno. Los datos solo están en este móvil: guárdala en Drive cada semana.
       Sirve para recuperarlo si cambias de móvil o se borra el navegador.</p>
     <button class="bloque-btn lleno" data-a="ex-json">Guardar copia de seguridad</button>
-    <label class="bloque-btn" style="display:grid;place-items:center">Restaurar una copia
-      <input type="file" id="im-json" accept=".txt,.json,text/plain,application/json" class="sr"></label>
+    <button class="bloque-btn" data-a="restaurar">Restaurar una copia</button>
     <p class="nota" style="margin-top:10px">También restaura las copias del cuaderno de Claude.</p>
   </div>`;
   return h;
@@ -1012,7 +1016,7 @@ function informe(){
         cuerpo += `<tr class="no"><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td colspan="5">No impartida: ${esc(s.motivo)}${s.notas?' — '+esc(s.notas):''}</td><td class="reg">${reg}</td></tr>`;
       }else{
         cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(nombreUnidad(g,s.unidad))}</td>
-          <td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
+          <td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.cambio?`<div class="mat">Cambio: ${esc(s.cambio)}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
           <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}</td><td class="reg">${reg}</td></tr>`;
       }
     }
@@ -1063,6 +1067,7 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
   else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
   else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
+  else if(a==='restaurar'){ const i = $('#archivo-copia'); i.value=''; i.click(); }
   else if(a==='nueva-fecha'){ abrirFecha(null); }
   else if(a==='ir-fecha'){ abrirFecha(b.dataset.id); }
   else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
@@ -1094,23 +1099,44 @@ document.getElementById('app').addEventListener('click', async e=>{
     guardarCfg(); toast('Ajustes guardados'); pintar();
   }
 });
-document.getElementById('app').addEventListener('change', e=>{
-  if(e.target.id!=='im-json') return;
-  const f = e.target.files[0]; if(!f) return;
+// ── RESTAURAR UNA COPIA ──
+// Se lee el archivo, se enseña qué trae y se pide confirmación dentro de la app
+// (sin confirm(): en algunas apps instaladas el aviso del sistema no aparece).
+let copiaPendiente = null;
+document.getElementById('archivo-copia').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
   const r = new FileReader();
+  r.onerror = ()=> toast('No se ha podido leer el archivo');
   r.onload = ()=>{
-    try{
-      const j = JSON.parse(r.result);
-      if(!j.store || !j.store.ses) throw 0;
-      const n = Object.keys(j.store.ses).length;
-      if(!confirm(`La copia tiene ${n} sesiones. Se añadirán a las que ya hay; si una sesión está en los dos sitios, se queda la de la copia. ¿Seguir?`)) return;
-      for(const [id,s] of Object.entries(j.store.ses)){ store.ses[id]=s; }
-      store.ev = Object.assign(store.ev||{}, j.store.ev||{});
-      if(j.store.cfg){ store.cfg = Object.assign(cfgInicial(), j.store.cfg); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, j.store.cfg.alumnos||{}); }
-      guardarLocal(); pintar(); toast(`Copia restaurada: ${n} sesiones`);
-    }catch(err){ toast('Ese archivo no es una copia del cuaderno'); }
+    let j = null;
+    try{ j = JSON.parse(String(r.result).replace(/^﻿/, '')); }catch(err){}
+    e.target.value = '';
+    if(!j || !j.store || !j.store.ses){ toast('Ese archivo no es una copia del cuaderno'); return; }
+    copiaPendiente = j;
+    const ids = Object.keys(j.store.ses).sort(), n = ids.length;
+    const pisa = ids.filter(id=>store.ses[id]).length;
+    const f1 = n ? j.store.ses[ids[0]].fecha : '', f2 = n ? j.store.ses[ids[n-1]].fecha : '';
+    const nev = Object.keys(j.store.ev||{}).length;
+    $('#hoja').innerHTML = `<div class="hoja-in"><div class="hoja-cab"><div><h2 id="hoja-titulo">Restaurar una copia</h2>
+      <div class="quando">${esc(f.name)}</div></div><button class="cerrar" data-r="no">Cerrar</button></div>
+      <div class="panel" style="margin-top:14px"><p><b>La copia trae ${n} ${n===1?'sesión':'sesiones'}</b>${n?` (del ${corta(f1)} al ${corta(f2)})`:''}${nev?` y ${nev} ${nev===1?'fecha':'fechas'} de pruebas o entregas`:''}.</p>
+      <p class="nota">${pisa?`${pisa} ${pisa===1?'está':'están'} también en este móvil: se quedará la versión de la copia.`:'Ninguna está en este móvil: se añaden todas.'}
+      Las sesiones que solo estén en este móvil no se tocan.</p></div>
+      </div><div class="acciones"><div><button class="secundario" data-r="no">Cancelar</button>
+      <button class="primario" data-r="si">Restaurar</button></div></div>`;
+    $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
   };
   r.readAsText(f);
+});
+document.getElementById('hoja').addEventListener('click', e=>{
+  const b = e.target.closest('[data-r]'); if(!b) return;
+  if(b.dataset.r==='si' && copiaPendiente){
+    const j = copiaPendiente, n = Object.keys(j.store.ses).length;
+    for(const [id,s] of Object.entries(j.store.ses)){ store.ses[id]=s; }
+    store.ev = Object.assign(store.ev||{}, j.store.ev||{});
+    if(j.store.cfg){ store.cfg = Object.assign(cfgInicial(), j.store.cfg); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, j.store.cfg.alumnos||{}); }
+    guardarLocal(); copiaPendiente = null; cerrar(); pintar(); toast(`Copia restaurada: ${n} ${n===1?'sesión':'sesiones'}`);
+  }else{ copiaPendiente = null; cerrar(); toast('No se ha restaurado nada'); }
 });
 document.getElementById('velo').addEventListener('click', cerrar);
 document.getElementById('hoja').addEventListener('click', e=>{
@@ -1210,8 +1236,8 @@ document.getElementById('hoja').addEventListener('click', ev=>{
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
 // al volver a la app (cambio de pestaña o de hora) se repinta: la franja «ahora» se mueve sola
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && !borrador) pintar(); });
-setInterval(()=>{ if(!borrador && vista==='dia') pintar(); }, 60000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && !borrador && !copiaPendiente) pintar(); });
+setInterval(()=>{ if(!borrador && !copiaPendiente && vista==='dia') pintar(); }, 60000);
 
 /* ═══════════════════════════ ARRANQUE ═══════════════════════════ */
 leerLocal();
