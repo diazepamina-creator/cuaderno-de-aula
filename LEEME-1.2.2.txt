@@ -1,0 +1,9 @@
+Versión 1.2.2 — sube estos dos archivos al repositorio (sustituyen a los que hay):
+  index.html   arregla «Restaurar una copia» en el móvil: al elegir el archivo,
+               Android dejaba la app en segundo plano y, al volver, el repintado
+               perdía el archivo. Ahora el selector no se repinta y la
+               confirmación sale dentro de la app, con lo que trae la copia.
+               Incluye lo de la 1.2.1: el «Cambio» del pilotaje sale en el
+               registro imprimible y en el historial de Grupos.
+  sw.js        versión cuaderno-v5, para que el móvil cargue la nueva.
+Los datos no se tocan.
