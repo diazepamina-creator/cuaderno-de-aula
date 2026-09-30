@@ -119,6 +119,10 @@ button{cursor:pointer}
 .marca.ok{color:var(--tinta)}
 .marca.pend{color:var(--rojo)}
 .marca.no{color:var(--gris);text-decoration:line-through}
+.marca.borr{color:var(--tinta);font-style:italic}
+.recuperado{border:1.5px dashed var(--tinta);border-radius:12px;padding:10px 12px;margin:10px 0 4px;font-size:15px}
+.recuperado small{color:var(--gris);display:block;margin-top:2px}
+.recuperado button{margin-top:8px}
 .recreo{font-size:13px;color:var(--gris);text-align:center;margin:2px 0 10px;letter-spacing:.3px}
 .pt{display:inline-block;font-size:12px;font-weight:700;color:var(--tinta);border:1.5px solid var(--tinta);
   border-radius:10px;padding:0 6px;margin-left:6px;line-height:18px;vertical-align:1px}
@@ -300,7 +304,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.2.2';
+const VERSION_APP = '1.3.0';
 let store = {cfg:cfgInicial(), ses:{}, ev:{}};
 const clon = o => JSON.parse(JSON.stringify(o));
 function leerLocal(){
@@ -340,6 +344,19 @@ function borrarSesion(id){
   delete store.ses[id]; guardarLocal();
 }
 function guardarCfg(){ guardarLocal(); }
+
+/* ── BORRADORES ──
+   Lo que se escribe en una sesión se guarda solo, mientras se escribe, como
+   borrador aparte. El registro oficial solo cambia al pulsar Guardar: así el
+   historial de cambios (lo que mira una auditoría) no se llena de apuntes a
+   medias, y a la vez no se pierde nada si suena el timbre, se cierra la hoja o
+   el móvil mata la app. Los borradores no van en la copia de seguridad. */
+const LSB = LS + '.borradores';
+let borr = {ses:{}, abierto:null};
+try{ const j = JSON.parse(localStorage.getItem(LSB)||'null'); if(j && j.ses) borr = j; }catch(e){}
+function guardarBorr(){ try{ localStorage.setItem(LSB, JSON.stringify(borr)); }catch(e){} }
+const mismos = (a,b) => CAMPOS.every(k => JSON.stringify(a[k]??'') === JSON.stringify(b[k]??''));
+function quitarBorrador(id){ if(borr.ses[id]){ delete borr.ses[id]; guardarBorr(); } }
 let instalable = null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); instalable = e; if(vista==='ajustes') pintar(); });
 const instalada = () => window.matchMedia('(display-mode: standalone)').matches;
@@ -581,13 +598,14 @@ function vDia(){
       let marca = '', sub = `Aula ${x.aula}${x.pt?'<span class="pt">con PT</span>':''}${fx}`;
       if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
       else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
-      else if(haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
+      if(borr.ses[id]){ marca = `<span class="marca borr">✎ borrador</span>`; }
+      else if(!s && haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
       h += `<li><button class="fr${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
         <span class="hora"><b>${f.ini}</b>${f.fin}</span>
         <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span><div class="sub">${sub}</div></span>
         ${marca}</button></li>`;
     }else{
-      const marca = s ? `<span class="marca ok">✓ anotada</span>` : '';
+      const marca = borr.ses[id] ? `<span class="marca borr">✎ borrador</span>` : s ? `<span class="marca ok">✓ anotada</span>` : '';
       const sub = s && s.notas ? esc(s.notas) : 'Toca para anotar';
       h += `<li><button class="fr otra${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
         <span class="hora"><b>${f.ini}</b>${f.fin}</span>
@@ -788,7 +806,7 @@ function vAjustes(){
 }
 
 /* ═══════════════════════════ LA HOJA DE UNA SESIÓN ═══════════════════════════ */
-let borrador = null, abiertoId = null;
+let borrador = null, abiertoId = null, base = null, recuperado = null, tBorr = null;
 function abrir(k, n){
   const x = (franjasDe(k))[n];
   if(!x) return;
@@ -803,12 +821,36 @@ function abrir(k, n){
     reconstruido: diasHasta(k) <= -2, fuente:''
   };
   if(x.pt && borrador.pt===undefined){ borrador.pt='si'; borrador.ptNotas=''; }
+  base = clon(borrador); recuperado = null;
+  const d = borr.ses[abiertoId];
+  if(d && !mismos(d.b, base)){
+    recuperado = {t:d.t, cambiado:(d.base||null)!==(s?s.actualizado:null)};
+    borrador = Object.assign(clon(base), clon(d.b));
+  }
+  borr.abierto = abiertoId; guardarBorr();
   pintarHoja();
   $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta');
   document.body.style.overflow='hidden';
-  setTimeout(()=>{ const t = $('#hoja textarea'); if(t && !s) t.focus(); }, 250);
+  setTimeout(()=>{ const t = $('#hoja textarea'); if(t && !s && !recuperado) t.focus(); }, 250);
 }
+// Guarda (o quita) el borrador de la sesión abierta. Si lo escrito coincide con
+// lo ya registrado —o con la hoja en blanco—, no hay borrador que guardar.
+function guardarBorrador(){
+  if(!borrador || !abiertoId || !borrador.fecha || !base) return false;
+  if($('#hoja [data-f]')) leerCampos();
+  const ref = store.ses[abiertoId] || base;
+  if(mismos(borrador, ref)){ quitarBorrador(abiertoId); return false; }
+  const s = store.ses[abiertoId];
+  borr.ses[abiertoId] = {b:clon(borrador), t:new Date().toISOString(), base: s ? s.actualizado : null};
+  guardarBorr(); return true;
+}
+function borradorLuego(){ clearTimeout(tBorr); tBorr = setTimeout(guardarBorrador, 500); }
 function cerrar(){
+  clearTimeout(tBorr);
+  const quedo = guardarBorrador();
+  if(borr.abierto){ borr.abierto = null; guardarBorr(); }
+  if(quedo) toast('Guardado como borrador: aún no está registrado');
+  base = null; recuperado = null;
   $('#velo').classList.remove('abierto'); $('#hoja').classList.remove('abierta');
   document.body.style.overflow=''; borrador=null; abiertoId=null;
   setTimeout(()=>{ if(!borrador) $('#hoja').innerHTML=''; }, 260);
@@ -820,6 +862,11 @@ function pintarHoja(){
       <h2 id="hoja-titulo"><span class="grupo" style="--gc:${b.grupo?gc(b.grupo):'var(--gX)'}">${titulo}</span></h2>
       <div class="quando">${larga(b.fecha)} · ${f.ini}–${f.fin}${b.aula?' · '+b.aula:''}${b.pt?' · con PT':''}</div></div>
       <button class="cerrar" data-h="cerrar">Cerrar</button></div>`;
+  if(recuperado){
+    h += `<div class="recuperado">✎ <b>Borrador recuperado</b> (${fechaHora(recuperado.t)}). Aún no está registrado: revísalo y pulsa Guardar.
+      ${recuperado.cambiado?'<small>Ojo: el registro guardado de esta sesión ha cambiado después de escribir el borrador.</small>':''}
+      <button class="secundario" data-h="descartar">Descartar borrador</button></div>`;
+  }
   if(!b.grupo){
     h += `<div class="campo"><label for="h-notas">Notas <span class="ayuda">— incidencias, a quién se atendió…</span></label>
       <textarea id="h-notas" data-f="notas">${esc(b.notas)}</textarea></div>`;
@@ -1144,6 +1191,11 @@ document.getElementById('hoja').addEventListener('click', e=>{
   const h = b.dataset.h;
   leerCampos();
   if(h==='cerrar'){ cerrar(); return; }
+  if(h==='descartar'){
+    if(!confirm('¿Descartar el borrador? Se pierde lo que no se guardó.')) return;
+    quitarBorrador(abiertoId); borrador = clon(store.ses[abiertoId] || base); recuperado = null;
+    pintarHoja(); toast('Borrador descartado'); return;
+  }
   if(h==='estado'){ borrador.estado = b.dataset.v; }
   else if(h==='pt'){ borrador.pt = b.dataset.v; }
   else if(h==='motivo'){ borrador.motivo = b.dataset.v; }
@@ -1183,14 +1235,16 @@ document.getElementById('hoja').addEventListener('click', e=>{
       nuevos.forEach(x=>{ if(!m.includes(x)){ m.unshift(x); cambio = true; } });
       if(cambio){ store.cfg.materiales = m.slice(0,12); guardarCfg(); }
     }
-    const hubo = guardarSesion(abiertoId, clon(b2)); cerrar(); toast(hubo ? 'Sesión guardada' : 'Sin cambios'); pintar(); return;
+    const hubo = guardarSesion(abiertoId, clon(b2)); quitarBorrador(abiertoId); cerrar(); toast(hubo ? 'Sesión guardada' : 'Sin cambios'); pintar(); return;
   }
   else if(h==='borrar'){
-    if(confirm('¿Borrar el registro de esta sesión? Quedará constancia de que se borró.')){ borrarSesion(abiertoId); cerrar(); toast('Registro borrado'); pintar(); }
+    if(confirm('¿Borrar el registro de esta sesión? Quedará constancia de que se borró.')){ borrarSesion(abiertoId); quitarBorrador(abiertoId); base = null; cerrar(); toast('Registro borrado'); pintar(); }
     return;
   }
-  pintarHoja();
+  pintarHoja(); guardarBorrador();
 });
+// lo escrito se guarda como borrador medio segundo después de dejar de teclear
+document.getElementById('hoja').addEventListener('input', e=>{ if(e.target.closest('[data-f]') && abiertoId) borradorLuego(); });
 function hojaFaltan(){
   const lista = sinRegistrar();
   borrador = {}; abiertoId = null;
@@ -1236,7 +1290,11 @@ document.getElementById('hoja').addEventListener('click', ev=>{
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
 // al volver a la app (cambio de pestaña o de hora) se repinta: la franja «ahora» se mueve sola
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && !borrador && !copiaPendiente) pintar(); });
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ clearTimeout(tBorr); guardarBorrador(); return; }
+  if(!borrador && !copiaPendiente) pintar();
+});
+window.addEventListener('pagehide', ()=>{ clearTimeout(tBorr); guardarBorrador(); });
 setInterval(()=>{ if(!borrador && !copiaPendiente && vista==='dia') pintar(); }, 60000);
 
 /* ═══════════════════════════ ARRANQUE ═══════════════════════════ */
@@ -1245,6 +1303,11 @@ if(!esLectivo(dia) && [0,6].includes(deClave(dia).getDay())){
   let d = deClave(dia); while(d.getDay()===0||d.getDay()===6) d = masDias(d,1); dia = clave(d);
 }
 pintar();
+// si el móvil cerró la app con una hoja abierta, se vuelve a ella tal como estaba
+if(borr.abierto && borr.ses[borr.abierto]){
+  const d = borr.ses[borr.abierto].b;
+  if(d && d.fecha && franjasDe(d.fecha)[d.franja]){ dia = d.fecha; vista = 'dia'; pintar(); abrir(d.fecha, d.franja); }
+}else if(borr.abierto){ borr.abierto = null; guardarBorr(); }
 conectar();
 </script>
 </body>
