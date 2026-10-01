@@ -304,7 +304,19 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.3.0';
+const VERSION_APP = '1.3.1';
+// CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
+// Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
+// Después del fin del periodo lectivo no se cuentan sesiones pendientes.
+const CAL = {nombre:'calendario escolar 2026-27', fin:'2027-06-18', dias:[
+  '2026-10-09','2026-10-12',                                   // 9 d'Octubre · Hispanitat
+  '2026-12-08',                                                // Immaculada
+  '2026-12-23','2026-12-24','2026-12-25','2026-12-28','2026-12-29','2026-12-30','2026-12-31',
+  '2027-01-01','2027-01-04','2027-01-05','2027-01-06',         // Nadal (23 des – 6 gen)
+  '2027-03-01','2027-03-02','2027-03-03','2027-03-04','2027-03-05', // Magdalena
+  '2027-03-19',                                                // Sant Josep
+  '2027-03-25','2027-03-26','2027-03-29','2027-03-30','2027-03-31','2027-04-01','2027-04-02' // Pasqua
+]};
 let store = {cfg:cfgInicial(), ses:{}, ev:{}};
 const clon = o => JSON.parse(JSON.stringify(o));
 function leerLocal(){
@@ -369,7 +381,7 @@ async function conectar(){
 /* ═══════════════════════════ LÓGICA ═══════════════════════════ */
 function esLectivo(k){
   const d = deClave(k), w = d.getDay();
-  return w>=1 && w<=5 && !store.cfg.nolectivos.includes(k);
+  return w>=1 && w<=5 && k <= CAL.fin && !store.cfg.nolectivos.includes(k);
 }
 function franjasDe(k){
   const w = deClave(k).getDay();
@@ -788,6 +800,7 @@ function vAjustes(){
   for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
   h += `</div></div>
   <div class="panel"><p><b>Días no lectivos</b><br><span class="nota">Festivos y días sin clase: no cuentan como sesiones sin registrar.</span></p>
+    ${CAL.dias.some(k=>!c.nolectivos.includes(k)) ? `<button class="bloque-btn" data-a="cal" style="margin-top:0">Cargar los festivos del ${CAL.nombre}</button>` : `<p class="nota">Cargados los festivos del ${CAL.nombre}. Fin de las clases: ${larga(CAL.fin)}.</p>`}
     <div class="fila2"><input type="date" id="aj-nl"><button class="secundario" data-a="add-nl">Añadir</button></div>
     <ul class="nolect">${[...c.nolectivos].sort().map(k=>`<li>${larga(k)}<button data-a="del-nl" data-k="${k}">Quitar</button></li>`).join('') || '<li class="nota">Ninguno todavía.</li>'}</ul>
   </div>
@@ -1123,6 +1136,7 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='ex-json' || a==='copia'){ await copiaSeguridad(); }
   else if(a==='instalar'){ if(instalable){ instalable.prompt(); instalable = null; } }
   else if(a==='add-nl'){ const v = $('#aj-nl').value; if(v && !store.cfg.nolectivos.includes(v)){ store.cfg.nolectivos.push(v); guardarCfg(); pintar(); } }
+  else if(a==='cal'){ const n = CAL.dias.filter(k=>!store.cfg.nolectivos.includes(k)); store.cfg.nolectivos.push(...n); guardarCfg(); toast(`${n.length} días no lectivos añadidos`); pintar(); }
   else if(a==='del-nl'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==b.dataset.k); guardarCfg(); pintar(); }
   else if(a==='add-u' || a==='del-u'){
     leerUnidades();
