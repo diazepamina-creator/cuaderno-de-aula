@@ -88,6 +88,10 @@ button{cursor:pointer}
 .pbar>span{display:block;height:100%;border-radius:6px;background:var(--tinta)}
 .pbar>i{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1px;background:var(--rojo);border-radius:2px}
 .tarde{color:var(--rojo)}
+.perd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.perd>span{width:50px;font-size:14px;color:var(--gris)}
+.perd{gap:5px}.perd .chip{min-width:42px;padding:6px 8px;text-align:center}
+.perd .chip[aria-pressed="true"]{border-color:var(--rojo);color:var(--rojo);font-weight:700}
 details.sa{margin-bottom:8px;padding:6px 12px}
 details.sa summary{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline;list-style:none}
 details.sa summary::-webkit-details-marker{display:none}
@@ -298,6 +302,9 @@ const HORARIO = {
   5:{1:{g:'2B',aula:'A100'}, 2:{o:'G'}, 3:{g:'1D',aula:'A100'}, 4:{g:'R4',aula:'A114'}, 5:{g:'1A',aula:'A114'}, 6:{g:'1B',aula:'A114'}},
 };
 const CLIMA = {bien:'Se ha podido trabajar', regular:'A ratos', mal:'No se ha podido'};
+// Minutos de clase perdidos: hasta que se puede empezar a trabajar, y antes del timbre (recoger, salir).
+const PERD_INI = [0,5,10,15,20,30], PERD_FIN = [0,5,10,15];
+const DUR = 55;   // minutos de una sesión
 const MOTIVOS = ['Festivo','Excursión o actividad','Ausencia del docente','Examen de otra materia','Otro'];
 const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -337,7 +344,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.4.0';
+const VERSION_APP = '1.4.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -371,7 +378,7 @@ function guardarLocal(){
 // Cada registro guarda cuándo se creó y un historial de qué campos se
 // cambiaron y cuándo: es lo que pide una auditoría para fiarse de un
 // registro que se puede editar.
-const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','pt','ptNotas','cambio','observacion','notas','reconstruido','fuente'];
+const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','reconstruido','fuente'];
 function guardarSesion(id, datos){
   const ahora = new Date().toISOString(), prev = store.ses[id];
   const hist = prev ? clon(prev.historial||[]) : [];
@@ -504,13 +511,17 @@ function indicadores(g, desde, hasta){
   const clima = {bien:0, regular:0, mal:0};
   dadas.forEach(s=>{ if(clima[s.clima]!==undefined) clima[s.clima]++; });
   const pt = dadas.filter(s=>s.pt); const ptSi = pt.filter(s=>s.pt!=='no').length;
+  const conP = dadas.filter(s=>s.perdIni!==undefined && s.perdIni!=='' || s.perdFin!==undefined && s.perdFin!=='');
+  const pIni = conP.reduce((a,s)=>a+(Number(s.perdIni)||0),0), pFin = conP.reduce((a,s)=>a+(Number(s.perdFin)||0),0);
+  const perd = {n:conP.length, ini:pIni, fin:pFin, total:pIni+pFin,
+    mIni: conP.length ? Math.round(pIni/conP.length) : 0, mFin: conP.length ? Math.round(pFin/conP.length) : 0};
   const porUnidad = unidadesDe(g).map(u=>({...u, dadas: dadas.filter(s=>s.unidad===u.id).length}));
   const sinUnidad = dadas.filter(s=>!s.unidad).length;
   return {previstas, registradas: ses.filter(s=>s.fecha<=fin).length, dadas: dadas.length, noDadas: ses.length - dadas.length,
     sinRegistrar: sinRegistrar().filter(x=>x.g===g && x.k>=desde && x.k<=hasta).length,
     puestos: dadas.filter(s=>s.deberes && s.deberes.trim()).length, revisadas,
     entrega: total ? Math.round(100*traen/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
-    pt: pt.length, ptSi, porUnidad, sinUnidad};
+    pt: pt.length, ptSi, porUnidad, sinUnidad, perd};
 }
 // Clima por franja horaria, sumando todos los grupos
 function climaPorFranja(desde, hasta){
@@ -519,6 +530,13 @@ function climaPorFranja(desde, hasta){
   Object.values(store.ses).forEach(s=>{ if(s.grupo && s.estado!=='no' && s.clima && s.fecha>=desde && s.fecha<=hasta) out[s.franja][s.clima]++; });
   return out;
 }
+function perdidoPorFranja(desde, hasta){
+  const out = {}; for(const n of [1,2,3,4,5,6]) out[n] = {n:0, ini:0, fin:0};
+  Object.values(store.ses).forEach(s=>{ if(s.grupo && s.estado!=='no' && s.fecha>=desde && s.fecha<=hasta && ((s.perdIni!==undefined && s.perdIni!=='') || (s.perdFin!==undefined && s.perdFin!==''))){
+    const o = out[s.franja]; o.n++; o.ini += Number(s.perdIni)||0; o.fin += Number(s.perdFin)||0; } });
+  return out;
+}
+const minTxt = m => m < 60 ? `${m} min` : `${Math.floor(m/60)} h${m%60?' '+(m%60)+' min':''}`;
 const pct = (a,b) => b ? Math.round(100*a/b) : 0;
 const fechaHora = iso => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
@@ -796,6 +814,14 @@ function vGrupos(){
       <span style="width:${pct(I.clima.mal,I.climaN)}%;background:var(--rojo)"></span></div>
       <div class="leyenda">Se ha podido trabajar ${pct(I.clima.bien,I.climaN)} % · a ratos ${pct(I.clima.regular,I.climaN)} % · no se ha podido ${pct(I.clima.mal,I.climaN)} %</div>`;
   }
+  if(I.perd.n){
+    const P = I.perd, m = P.mIni + P.mFin;
+    h += `<h3>Tiempo perdido</h3>
+      <div class="barras" role="img" aria-label="De media se pierden ${P.mIni} minutos al empezar y ${P.mFin} al acabar, de ${DUR}">
+        <span style="width:${pct(P.mIni,DUR)}%;background:var(--rojo)"></span><span style="width:${pct(DUR-m,DUR)}%;background:var(--tinta)"></span><span style="width:${pct(P.mFin,DUR)}%;background:var(--rojo)"></span></div>
+      <div class="leyenda">De media, <b>${P.mIni} min al empezar</b> y <b>${P.mFin} min al acabar</b>: quedan ${Math.max(0,DUR-m)} de ${DUR} para trabajar
+        (${P.n} ${P.n===1?'sesión anotada':'sesiones anotadas'}). En total, ${minTxt(P.total)} perdidos${P.total>=DUR?` ≈ ${String(Math.round(P.total/DUR*10)/10).replace('.',',')} sesiones`:''}.</div>`;
+  }
   if(progDe(g)){ h += vProg(g); if(I.sinUnidad) h += `<p class="leyenda">${I.sinUnidad} ${I.sinUnidad===1?'sesión':'sesiones'} sin unidad asignada.</p>`; }
   else{ h += vProg(g);
   if(I.porUnidad.length){
@@ -821,7 +847,7 @@ function vGrupos(){
         return `Deberes del ${f}: ${r.no && r.no.length ? 'no los traen '+r.no.join(', ') : 'los traen todos'}`;
       }).join(' · ');
       h += `<li><button data-a="ir" data-id="${id}">
-        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
+        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${perdTxt(s)?' · '+perdTxt(s):''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
         <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
         ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
         ${s.cambio?`<div class="f">Cambio: ${esc(s.cambio)}</div>`:''}
@@ -1064,7 +1090,7 @@ function abrir(k, n){
   const s = store.ses[abiertoId];
   borrador = s ? clon(s) : {
     fecha:k, franja:n, grupo:x.g||null, otra:x.o||null, aula:x.aula||'',
-    estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', cambio:'', observacion:'', notas:'',
+    estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', perdIni:'', perdFin:'', cambio:'', observacion:'', notas:'',
     ...(x.pt ? {pt:'si', ptNotas:''} : {}),
     unidad: x.g ? ultimaUnidad(x.g) : '',
     // una sesión de hace dos días o más se está reconstruyendo después
@@ -1186,6 +1212,10 @@ function pintarHoja(){
       <div class="campo"><span class="et">¿Cómo ha ido el aula?</span><div class="seg">
         ${Object.entries(CLIMA).map(([k,v])=>`<button data-h="clima" data-v="${k}" aria-pressed="${b.clima===k}">${v}</button>`).join('')}
       </div></div>
+      <div class="campo"><span class="et">Minutos perdidos <span class="ayuda">— hasta poder empezar a trabajar, y antes del timbre</span></span>
+        <div class="perd"><span>Inicio</span>${PERD_INI.map(m=>`<button class="chip" data-h="pini" data-v="${m}" aria-pressed="${b.perdIni!=='' && b.perdIni!==undefined && Number(b.perdIni)===m}">${m===30?'30+':m}</button>`).join('')}</div>
+        <div class="perd"><span>Final</span>${PERD_FIN.map(m=>`<button class="chip" data-h="pfin" data-v="${m}" aria-pressed="${b.perdFin!=='' && b.perdFin!==undefined && Number(b.perdFin)===m}">${m}</button>`).join('')}</div>
+      </div>
       <details ${b.cambio||b.observacion?'open':''}><summary>Pilotaje <span class="ayuda" style="font-weight:400">— para el diario de mejora</span></summary>
         <div class="campo"><label for="h-camb">Qué cambié respecto al grupo anterior</label>
           <textarea id="h-camb" data-f="cambio" style="min-height:64px">${esc(b.cambio)}</textarea></div>
@@ -1238,16 +1268,18 @@ function filasExport(){
     .filter(([id,s])=> s.fecha>=desde && s.fecha<=hasta && (s.grupo ? sel.includes(s.grupo) : sel.includes('otras')))
     .sort((a,b)=>a[0]<b[0]?-1:1).map(([id,s])=>({id,...s}));
 }
+const perdTxt = s => { const a = s.perdIni!==undefined && s.perdIni!=='', b = s.perdFin!==undefined && s.perdFin!=='';
+  return a||b ? `perdidos ${a?s.perdIni:'?'} + ${b?s.perdFin:'?'} min` : ''; };
 const textoRev = s => (s.revisiones||[]).map(r=>{
   const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])}: ${r.no&&r.no.length?'no los traen nº '+r.no.join(', '):'los traen todos'}`;
 }).join('; ');
 function csv(){
   const f = filasExport();
-  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
+  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','Min. perdidos al empezar','Min. perdidos al acabar','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
   const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
   const filas = f.map(s=>[s.fecha, DIAS[deClave(s.fecha).getDay()], `${FR[s.franja].ini}-${FR[s.franja].fin}`,
     s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'', s.grupo?nombreUnidad(s.grupo,s.unidad):'',
-    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length, s.reconstruido?'Sí':'', s.reconstruido?(s.fuente||''):''].map(q).join(';'));
+    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.perdIni??'', s.perdFin??'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length, s.reconstruido?'Sí':'', s.reconstruido?(s.fuente||''):''].map(q).join(';'));
   return '\ufeff' + [cab.map(q).join(';'), ...filas].join('\r\n');
 }
 function calendarioInforme(desde, hasta, gs){
@@ -1267,12 +1299,13 @@ function informe(){
   const gs = Object.keys(GRUPOS).filter(g=>sel.includes(g));
   // 1. resumen de indicadores
   let resumen = `<h2>Resumen</h2><table><thead><tr><th>Grupo</th><th>Previstas</th><th>Impartidas</th><th>No impartidas</th>
-    <th>Sin registrar</th><th>Entrega de deberes</th><th>Clima: bien / a ratos / no</th><th>Con PT</th></tr></thead><tbody>`;
+    <th>Sin registrar</th><th>Entrega de deberes</th><th>Clima: bien / a ratos / no</th><th>Min. perdidos por sesión (inicio + final)</th><th>Con PT</th></tr></thead><tbody>`;
   for(const g of gs){
     const I = indicadores(g, desde, hasta);
     resumen += `<tr><td>${GRUPOS[g].nombre}</td><td>${I.previstas}</td><td>${I.dadas}</td><td>${I.noDadas}</td><td>${I.sinRegistrar}</td>
       <td>${I.entrega===null?'—':I.entrega+' % ('+I.revisadas+' revisiones)'}</td>
       <td>${I.climaN?`${pct(I.clima.bien,I.climaN)} / ${pct(I.clima.regular,I.climaN)} / ${pct(I.clima.mal,I.climaN)} %`:'—'}</td>
+      <td>${I.perd.n?`${I.perd.mIni} + ${I.perd.mFin} (${I.perd.n} ses.; total ${minTxt(I.perd.total)})`:'—'}</td>
       <td>${I.pt?`${I.ptSi} de ${I.pt}`:'—'}</td></tr>`;
   }
   const nRec = f.filter(s=>s.reconstruido).length;
@@ -1286,6 +1319,13 @@ function informe(){
     for(const n of [1,2,3,4,5,6]){ const x = cf[n], t = x.bien+x.regular+x.mal; if(!t) continue;
       resumen += `<tr><td>${FR[n].ini}–${FR[n].fin}</td><td>${t}</td><td>${pct(x.bien,t)} %</td><td>${pct(x.regular,t)} %</td><td>${pct(x.mal,t)} %</td></tr>`; }
     resumen += `</tbody></table>`;
+  }
+  const pf = perdidoPorFranja(desde, hasta);
+  if(Object.values(pf).some(x=>x.n)){
+    resumen += `<h2>Tiempo perdido por franja horaria</h2><table><thead><tr><th>Franja</th><th>Sesiones anotadas</th><th>Al empezar (media)</th><th>Al acabar (media)</th><th>Útil de ${DUR} min</th></tr></thead><tbody>`;
+    for(const n of [1,2,3,4,5,6]){ const x = pf[n]; if(!x.n) continue; const a = Math.round(x.ini/x.n), b = Math.round(x.fin/x.n);
+      resumen += `<tr><td>${FR[n].ini}–${FR[n].fin}</td><td>${x.n}</td><td>${a} min</td><td>${b} min</td><td>${Math.max(0,DUR-a-b)} min</td></tr>`; }
+    resumen += `</tbody></table><p class="meta">Minutos hasta poder empezar a trabajar y antes del timbre, anotados al registrar cada sesión.</p>`;
   }
   // 3. por grupo: programación y sesiones
   let cuerpo = '';
@@ -1314,7 +1354,7 @@ function informe(){
       }else{
         cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(nombreUnidad(g,s.unidad))}</td>
           <td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.cambio?`<div class="mat">Cambio: ${esc(s.cambio)}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
-          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}</td><td class="reg">${reg}</td></tr>`;
+          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}${perdTxt(s)?`<div class="mat">${perdTxt(s)}</div>`:''}</td><td class="reg">${reg}</td></tr>`;
       }
     }
     cuerpo += `</tbody></table>`;
@@ -1477,6 +1517,8 @@ document.getElementById('hoja').addEventListener('click', e=>{
   else if(h==='pt'){ borrador.pt = b.dataset.v; }
   else if(h==='motivo'){ borrador.motivo = b.dataset.v; }
   else if(h==='clima'){ borrador.clima = borrador.clima===b.dataset.v ? '' : b.dataset.v; }
+  else if(h==='pini'){ const v = Number(b.dataset.v); borrador.perdIni = borrador.perdIni!=='' && borrador.perdIni!==undefined && Number(borrador.perdIni)===v ? '' : v; }
+  else if(h==='pfin'){ const v = Number(b.dataset.v); borrador.perdFin = borrador.perdFin!=='' && borrador.perdFin!==undefined && Number(borrador.perdFin)===v ? '' : v; }
   else if(h==='unidad'){ borrador.unidad = borrador.unidad===b.dataset.v ? '' : b.dataset.v; }
   else if(h==='recons'){ borrador.reconstruido = !borrador.reconstruido; }
   else if(h==='fuente'){
