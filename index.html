@@ -83,6 +83,31 @@ button{cursor:pointer}
 .unidad .n{display:flex;justify-content:space-between;gap:10px;font-size:15px}
 .prog{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin-top:4px}
 .prog span{display:block;height:100%;background:var(--tinta)}
+/* programación: barra con la raya de dónde dice el plan que deberías ir */
+.pbar{position:relative;height:12px;border-radius:6px;background:var(--linea);margin:4px 0 6px}
+.pbar>span{display:block;height:100%;border-radius:6px;background:var(--tinta)}
+.pbar>i{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1px;background:var(--rojo);border-radius:2px}
+.tarde{color:var(--rojo)}
+details.sa{margin-bottom:8px;padding:6px 12px}
+details.sa summary{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline;list-style:none}
+details.sa summary::-webkit-details-marker{display:none}
+details.sa summary .prog{grid-column:1/-1;margin-top:2px}
+.sa-n{font-weight:700}.sa-c{font-size:13px;color:var(--gris);font-weight:400;font-variant-numeric:tabular-nums}
+details.sa.hecha .sa-n{color:var(--gris)}
+.pasos{list-style:none;padding:0;margin:4px 0 0}
+.paso-b{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;padding:9px 0;border-top:1px dashed var(--linea);font-size:15px}
+.paso-b .caja{flex:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--tinta);border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--hoja)}
+.paso-b[aria-pressed="true"] .caja{background:var(--tinta)}
+.paso-b[aria-pressed="true"] .txt{color:var(--gris)}
+.paso-b .txt{flex:1}.paso-b small{display:block;font-size:13px;color:var(--gris);margin-top:2px}
+.paso-b .etq{flex:none}
+.horq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px 34px;font-size:14px}
+.horq small{flex-basis:100%;font-size:13px;color:var(--gris)}
+.horq .chip{padding:4px 10px;font-size:14px}.horq .chip.sel{border-color:var(--tinta);color:var(--tinta);font-weight:700}
+details.semana{margin-top:16px}
+details.semana ul{list-style:none;padding:0;margin:6px 0 0}
+details.semana li button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;border-top:1px dashed var(--linea);background:none;padding:9px 0;font-size:15px}
+details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:var(--gris);margin-top:2px}
 .prox{list-style:none;margin:0 0 14px;padding:0}
 .prox button{width:100%;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;
   background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:9px 12px;margin-bottom:6px}
@@ -241,6 +266,7 @@ h3{font-size:17px;margin:18px 0 8px}
      app en segundo plano y, al volver, la vista se repinta; si el selector estuviera
      dentro, se sustituiría y el archivo elegido se perdería. -->
 <input type="file" id="archivo-copia" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
+<input type="file" id="archivo-prog" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
 
 <script>
 /* ═══════════════════════════ DATOS FIJOS ═══════════════════════════ */
@@ -292,6 +318,13 @@ const idSes = (fecha,n) => `${fecha}_${n}`;
    Todo se guarda en el propio móvil (localStorage). No sale a ningún
    servidor: la copia de seguridad se hace a mano, desde Exportar, y se
    manda a Drive, al correo o donde se quiera con el menú de compartir.  */
+/* Programación de aula: NO va en el código (el repositorio es público). Se
+   carga desde un archivo en Ajustes, se guarda en este móvil (store.programa)
+   y viaja en la copia de seguridad. Formato: {tipo:'programacion-cuaderno',
+   nombre, niveles:{1:[situaciones…], 2:[…]}}; ver «PROGRAMACIÓN DE AULA». */
+const PROGD = () => (store.programa && store.programa.niveles) || {};
+const unidadesProg = nv => (PROGD()[nv]||[]).map(sa=>({id:sa.id, nombre:sa.n, previstas:sa.it.reduce((a,x)=>a+x.s,0)}));
+const recorta = (t,n) => t.length>n ? t.slice(0,n-1).replace(/\s+\S*$/,'')+'…' : t;
 const LS = 'cuaderno-de-aula.v1';
 const cfgInicial = () => ({
   inicio: hoyK(), docente:'', centro:'', curso:'2026-27', ultimaCopia:'',
@@ -304,20 +337,20 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.3.1';
+const VERSION_APP = '1.4.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
 const CAL = {nombre:'calendario escolar 2026-27', fin:'2027-06-18', dias:[
   '2026-10-09','2026-10-12',                                   // 9 d'Octubre · Hispanitat
   '2026-12-08',                                                // Immaculada
-  '2026-12-23','2026-12-24','2026-12-25','2026-12-28','2026-12-29','2026-12-30','2026-12-31',
-  '2027-01-01','2027-01-04','2027-01-05','2027-01-06',         // Nadal (23 des – 6 gen)
+  '2026-12-22','2026-12-23','2026-12-24','2026-12-25','2026-12-28','2026-12-29','2026-12-30','2026-12-31',
+  '2027-01-01','2027-01-04','2027-01-05','2027-01-06',         // Nadal (22 des – 6 gen, en rosa en el calendario)
   '2027-03-01','2027-03-02','2027-03-03','2027-03-04','2027-03-05', // Magdalena
   '2027-03-19',                                                // Sant Josep
   '2027-03-25','2027-03-26','2027-03-29','2027-03-30','2027-03-31','2027-04-01','2027-04-02' // Pasqua
 ]};
-let store = {cfg:cfgInicial(), ses:{}, ev:{}};
+let store = {cfg:cfgInicial(), ses:{}, ev:{}, prog:{}, programa:null};
 const clon = o => JSON.parse(JSON.stringify(o));
 function leerLocal(){
   try{
@@ -325,6 +358,9 @@ function leerLocal(){
     if(j && j.store){ store = j.store; const c0 = cfgInicial(); store.cfg = Object.assign(c0, store.cfg||{}); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, store.cfg.alumnos||{}); }
     if(!store.cfg.unidades[4]) store.cfg.unidades[4] = [];
     if(!store.ev) store.ev = {};
+    if(!store.prog) store.prog = {};
+    // las unidades de antes (solo la de divisibilidad) pasan a ser las de la programación
+    if(store.programa) ponerUnidadesProg(false);
   }catch(e){}
 }
 let avisado = false;
@@ -526,6 +562,112 @@ function cuenta(x){
   return `faltan ${x.falta} días · ${c===0?'no te quedan clases antes':c===1?'te queda 1 clase antes':'te quedan '+c+' clases antes'}`;
 }
 
+
+/* ═══════════════════════ PROGRAMACIÓN DE AULA ═══════════════════════
+   Las situaciones de aprendizaje de la programación de aula entregada al
+   departamento (1.º y 2.º), cada una con sus actividades y sus sesiones.
+   «ini» es cuándo empieza según la programación; el plan de cada grupo sale
+   de repartir las sesiones en las clases de su horario, sin festivos. Lo que
+   se marca como hecho se guarda por grupo en store.prog y va en la copia. */
+function clasesEntre(g, k1, k2){
+  const out = [];
+  for(let d = deClave(k1); clave(d) < k2; d = masDias(d,1)){
+    const k = clave(d); if(!esLectivo(k)) continue;
+    const h = franjasDe(k); for(const f in h) if(h[f].g===g) out.push(k);
+  }
+  return out;
+}
+// las próximas n clases de un grupo, contando las de hoy que aún no han acabado
+function proximasClases(g, n){
+  const out = [];
+  for(let d = deClave(hoyK()), i = 0; out.length < n && i < 400; d = masDias(d,1), i++){
+    const k = clave(d); if(k > CAL.fin) break; if(!esLectivo(k)) continue;
+    const h = franjasDe(k);
+    for(const f of Object.keys(h).sort((a,b)=>a-b)) if(h[f].g===g && !haTerminado(k, Number(f))) out.push(k);
+  }
+  return out.slice(0, n);
+}
+const progDe = g => { const P = PROGD()[GRUPOS[g].nivel]; return P && P.length ? P : null; };
+const hechos = g => (store.prog && store.prog[g]) || {};
+let cachePlan = {};
+function plan(g){
+  const P = progDe(g); if(!P) return null;
+  const firma = store.cfg.nolectivos.join(',') + hoyK();
+  if(cachePlan[g] && cachePlan[g].firma===firma) return cachePlan[g];
+  const seq = P.filter(s=>!s.trans), items = [];
+  const finCurso = clave(masDias(deClave(CAL.fin),1));
+  seq.forEach((sa, i)=>{
+    const L = clasesEntre(g, sa.ini, i+1<seq.length ? seq[i+1].ini : finCurso);
+    const N = sa.it.reduce((a,x)=>a+x.s, 0);
+    const f = N ? L.length / N : 1;   // se reparte en todas las clases hasta la siguiente; si no caben, se aprietan
+    let pos = 0, acc = 0;
+    sa.it.forEach(it=>{
+      acc += it.s * f;
+      const hasta = Math.max(Math.round(acc), it.s ? pos+1 : pos);
+      const fechas = L.slice(pos, hasta); pos = hasta;
+      const ini = fechas[0] || L[L.length-1] || sa.ini, fin = fechas[fechas.length-1] || ini;
+      items.push({sa, it, fechas, ini, fin});
+    });
+  });
+  return (cachePlan[g] = {firma, items, apretadas: seq.filter((sa,i)=>
+    sa.it.reduce((a,x)=>a+x.s,0) > clasesEntre(g, sa.ini, i+1<seq.length ? seq[i+1].ini : finCurso).length).map(s=>s.id)});
+}
+function estadoProg(g){
+  const p = plan(g); if(!p) return null;
+  const H = hechos(g), hoy = hoyK();
+  let n = 0, hechosN = 0, sesHechas = 0, sesPrev = 0, sesTot = 0, prevN = 0;
+  p.items.forEach(x=>{
+    n++; sesTot += x.it.s;
+    if(H[x.it.id]){ hechosN++; sesHechas += x.it.s; }
+    if(x.fechas.length) sesPrev += x.it.s * x.fechas.filter(k=>k<hoy).length / x.fechas.length;
+    if(x.fin < hoy) prevN++;
+  });
+  const sig = p.items.find(x=>!H[x.it.id]) || null;              // por dónde vas
+  const toca = p.items.filter(x=>x.ini<=hoy && x.fin>=hoy);        // lo que dice el plan para hoy
+  return {p, H, n, hechosN, prevN, sesTot, sesHechas, sesPrev:Math.round(sesPrev), retraso:Math.round(sesPrev - sesHechas), sig, toca};
+}
+// Horquilla para la prueba de una actividad: lo que queda hasta ella, contado
+// en clases del grupo desde hoy, y un par de clases a cada lado.
+function horquilla(g, item){
+  const E = estadoProg(g); if(!E) return null;
+  let quedan = 0;
+  for(const x of E.p.items){ if(!E.H[x.it.id]) quedan += x.it.s; if(x.it.id===item.it.id) break; }
+  if(!quedan) return null;
+  const L = proximasClases(g, quedan + 2);
+  if(!L.length) return null;
+  const idx = Math.min(quedan, L.length) - 1;
+  const opc = L.slice(Math.max(0, idx-1), idx+3);
+  const corte = opc.some((k,i)=> i && (deClave(k)-deClave(opc[i-1]))/86400000 > 4);
+  return {opc, prevista: L[idx], plan: item.fin, corte};
+}
+const pruebaFijada = (g, saId) => Object.entries(store.ev||{}).find(([,e])=>e.sa===saId && e.fechas && e.fechas[g]);
+function rangoCorto(a, b){
+  const A = deClave(a), B = deClave(b);
+  if(a===b) return `${A.getDate()} ${MESES[A.getMonth()].slice(0,3)}`;
+  return A.getMonth()===B.getMonth() ? `${A.getDate()}–${B.getDate()} ${MESES[B.getMonth()].slice(0,3)}`
+    : `${A.getDate()} ${MESES[A.getMonth()].slice(0,3)} – ${B.getDate()} ${MESES[B.getMonth()].slice(0,3)}`;
+}
+const semanaDe = k => { const d = deClave(k), w = d.getDay() || 7; const l = masDias(d, 1-w); return [clave(l), clave(masDias(l,4))]; };
+
+// Las unidades del registro pasan a ser las situaciones de la programación.
+// Con «todas», se ponen siempre (las que haya de más se conservan detrás);
+// sin él, solo si siguen las de fábrica (la de divisibilidad sola).
+function ponerUnidadesProg(todas){
+  for(const nv of [1,2]){
+    const U = store.cfg.unidades[nv] || [], P = unidadesProg(nv); if(!P.length) continue;
+    if(!todas && !(U.length<=1 && (!U.length || U[0].id==='u1'))) continue;
+    const ids = new Set(P.map(u=>u.id)); store.cfg.unidades[nv] = [...P, ...U.filter(u=>!ids.has(u.id))];
+  }
+}
+function cargarProgramacion(texto){
+  let j = null; try{ j = JSON.parse(String(texto).replace(/^\ufeff/, '')); }catch(e){}
+  if(!j || j.tipo!=='programacion-cuaderno' || !j.niveles){ toast('Ese archivo no es una programación del cuaderno'); return; }
+  store.programa = {nombre: j.nombre||'Programación de aula', curso: j.curso||'', niveles: j.niveles, cargada: new Date().toISOString()};
+  cachePlan = {}; ponerUnidadesProg(true); guardarLocal();
+  const n = Object.values(j.niveles).reduce((a,L)=>a+L.length, 0);
+  toast(`Programación cargada: ${n} situaciones`); pintar();
+}
+
 /* ═══════════════════════════ PANTALLA ═══════════════════════════ */
 let vista = 'dia';
 let dia = hoyK();
@@ -627,6 +769,7 @@ function vDia(){
   }
   h += '</ul>';
   if(!Object.keys(hor).length) h += `<div class="vacio">Hoy no tienes nada en el horario.</div>`;
+  h += vSemana();
   h += `<p class="nota" style="margin-top:14px"><button class="chip" data-a="nolectivo">Marcar el día como no lectivo</button></p>`;
   return h;
 }
@@ -653,11 +796,14 @@ function vGrupos(){
       <span style="width:${pct(I.clima.mal,I.climaN)}%;background:var(--rojo)"></span></div>
       <div class="leyenda">Se ha podido trabajar ${pct(I.clima.bien,I.climaN)} % · a ratos ${pct(I.clima.regular,I.climaN)} % · no se ha podido ${pct(I.clima.mal,I.climaN)} %</div>`;
   }
+  if(progDe(g)){ h += vProg(g); if(I.sinUnidad) h += `<p class="leyenda">${I.sinUnidad} ${I.sinUnidad===1?'sesión':'sesiones'} sin unidad asignada.</p>`; }
+  else{ h += vProg(g);
   if(I.porUnidad.length){
     h += `<h3>Seguimiento de la programación</h3>`;
     I.porUnidad.forEach(u=>{ h += `<div class="unidad"><div class="n"><span>${esc(u.nombre)}</span><span>${u.dadas}${u.previstas?' / '+u.previstas:''}</span></div>
       ${u.previstas?`<div class="prog"><span style="width:${Math.min(100,pct(u.dadas,u.previstas))}%"></span></div>`:''}</div>`; });
     if(I.sinUnidad) h += `<p class="leyenda">${I.sinUnidad} ${I.sinUnidad===1?'sesión':'sesiones'} sin unidad asignada.</p>`;
+  }
   }
   if(I.pt) h += `<p class="leyenda" style="margin-top:10px">Sesiones con PT: ${I.ptSi} de ${I.pt} con la PT en el aula.</p>`;
   if(pendDeb.length){
@@ -690,6 +836,88 @@ function vGrupos(){
   return h;
 }
 
+
+/* ── Programación: el bloque de Grupos y la semana del Día ── */
+function vProg(g){
+  const E = estadoProg(g);
+  if(!E) return GRUPOS[g].nivel===4
+    ? `<h3>Programación</h3><p class="leyenda">El taller no sigue una secuencia de temas: cada alumno trabaja lo de su clase y su itinerario de fichas.</p>`
+    : `<h3>Programación</h3><p class="leyenda">Carga el archivo de tu programación en <b>Ajustes</b> para ver aquí el seguimiento, las fechas de las pruebas y lo que toca cada semana.</p>`;
+  const P = progDe(g), I = indicadores(g, store.cfg.inicio, hoyK());
+  const dadasU = Object.fromEntries(I.porUnidad.map(u=>[u.id, u.dadas]));
+  const r = E.retraso, sem = Math.round(Math.abs(r)/4*2)/2;
+  const ritmo = Math.abs(r) <= 1 ? 'vas al día'
+    : r > 0 ? `vas ${r} ${r===1?'clase':'clases'} por detrás${sem>=1?' (≈ '+String(sem).replace('.',',')+' '+(sem===1?'semana':'semanas')+')':''}`
+    : `vas ${-r} ${r===-1?'clase':'clases'} por delante`;
+  let h = `<h3>Programación</h3>
+    <div class="pbar" role="img" aria-label="Hechas ${E.hechosN} de ${E.n} actividades; según el plan, ${E.prevN}">
+      <span style="width:${pct(E.sesHechas,E.sesTot)}%"></span><i style="left:${pct(E.sesPrev,E.sesTot)}%"></i></div>
+    <p class="leyenda">${E.hechosN} de ${E.n} actividades hechas · según el plan deberías ir por ${E.prevN} · <b class="${r>3?'tarde':''}">${ritmo}</b>.
+      La raya roja es donde dice el plan que deberías estar hoy.</p>
+    ${E.prevN > E.hechosN ? `<p class="nota"><button class="chip" data-a="pi-hasta" data-g="${g}">Marcar como hecho todo lo que el plan daba hasta hoy</button><br>
+      Útil al empezar a usarlo; lo que no se haya dado se desmarca uno a uno.</p>` : ''}`;
+  const blq = (sa, abierto) => {
+    const its = E.p.items.filter(x=>x.sa===sa);
+    const hn = its.filter(x=>E.H[x.it.id]).length, todo = hn===its.length;
+    const ses = its.reduce((a,x)=>a+x.it.s,0), d = dadasU[sa.id];
+    let b = `<details class="sa${todo?' hecha':''}" ${abierto?'open':''}><summary><span class="sa-n">${todo?'✓ ':''}${esc(sa.n)}</span>
+      <span class="sa-c">${hn}/${its.length} · ${rangoCorto(its[0].ini, its[its.length-1].fin)}</span>
+      <span class="prog"><span style="width:${pct(hn,its.length)}%"></span></span></summary>
+      <p class="leyenda" style="margin:6px 0 2px">${esc(sa.u)}${d!==undefined?` · ${d} ${d===1?'sesión registrada':'sesiones registradas'} de ${ses} previstas`:''}</p>
+      ${E.p.apretadas.includes(sa.id)?'<p class="leyenda tarde">Con el calendario, las sesiones previstas no caben antes de la siguiente: el plan las aprieta.</p>':''}
+      <ul class="pasos">`;
+    its.forEach(x=>{
+      const ok = !!E.H[x.it.id];
+      b += `<li><button class="paso-b" data-a="pi" data-g="${g}" data-i="${x.it.id}" aria-pressed="${ok}">
+        <span class="caja" aria-hidden="true">${ok?'✓':''}</span>
+        <span class="txt">${esc(x.it.a)}<small>${x.it.s} ${x.it.s===1?'sesión':'sesiones'} · ${rangoCorto(x.ini, x.fin)}${ok?' · hecho el '+corta(E.H[x.it.id]):''}</small></span>
+        ${x.it.ex?'<span class="etq">Prueba</span>':''}</button>`;
+      if(x.it.ex && !ok){
+        const fj = pruebaFijada(g, sa.id);
+        if(fj) b += `<div class="horq">Prueba fijada: <button class="chip" data-a="ir-fecha" data-id="${fj[0]}">${larga(fj[1].fechas[g])}</button></div>`;
+        else{
+          const hq = horquilla(g, x);
+          if(hq) b += `<div class="horq"><span>Para la prueba, a tu ritmo:</span>
+            ${hq.opc.map(k=>`<button class="chip${k===hq.prevista?' sel':''}" data-a="px" data-g="${g}" data-sa="${sa.id}" data-k="${k}">${corta(k)}</button>`).join('')}
+            <small>El plan la ponía hacia el ${corta(hq.plan)}.${hq.corte?' Ojo: hay vacaciones o festivos en medio.':''} Toca una fecha para apuntarla en Fechas.</small></div>`;
+        }
+      }
+      b += `</li>`;
+    });
+    return b + `</ul></details>`;
+  };
+  const actual = E.sig ? E.sig.sa : null;
+  P.filter(s=>!s.trans).forEach(sa=>{ h += blq(sa, sa===actual); });
+  const tr = P.find(s=>s.trans);
+  if(tr){
+    h += `<details class="sa"><summary><span class="sa-n">${esc(tr.n)}</span><span class="sa-c">a lo largo del curso</span></summary>
+      <p class="leyenda" style="margin:6px 0 2px">${esc(tr.u)}</p><ul class="pasos">${tr.it.map(it=>{ const ok = !!E.H[it.id];
+      return `<li><button class="paso-b" data-a="pi" data-g="${g}" data-i="${it.id}" aria-pressed="${ok}"><span class="caja" aria-hidden="true">${ok?'✓':''}</span>
+        <span class="txt">${esc(it.a)}${ok?'<small>hecho el '+corta(E.H[it.id])+'</small>':''}</span></button></li>`; }).join('')}</ul></details>`;
+  }
+  return h;
+}
+function vSemana(){
+  const [l, v] = semanaDe(dia), hoy = hoyK();
+  const filas = [];
+  for(const g of Object.keys(GRUPOS)){
+    const E = estadoProg(g); if(!E) continue;
+    const L = clasesEntre(g, l, clave(masDias(deClave(v),1)));
+    if(!L.length) continue;
+    const toca = E.p.items.filter(x=>x.fechas.some(k=>k>=l && k<=v));
+    const sas = [...new Set(toca.map(x=>x.sa))];
+    let t = toca.length ? `<b>${sas.map(s=>esc(s.n)).join(' · ')}</b> — ${toca.map(x=>esc(recorta(x.it.a,110))).join(' · ')}` : 'Sin actividad prevista en el plan';
+    let extra = '';
+    if(E.sig && l<=hoy && hoy<=v && !toca.some(x=>x===E.sig)) extra = `<small class="${E.retraso>3?'tarde':''}">Vas por: ${esc(E.sig.sa.n)} — ${esc(recorta(E.sig.it.a,90))}</small>`;
+    const px = toca.find(x=>x.it.ex);
+    if(px) extra += `<small>Según el plan, esta semana cae la prueba.</small>`;
+    filas.push(`<li><button data-a="ir-grupo" data-g="${g}"><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span>
+      <span class="sem-t">${t}${extra}</span></button></li>`);
+  }
+  if(!filas.length) return '';
+  return `<details class="semana" open><summary>La semana del ${rangoCorto(l, v)}, según la programación</summary><ul>${filas.join('')}</ul></details>`;
+}
+
 function vFechas(){
   const hoy = hoyK();
   const evs = Object.entries(store.ev||{}).map(([id,e])=>{
@@ -708,9 +936,9 @@ function vFechas(){
   return h;
 }
 let evBorr = null, evId = null;
-function abrirFecha(id){
+function abrirFecha(id, pre){
   evId = id || ('e' + Date.now().toString(36));
-  evBorr = id && store.ev[id] ? clon(store.ev[id]) : {tipo:'examen', titulo:'', notas:'', fechas:{}};
+  evBorr = id && store.ev[id] ? clon(store.ev[id]) : (pre || {tipo:'examen', titulo:'', notas:'', fechas:{}});
   pintarHojaFecha();
   $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
 }
@@ -788,6 +1016,13 @@ function vAjustes(){
       ${[1,2,3,4,5].map(d=>`<option value="${d}" ${store.cfg.copia.dia===d?'selected':''}>${DIAS[d]}</option>`).join('')}</select></label>
       <label>Hora<input type="time" id="aj-chora" value="${store.cfg.copia.hora}"></label></div>
   </div>
+  <div class="panel"><p><b>Programación de aula</b><br><span class="nota">Se carga desde un archivo y se queda solo en este móvil (y en la copia de seguridad): no está en la app publicada.</span></p>
+    ${store.programa?`<p style="margin:8px 0">✓ <b>${esc(store.programa.nombre)}</b>${store.programa.curso?' · '+esc(store.programa.curso):''}<br>
+      <span class="nota">Cargada el ${fechaHora(store.programa.cargada)} · ${Object.values(store.programa.niveles).reduce((a,L)=>a+L.length,0)} situaciones</span></p>`
+      :'<p class="nota" style="margin:8px 0">Todavía no hay ninguna cargada.</p>'}
+    <button class="bloque-btn${store.programa?'':' lleno'}" data-a="archivo-prog">${store.programa?'Cargar otra versión':'Cargar el archivo de la programación'}</button>
+    ${store.programa?'<button class="chip" data-a="quitar-prog" style="margin-top:8px">Quitar la programación</button>':''}
+  </div>
   <div class="panel"><p><b>Unidades y situaciones de aprendizaje</b><br><span class="nota">Con las sesiones previstas de cada una sale el seguimiento de la programación.</span></p>
     ${[[1,'1.º ESO'],[2,'2.º ESO'],[4,'Refuerzo 4.º ESO']].map(([nv,tit])=>`
       <p style="margin:12px 0 6px"><b>${tit}</b></p>
@@ -795,6 +1030,8 @@ function vAjustes(){
         <input type="number" min="0" max="99" class="aj-u" data-nv="${nv}" data-i="${i}" data-k="previstas" value="${u.previstas||''}" aria-label="Sesiones previstas" placeholder="ses.">
         <button data-a="del-u" data-nv="${nv}" data-i="${i}" aria-label="Quitar">×</button></div>`).join('')}
       <button class="chip" data-a="add-u" data-nv="${nv}">Añadir unidad</button>`).join('')}
+    ${store.programa?`<p class="nota" style="margin-top:12px"><button class="chip" data-a="cargar-prog">Poner las situaciones de la programación</button><br>
+      Las sesiones ya registradas no se tocan.</p>`:''}
   </div>
   <div class="panel"><p><b>Alumnos por grupo</b><br><span class="nota">Para la cuadrícula de números de lista.</span></p><div class="alumnos">`;
   for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
@@ -1127,6 +1364,24 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
   else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
   else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
+  else if(a==='ir-grupo'){ grupoSel = b.dataset.g; vista = 'grupos'; pintar(); window.scrollTo(0,0); }
+  else if(a==='pi'){
+    const g = b.dataset.g, id = b.dataset.i, H = store.prog[g] = store.prog[g] || {};
+    if(H[id]) delete H[id]; else H[id] = hoyK();
+    guardarLocal(); const y = window.scrollY; pintar(); window.scrollTo(0, y);
+  }
+  else if(a==='pi-hasta'){
+    const g = b.dataset.g, E = estadoProg(g), H = store.prog[g] = store.prog[g] || {};
+    let n = 0; E.p.items.forEach(x=>{ if(x.fin < hoyK() && !H[x.it.id]){ H[x.it.id] = x.fin; n++; } });
+    guardarLocal(); toast(`${n} ${n===1?'actividad marcada':'actividades marcadas'}`); pintar();
+  }
+  else if(a==='px'){
+    const g = b.dataset.g, sa = (progDe(g)||[]).find(x=>x.id===b.dataset.sa);
+    abrirFecha(null, {tipo:'examen', titulo:'Prueba: '+(sa?sa.n:''), notas:'', sa:b.dataset.sa, fechas:{[g]:b.dataset.k}});
+  }
+  else if(a==='cargar-prog'){ leerUnidades(); ponerUnidadesProg(true); guardarCfg(); toast('Unidades de la programación puestas'); pintar(); }
+  else if(a==='archivo-prog'){ const i = $('#archivo-prog'); i.value=''; i.click(); }
+  else if(a==='quitar-prog'){ if(confirm('¿Quitar la programación de este móvil? Lo marcado como hecho se conserva por si la vuelves a cargar.')){ store.programa = null; cachePlan = {}; guardarLocal(); pintar(); } }
   else if(a==='restaurar'){ const i = $('#archivo-copia'); i.value=''; i.click(); }
   else if(a==='nueva-fecha'){ abrirFecha(null); }
   else if(a==='ir-fecha'){ abrirFecha(b.dataset.id); }
@@ -1159,6 +1414,11 @@ document.getElementById('app').addEventListener('click', async e=>{
     document.querySelectorAll('.aj-n').forEach(i=>{ const n = Math.max(1, Math.min(40, parseInt(i.value)||25)); c.alumnos[i.dataset.g] = n; });
     guardarCfg(); toast('Ajustes guardados'); pintar();
   }
+});
+document.getElementById('archivo-prog').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
+  r.onload = ()=>{ e.target.value = ''; cargarProgramacion(r.result); }; r.readAsText(f);
 });
 // ── RESTAURAR UNA COPIA ──
 // Se lee el archivo, se enseña qué trae y se pide confirmación dentro de la app
@@ -1195,8 +1455,11 @@ document.getElementById('hoja').addEventListener('click', e=>{
     const j = copiaPendiente, n = Object.keys(j.store.ses).length;
     for(const [id,s] of Object.entries(j.store.ses)){ store.ses[id]=s; }
     store.ev = Object.assign(store.ev||{}, j.store.ev||{});
+    store.prog = store.prog || {};
+    for(const [g,H] of Object.entries(j.store.prog||{})) store.prog[g] = Object.assign(store.prog[g]||{}, H);
+    if(j.store.programa) store.programa = j.store.programa;
     if(j.store.cfg){ store.cfg = Object.assign(cfgInicial(), j.store.cfg); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, j.store.cfg.alumnos||{}); }
-    guardarLocal(); copiaPendiente = null; cerrar(); pintar(); toast(`Copia restaurada: ${n} ${n===1?'sesión':'sesiones'}`);
+    cachePlan = {}; guardarLocal(); copiaPendiente = null; cerrar(); pintar(); toast(`Copia restaurada: ${n} ${n===1?'sesión':'sesiones'}`);
   }else{ copiaPendiente = null; cerrar(); toast('No se ha restaurado nada'); }
 });
 document.getElementById('velo').addEventListener('click', cerrar);
