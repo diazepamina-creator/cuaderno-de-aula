@@ -205,6 +205,21 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .lista button{height:42px;border:1.5px solid var(--linea);background:var(--hoja);border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px}
 .lista button[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff;font-weight:700}
 .lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
+/* plano del aula */
+.pizarra{text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gris);border-bottom:3px solid var(--grafito);margin:10px 18% 8px;padding-bottom:2px}
+.plano{display:grid;gap:5px;margin-bottom:8px}
+.plano .mesa{height:40px;border:1.5px dashed var(--linea);background:transparent;border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px;padding:0}
+.plano .mesa.llena{border-style:solid;background:var(--hoja);font-weight:700;color:var(--tinta)}
+.plano .mesa[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff}
+.plano .mesa:disabled{visibility:hidden}
+.plano-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.plano-ctl .btn-r{width:36px;height:36px;font-size:18px}
+.plano-ctl b{min-width:20px;text-align:center}
+.plano-sig{margin:4px 0 0;font-size:15px}
+.sin-mesa{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;align-items:center;font-size:13px;color:var(--gris)}
+.sin-mesa button{width:40px;height:36px;border:1.5px solid var(--linea);background:var(--hoja);border-radius:8px}
+.sin-mesa button[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff;font-weight:700}
+
 details{border:1px dashed var(--linea);border-radius:12px;padding:8px 12px;background:var(--hoja)}
 summary{font-weight:700;cursor:pointer;padding:4px 0}
 .acciones{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);z-index:12;
@@ -344,7 +359,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.4.1';
+const VERSION_APP = '1.4.2';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -713,6 +728,7 @@ function pintar(){
   else if(vista==='grupos') app.innerHTML = vGrupos();
   else if(vista==='fechas') app.innerHTML = vFechas();
   else if(vista==='exportar') app.innerHTML = vExportar();
+  else if(vista==='plano' && planoB) app.innerHTML = vPlanoEd();
   else app.innerHTML = vAjustes();
   pintarSync();
 }
@@ -837,6 +853,10 @@ function vGrupos(){
     for(const [id,s] of pendDeb) h += `<li><button data-a="ir" data-id="${id}"><div class="f">Puestos el ${corta(s.fecha)}</div><div class="d">${esc(s.deberes)}</div></button></li>`;
     h += `</ul>`;
   }
+  { const P = planoDe(g), N = store.cfg.alumnos[g]||25;
+    h += `<h3>Plano del aula</h3>${P ? `<p class="leyenda">${Object.keys(P.sitios).length} de ${N} en su mesa. En «Deberes para revisar» se toca la mesa de quien no los trae.</p>`
+      : `<p class="leyenda">Coloca los números de lista en sus mesas y, al revisar deberes, toca la mesa en vez de buscar el número. Solo se guardan números.</p>`}
+      <button class="chip" data-a="plano" data-g="${g}">${P?'Cambiar el plano':'Hacer el plano'}</button>`; }
   h += `<h3>Historial</h3>`;
   if(!ses.length) h += `<div class="vacio">Todavía no hay sesiones de este grupo.<br>Se registran desde <b>Día</b>.</div>`;
   else{
@@ -942,6 +962,55 @@ function vSemana(){
   }
   if(!filas.length) return '';
   return `<details class="semana" open><summary>La semana del ${rangoCorto(l, v)}, según la programación</summary><ul>${filas.join('')}</ul></details>`;
+}
+
+/* ── PLANO DEL AULA ── Para revisar deberes sin saberse aún los nombres: se
+   toca la mesa de quien no los trae y la app apunta su número de lista. El
+   plano solo guarda números por mesa (nada de nombres) y va en la copia. */
+const planoDe = g => { const p = (store.cfg.planos||{})[g]; return p && Object.keys(p.sitios||{}).length ? p : null; };
+let planoB = null, planoG = null;
+function abrirPlano(g){ planoG = g; planoB = clon((store.cfg.planos||{})[g] || {filas:5, cols:6, sitios:{}}); vista = 'plano'; pintar(); window.scrollTo(0,0); }
+function rejillaPlano(p, celda){
+  let h = `<div class="pizarra">pizarra</div><div class="plano" style="grid-template-columns:repeat(${p.cols},1fr)">`;
+  for(let f=1; f<=p.filas; f++) for(let c=1; c<=p.cols; c++) h += celda(`${f}-${c}`, p.sitios[`${f}-${c}`]);
+  return h + `</div>`;
+}
+function vPlanoEd(){
+  const p = planoB, N = store.cfg.alumnos[planoG] || 25, usados = new Set(Object.values(p.sitios));
+  let sig = 1; while(usados.has(sig) && sig <= N) sig++;
+  const faltan = []; for(let i=1;i<=N;i++) if(!usados.has(i)) faltan.push(i);
+  let h = `<h1 class="titulo">Plano del aula</h1>
+    <p><span class="grupo" style="--gc:${gc(planoG)}">${GRUPOS[planoG].nombre}</span></p>
+    <p class="nota">Con el plano de clase delante, toca la mesa del <b>1</b>, luego la del <b>2</b>, y así. Si te equivocas, toca esa mesa otra vez y se vacía: el número vuelve a ser el siguiente.</p>
+    <div class="plano-ctl"><span>Filas</span><button class="btn-r" data-pz="filas" data-d="-1">−</button><b>${p.filas}</b><button class="btn-r" data-pz="filas" data-d="1">+</button>
+      <span>Columnas</span><button class="btn-r" data-pz="cols" data-d="-1">−</button><b>${p.cols}</b><button class="btn-r" data-pz="cols" data-d="1">+</button></div>
+    <p class="plano-sig">${sig<=N?`Siguiente: <b>${sig}</b>`:'Están todos colocados.'}</p>`;
+  h += rejillaPlano(p, (k,n)=>`<button class="mesa${n?' llena':''}" data-pz="mesa" data-k="${k}">${n||''}</button>`);
+  if(faltan.length && faltan.length < N) h += `<p class="nota">Sin mesa: ${faltan.join(', ')}.</p>`;
+  h += `<button class="bloque-btn lleno" data-pz="guardar">Guardar el plano</button>
+    <button class="bloque-btn" data-pz="vaciar">Vaciar todas las mesas</button>
+    <button class="bloque-btn" data-pz="cancelar">Cancelar</button>
+    <p class="nota" style="margin-top:10px">Si cambias a alguien de sitio, vuelve aquí: vacía su mesa antigua y toca la nueva.</p>`;
+  return h;
+}
+function accionPlano(a, b){
+  const p = planoB, N = store.cfg.alumnos[planoG] || 25;
+  if(a==='filas' || a==='cols'){
+    p[a] = Math.max(1, Math.min(10, p[a] + Number(b.dataset.d)));
+    for(const k of Object.keys(p.sitios)){ const [f,c] = k.split('-').map(Number); if(f>p.filas || c>p.cols) delete p.sitios[k]; }
+  }
+  else if(a==='mesa'){
+    const k = b.dataset.k;
+    if(p.sitios[k]) delete p.sitios[k];
+    else{ const u = new Set(Object.values(p.sitios)); let sig = 1; while(u.has(sig)) sig++; if(sig > N){ toast('Ya están todos colocados'); return; } p.sitios[k] = sig; }
+  }
+  else if(a==='vaciar'){ if(!confirm('¿Vaciar todas las mesas?')) return; p.sitios = {}; }
+  else if(a==='cancelar'){ planoB = null; vista = 'grupos'; pintar(); return; }
+  else if(a==='guardar'){
+    store.cfg.planos = store.cfg.planos || {}; store.cfg.planos[planoG] = p; guardarCfg();
+    planoB = null; vista = 'grupos'; toast('Plano guardado'); pintar(); window.scrollTo(0,0); return;
+  }
+  const y = window.scrollY; pintar(); window.scrollTo(0,y);
 }
 
 function vFechas(){
@@ -1192,10 +1261,18 @@ function pintarHoja(){
           h += `<div class="deber"><div class="deber-cab"><div><p>${esc(s.deberes)}</p><span class="de">Puestos el ${corta(s.fecha)}</span></div>
             <button class="tog" data-h="rev" data-id="${id}" aria-pressed="${!!r}">${r?'Revisados':'Revisar hoy'}</button></div>`;
           if(r){
-            const N = store.cfg.alumnos[b.grupo]||25;
-            h += `<div class="lista" role="group" aria-label="Números de lista que no los traen">`;
-            for(let i=1;i<=N;i++) h += `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`;
-            h += `</div><div class="lista-nota">Toca los números de quien <b>no</b> los trae. ${r.no.length? 'No los traen: '+r.no.join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
+            const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
+            if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
+            if(modo==='plano'){
+              h += rejillaPlano(P, (k,n)=> n ? `<button class="mesa llena" data-h="no" data-id="${id}" data-i="${n}" aria-pressed="${r.no.includes(n)}" aria-label="Número ${n}">${n}</button>` : `<button class="mesa" disabled></button>`);
+              const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i)) sin.push(i);
+              if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>`<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`).join('')}</div>`;
+            }else{
+              h += `<div class="lista" role="group" aria-label="Números de lista que no los traen">`;
+              for(let i=1;i<=N;i++) h += `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`;
+              h += `</div>`;
+            }
+            h += `<div class="lista-nota">Toca ${modo==='plano'?'la mesa':'el número'} de quien <b>no</b> los trae. ${r.no.length? 'No los traen: '+r.no.join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
           }
           h += `</div>`;
         }
@@ -1388,9 +1465,10 @@ Cada sesión indica cuándo se registró y cuántas veces se ha modificado; los 
 /* ═══════════════════════════ EVENTOS ═══════════════════════════ */
 document.getElementById('barra').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
-  vista = b.dataset.v; pintar(); window.scrollTo(0,0);
+  planoB = null; vista = b.dataset.v; pintar(); window.scrollTo(0,0);
 });
 document.getElementById('app').addEventListener('click', async e=>{
+  const pz = e.target.closest('[data-pz]'); if(pz && planoB){ accionPlano(pz.dataset.pz, pz); return; }
   const b = e.target.closest('[data-a]'); if(!b) return;
   const a = b.dataset.a;
   if(a==='prev' || a==='next'){
@@ -1404,6 +1482,7 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
   else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
   else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
+  else if(a==='plano'){ abrirPlano(b.dataset.g); }
   else if(a==='ir-grupo'){ grupoSel = b.dataset.g; vista = 'grupos'; pintar(); window.scrollTo(0,0); }
   else if(a==='pi'){
     const g = b.dataset.g, id = b.dataset.i, H = store.prog[g] = store.prog[g] || {};
@@ -1540,6 +1619,7 @@ document.getElementById('hoja').addEventListener('click', e=>{
     const i = borrador.revisiones.findIndex(r=>r.de===id);
     if(i>=0) borrador.revisiones.splice(i,1); else borrador.revisiones.push({de:id, no:[]});
   }
+  else if(h==='modo'){ store.cfg.revModo = store.cfg.revModo || {}; store.cfg.revModo[borrador.grupo] = b.dataset.v; guardarCfg(); }
   else if(h==='no'){
     const r = borrador.revisiones.find(x=>x.de===b.dataset.id); const n = Number(b.dataset.i);
     if(r){ r.no = r.no.includes(n) ? r.no.filter(x=>x!==n) : [...r.no, n].sort((x,y)=>x-y); }
