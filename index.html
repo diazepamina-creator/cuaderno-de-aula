@@ -359,7 +359,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.4.2';
+const VERSION_APP = '1.4.3';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -853,10 +853,17 @@ function vGrupos(){
     for(const [id,s] of pendDeb) h += `<li><button data-a="ir" data-id="${id}"><div class="f">Puestos el ${corta(s.fecha)}</div><div class="d">${esc(s.deberes)}</div></button></li>`;
     h += `</ul>`;
   }
-  { const P = planoDe(g), N = store.cfg.alumnos[g]||25;
+  { const P = planoLleno(g), N = store.cfg.alumnos[g]||25, AU = aulasDe(g);
     h += `<h3>Plano del aula</h3>${P ? `<p class="leyenda">${Object.keys(P.sitios).length} de ${N} en su mesa. En «Deberes para revisar» se toca la mesa de quien no los trae.</p>`
       : `<p class="leyenda">Coloca los números de lista en sus mesas y, al revisar deberes, toca la mesa en vez de buscar el número. Solo se guardan números.</p>`}
-      <button class="chip" data-a="plano" data-g="${g}">${P?'Cambiar el plano':'Hacer el plano'}</button>`; }
+      <div class="chips"><button class="chip" data-a="plano" data-g="${g}">${P?'Cambiar el plano':'Hacer el plano'}</button>
+      ${P?`<button class="chip" data-a="imprimir-plano" data-g="${g}">Imprimir para poner los nombres</button>`:''}</div>`;
+    if(P && AU.length > 1){
+      h += `<p class="leyenda" style="margin-top:8px">Este grupo cambia de aula (${AU.map(esc).join(', ')}). Si alguna tiene otra disposición de mesas, hazle su propio plano:</p><div class="chips">`;
+      AU.forEach(a=>{ const pa = planoLleno(clavePlano(g, a));
+        h += `<button class="chip" data-a="plano" data-g="${g}" data-aula="${esc(a)}">${esc(a)}${pa?' · propio':''}</button>${pa?`<button class="chip" data-a="imprimir-plano" data-g="${g}" data-aula="${esc(a)}">Imprimir ${esc(a)}</button>`:''}`; });
+      h += `</div>`;
+    } }
   h += `<h3>Historial</h3>`;
   if(!ses.length) h += `<div class="vacio">Todavía no hay sesiones de este grupo.<br>Se registran desde <b>Día</b>.</div>`;
   else{
@@ -967,9 +974,15 @@ function vSemana(){
 /* ── PLANO DEL AULA ── Para revisar deberes sin saberse aún los nombres: se
    toca la mesa de quien no los trae y la app apunta su número de lista. El
    plano solo guarda números por mesa (nada de nombres) y va en la copia. */
-const planoDe = g => { const p = (store.cfg.planos||{})[g]; return p && Object.keys(p.sitios||{}).length ? p : null; };
-let planoB = null, planoG = null;
-function abrirPlano(g){ planoG = g; planoB = clon((store.cfg.planos||{})[g] || {filas:5, cols:6, sitios:{}}); vista = 'plano'; pintar(); window.scrollTo(0,0); }
+// Un plano por grupo (clave «1A») y, si un aula es distinta, otro para esa aula («1A@A104»).
+const clavePlano = (g, aula) => aula ? `${g}@${aula}` : g;
+const planoLleno = k => { const p = (store.cfg.planos||{})[k]; return p && Object.keys(p.sitios||{}).length ? p : null; };
+const planoDe = (g, aula) => (aula && planoLleno(clavePlano(g, aula))) || planoLleno(g);
+const aulasDe = g => [...new Set(Object.values(HORARIO).flatMap(d=>Object.values(d)).filter(x=>x.g===g && x.aula).map(x=>x.aula))].sort();
+let planoB = null, planoG = null, planoA = '';
+function abrirPlano(g, aula){ planoG = g; planoA = aula || '';
+  planoB = clon((store.cfg.planos||{})[clavePlano(g, planoA)] || (planoA && planoLleno(g) ? {...planoLleno(g)} : null) || {filas:5, cols:6, sitios:{}});
+  vista = 'plano'; pintar(); window.scrollTo(0,0); }
 function rejillaPlano(p, celda){
   let h = `<div class="pizarra">pizarra</div><div class="plano" style="grid-template-columns:repeat(${p.cols},1fr)">`;
   for(let f=1; f<=p.filas; f++) for(let c=1; c<=p.cols; c++) h += celda(`${f}-${c}`, p.sitios[`${f}-${c}`]);
@@ -980,7 +993,8 @@ function vPlanoEd(){
   let sig = 1; while(usados.has(sig) && sig <= N) sig++;
   const faltan = []; for(let i=1;i<=N;i++) if(!usados.has(i)) faltan.push(i);
   let h = `<h1 class="titulo">Plano del aula</h1>
-    <p><span class="grupo" style="--gc:${gc(planoG)}">${GRUPOS[planoG].nombre}</span></p>
+    <p><span class="grupo" style="--gc:${gc(planoG)}">${GRUPOS[planoG].nombre}</span> · ${planoA ? 'aula '+esc(planoA) : 'todas las aulas'}</p>
+    ${planoA ? `<p class="nota">Este plano solo se usa en el aula ${esc(planoA)}; en las demás, el general. Empieza como copia del general.</p>` : ''}
     <p class="nota">Con el plano de clase delante, toca la mesa del <b>1</b>, luego la del <b>2</b>, y así. Si te equivocas, toca esa mesa otra vez y se vacía: el número vuelve a ser el siguiente.</p>
     <div class="plano-ctl"><span>Filas</span><button class="btn-r" data-pz="filas" data-d="-1">−</button><b>${p.filas}</b><button class="btn-r" data-pz="filas" data-d="1">+</button>
       <span>Columnas</span><button class="btn-r" data-pz="cols" data-d="-1">−</button><b>${p.cols}</b><button class="btn-r" data-pz="cols" data-d="1">+</button></div>
@@ -989,9 +1003,36 @@ function vPlanoEd(){
   if(faltan.length && faltan.length < N) h += `<p class="nota">Sin mesa: ${faltan.join(', ')}.</p>`;
   h += `<button class="bloque-btn lleno" data-pz="guardar">Guardar el plano</button>
     <button class="bloque-btn" data-pz="vaciar">Vaciar todas las mesas</button>
+    ${planoA && (store.cfg.planos||{})[clavePlano(planoG, planoA)] ? '<button class="bloque-btn" data-pz="borrar">Borrar este plano (usar el general)</button>' : ''}
     <button class="bloque-btn" data-pz="cancelar">Cancelar</button>
     <p class="nota" style="margin-top:10px">Si cambias a alguien de sitio, vuelve aquí: vacía su mesa antigua y toca la nueva.</p>`;
   return h;
+}
+function hojaPlano(g, aula){
+  const P = aula ? planoLleno(clavePlano(g, aula)) : planoLleno(g); if(!P) return '';
+  let filas = '';
+  for(let f=1; f<=P.filas; f++){
+    filas += '<tr>';
+    for(let c=1; c<=P.cols; c++){ const n = P.sitios[`${f}-${c}`];
+      filas += n ? `<td class="m"><b>${n}</b><span></span></td>` : '<td class="v"></td>'; }
+    filas += '</tr>';
+  }
+  const N = store.cfg.alumnos[g]||25, en = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!en.has(i)) sin.push(i);
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Plano · ${esc(GRUPOS[g].nombre)}</title><style>
+  @page{size:A4 landscape;margin:12mm} body{font-family:system-ui,sans-serif;color:#222;margin:0}
+  h1{font-size:18pt;margin:0 0 1mm} .meta{font-size:9pt;color:#555;margin:0 0 4mm}
+  .piz{text-align:center;font-size:9pt;letter-spacing:3px;text-transform:uppercase;border-bottom:3px solid #222;margin:0 30% 4mm;padding-bottom:1mm}
+  table{width:100%;border-collapse:separate;border-spacing:3mm;table-layout:fixed}
+  td{height:20mm;vertical-align:top;border-radius:2mm} td.m{border:1.2px solid #333;padding:1.5mm 2mm;position:relative}
+  td.m b{font-size:13pt} td.m span{position:absolute;left:2mm;right:2mm;bottom:3mm;border-bottom:1px solid #999}
+  td.v{border:1px dashed #ccc} .pie{font-size:8.5pt;color:#555;margin-top:2mm}
+  </style></head><body>
+  <h1>Plano del aula · ${esc(GRUPOS[g].nombre)}${aula?' · aula '+esc(aula):''}</h1>
+  <p class="meta">${[store.cfg.docente, store.cfg.centro, store.cfg.curso].filter(Boolean).map(esc).join(' · ')} · ${larga(hoyK())}</p>
+  <div class="piz">pizarra</div><table>${filas}</table>
+  ${sin.length?`<p class="pie">Sin mesa: ${sin.join(', ')}.</p>`:''}
+  <p class="pie">Escribe el nombre a mano en cada mesa. Documento del profesor: no se entrega, no se publica y no se sube a Aules.</p>
+  <script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`;
 }
 function accionPlano(a, b){
   const p = planoB, N = store.cfg.alumnos[planoG] || 25;
@@ -1005,9 +1046,11 @@ function accionPlano(a, b){
     else{ const u = new Set(Object.values(p.sitios)); let sig = 1; while(u.has(sig)) sig++; if(sig > N){ toast('Ya están todos colocados'); return; } p.sitios[k] = sig; }
   }
   else if(a==='vaciar'){ if(!confirm('¿Vaciar todas las mesas?')) return; p.sitios = {}; }
+  else if(a==='borrar'){ if(!confirm(`¿Borrar el plano del aula ${planoA}? Se usará el general.`)) return;
+    delete store.cfg.planos[clavePlano(planoG, planoA)]; guardarCfg(); planoB = null; vista = 'grupos'; pintar(); return; }
   else if(a==='cancelar'){ planoB = null; vista = 'grupos'; pintar(); return; }
   else if(a==='guardar'){
-    store.cfg.planos = store.cfg.planos || {}; store.cfg.planos[planoG] = p; guardarCfg();
+    store.cfg.planos = store.cfg.planos || {}; store.cfg.planos[clavePlano(planoG, planoA)] = p; guardarCfg();
     planoB = null; vista = 'grupos'; toast('Plano guardado'); pintar(); window.scrollTo(0,0); return;
   }
   const y = window.scrollY; pintar(); window.scrollTo(0,y);
@@ -1261,7 +1304,7 @@ function pintarHoja(){
           h += `<div class="deber"><div class="deber-cab"><div><p>${esc(s.deberes)}</p><span class="de">Puestos el ${corta(s.fecha)}</span></div>
             <button class="tog" data-h="rev" data-id="${id}" aria-pressed="${!!r}">${r?'Revisados':'Revisar hoy'}</button></div>`;
           if(r){
-            const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
+            const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo, b.aula), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
             if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
             if(modo==='plano'){
               h += rejillaPlano(P, (k,n)=> n ? `<button class="mesa llena" data-h="no" data-id="${id}" data-i="${n}" aria-pressed="${r.no.includes(n)}" aria-label="Número ${n}">${n}</button>` : `<button class="mesa" disabled></button>`);
@@ -1482,7 +1525,9 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
   else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
   else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
-  else if(a==='plano'){ abrirPlano(b.dataset.g); }
+  else if(a==='plano'){ abrirPlano(b.dataset.g, b.dataset.aula); }
+  else if(a==='imprimir-plano'){ const g = b.dataset.g, au = b.dataset.aula||'';
+    await descargar(`plano_${GRUPOS[g].nombre.replace(/[^\wÀ-ÿ]+/g,'-')}${au?'_'+au:''}.html`, hojaPlano(g, au), 'text/html'); }
   else if(a==='ir-grupo'){ grupoSel = b.dataset.g; vista = 'grupos'; pintar(); window.scrollTo(0,0); }
   else if(a==='pi'){
     const g = b.dataset.g, id = b.dataset.i, H = store.prog[g] = store.prog[g] || {};
