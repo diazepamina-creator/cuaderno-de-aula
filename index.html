@@ -283,6 +283,18 @@ h3{font-size:17px;margin:18px 0 8px}
 /* exportar y ajustes */
 .panel{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:14px;margin-bottom:14px}
 .panel p{margin:0 0 10px}
+/* desplegables de Ajustes y de Grupos: cerrados por defecto, con un resumen a la derecha (como «Pasadas» en Fechas) */
+details.aj{padding:0}
+details.aj>summary,details.pleg>summary{list-style:none;display:flex;align-items:baseline;gap:10px;cursor:pointer}
+details.aj>summary{padding:14px}
+details.aj>summary::-webkit-details-marker,details.pleg>summary::-webkit-details-marker{display:none}
+details.aj>summary>b,details.pleg>summary>b{flex:1 1 auto;min-width:0}
+details.aj>summary .res,details.pleg>summary .res{flex:0 0 auto;font-weight:400;font-size:13px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48%}
+details.aj>summary::after,details.pleg>summary::after{content:'▾';color:var(--gris);font-weight:400}
+details.aj[open]>summary::after,details.pleg[open]>summary::after{content:'▴'}
+details.aj>.aj-c{padding:0 14px 14px}
+details.pleg{margin-top:18px;border-top:1px solid var(--linea);padding-top:8px}
+details.pleg>summary{font-size:17px;padding:4px 0}
 .fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .checks{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 .checks label{display:flex;align-items:center;gap:6px;border:1.5px solid var(--linea);border-radius:18px;padding:6px 12px}
@@ -353,7 +365,6 @@ let NOMBRES = null, NOMBRES_DE = '', tOculto = 0;
    y siguen valiendo igual. Los ausentes no cuentan en el porcentaje de entrega. */
 const EST = {no:'✗ No los trae', medias:'½ A medias', falta:'Falta'};
 const DEF_MEDIAS = 'Empezados, pero falta al menos un ejercicio.';
-const L = (r,k) => r[k] || (r[k] = []);
 const estadoDe = (r,n) => (r.no||[]).includes(n) ? 'no' : (r.medias||[]).includes(n) ? 'medias' : (r.falta||[]).includes(n) ? 'falta' : 'si';
 function ponEstado(r, n, st){
   const prev = estadoDe(r, n);
@@ -470,7 +481,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.7.0';
+const VERSION_APP = '1.8.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -832,6 +843,48 @@ function toast(t){
   const el = $('#toast'); el.textContent = t; el.classList.add('si');
   clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('si'), 1800);
 }
+/* Desplegables: Ajustes entero y las secciones de consulta de Grupos (marcadas con data-plegar).
+   Se cierran por defecto y recuerdan lo abierto mientras la app está abierta (al guardar o
+   añadir algo se repinta y no se cierra el que estabas usando). */
+const abiertos = new Set();
+function resumenAj(t){
+  const c = store.cfg, D = ['','lunes','martes','miércoles','jueves','viernes'];
+  switch(t){
+    case 'Mi horario': return typeof hayHorario==='function' && hayHorario() ? Object.keys(GRUPOS).length+' grupos' : 'sin configurar';
+    case 'Docente y centro': return [c.docente, c.centro].filter(Boolean).join(' · ') || 'sin rellenar';
+    case 'Aviso de copia de seguridad': return `${D[c.copia.dia]||''} ${c.copia.hora}`;
+    case 'Programación de aula': return store.programa ? '✓ cargada' : 'sin cargar';
+    case 'Unidades y situaciones de aprendizaje': return Object.values(c.unidades||{}).reduce((a,L)=>a+(L||[]).length,0)+' unidades';
+    case 'Alumnos por grupo': return Object.keys(GRUPOS).map(k=>c.alumnos[k]||25).reduce((a,b)=>a+b,0)+' en total';
+    case 'Deberes «a medias»': return c.criterioMedias || DEF_MEDIAS;
+    case 'Días no lectivos': return c.nolectivos.length+' días';
+    case 'Dibujos del bosque': return c.deco===false ? 'sin dibujos' : (c.anim===false ? 'sin animación' : 'con animación');
+    case 'En el móvil': return instalada() ? 'instalada' : 'sin instalar';
+    case 'Protección de datos': return NOMBRES ? 'nombres cargados' : 'solo números';
+  }
+  return '';
+}
+function plegar(root){
+  if(vista==='ajustes') root.querySelectorAll(':scope > .panel').forEach(p=>{
+    const b = p.querySelector(':scope > p:first-child > b'), tit = b ? b.textContent : 'Docente y centro';
+    const d = document.createElement('details'); d.className = 'panel aj'; d.dataset.k = 'aj:'+tit; d.open = abiertos.has(d.dataset.k);
+    const s = document.createElement('summary'); s.innerHTML = `<b>${esc(tit)}</b><span class="res">${esc(resumenAj(tit))}</span>`;
+    if(b){ const p0 = b.parentNode; b.remove(); const br = p0.querySelector(':scope > br'); if(br) br.remove(); if(!p0.textContent.trim()) p0.remove(); }
+    const c = document.createElement('div'); c.className = 'aj-c'; while(p.firstChild) c.append(p.firstChild);
+    d.append(s, c); p.replaceWith(d);
+  });
+  root.querySelectorAll('h3[data-plegar]').forEach(h=>{
+    const d = document.createElement('details'); d.className = 'pleg'; d.dataset.k = 'g:'+h.dataset.plegar; d.open = abiertos.has(d.dataset.k);
+    const s = document.createElement('summary'); s.innerHTML = `<b>${h.innerHTML}</b><span class="res">${esc(h.dataset.res||'')}</span>`;
+    const c = document.createElement('div'); let n = h.nextSibling;
+    while(n && !(n.nodeType===1 && (n.tagName==='H3' || n.classList.contains('pie-bosque')))){ const x = n.nextSibling; c.append(n); n = x; }
+    d.append(s, c); h.replaceWith(d);
+  });
+}
+document.getElementById('app').addEventListener('toggle', e=>{
+  const d = e.target; if(!d.dataset || !d.dataset.k) return;
+  if(d.open) abiertos.add(d.dataset.k); else abiertos.delete(d.dataset.k);
+}, true);
 function pintar(){
   document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===vista?'page':'false'));
   const app = $('#app');
@@ -841,6 +894,7 @@ function pintar(){
   else if(vista==='exportar') app.innerHTML = vExportar();
   else if(vista==='plano' && planoB) app.innerHTML = vPlanoEd();
   else app.innerHTML = vAjustes();
+  plegar(app);
   pintarSync();
 }
 
@@ -965,21 +1019,20 @@ function vGrupos(){
     h += `</ul>`;
   }
   { const d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
-    h += `<h3>Deberes por alumno</h3>
+    h += `<h3 data-plegar="deb" data-res="${D.nRev} ${D.nRev===1?'revisión':'revisiones'}">Deberes por alumno</h3>
       <div class="fila2"><input type="date" id="pa-desde" value="${d}" aria-label="Desde"><input type="date" id="pa-hasta" value="${hs}" aria-label="Hasta"></div>`;
     if(!D.nRev) h += `<p class="leyenda">No hay revisiones de deberes en estas fechas.</p>`;
     else{
-      h += `<details${NOMBRES&&NOMBRES[g]?' open':''}><summary>${D.nRev} ${D.nRev===1?'revisión':'revisiones'} · ver la tabla</summary>
-        <table class="porAl"><thead><tr><th>Nº</th><th>${NOMBRES&&NOMBRES[g]?'Nombre':''}</th><th>✓</th><th>½</th><th>✗</th><th>Falta</th><th>% ✓</th></tr></thead><tbody>`;
+      h += `<table class="porAl"><thead><tr><th>Nº</th><th>${NOMBRES&&NOMBRES[g]?'Nombre':''}</th><th>✓</th><th>½</th><th>✗</th><th>Falta</th><th>% ✓</th></tr></thead><tbody>`;
       for(let i=1;i<=D.N;i++){ const a = D.A[i], pres = a.si + a.medias + a.no;
         h += `<tr><td>${i}</td><td>${esc(nomCorto(nomDe(g,i)))}</td><td>${a.si}</td><td>${a.medias}</td><td>${a.no}</td><td>${a.falta}</td><td>${pres?Math.round(100*a.si/pres):'—'}</td></tr>`; }
-      h += `</tbody></table></details>
+      h += `</tbody></table>
         <p class="leyenda">% ✓ = completos sobre las revisiones en las que estaba. El CSV va solo con números, para pegarlo junto a tu listado de notas.</p>
         <div class="chips"><button class="chip" data-a="csv-deberes" data-g="${g}">Descargar CSV (por número)</button></div>`;
     }
   }
   { const P = planoLleno(g), N = store.cfg.alumnos[g]||25, AU = aulasDe(g);
-    h += `<h3>Plano del aula</h3>${P ? `<p class="leyenda">${Object.keys(P.sitios).length} de ${N} en su mesa. En «Deberes para revisar» se toca la mesa de quien no los trae.</p>`
+    h += `<h3 data-plegar="plano" data-res="${P?'hecho':'sin hacer'}">Plano del aula</h3>${P ? `<p class="leyenda">${Object.keys(P.sitios).length} de ${N} en su mesa. En «Deberes para revisar» se toca la mesa de quien no los trae.</p>`
       : `<p class="leyenda">Coloca los números de lista en sus mesas y, al revisar deberes, toca la mesa en vez de buscar el número. Solo se guardan números.</p>`}
       <div class="chips"><button class="chip" data-a="plano" data-g="${g}">${P?'Cambiar el plano':'Hacer el plano'}</button>
       ${P?`<button class="chip" data-a="imprimir-plano" data-g="${g}">Imprimir para poner los nombres</button>`:''}</div>`;
@@ -989,7 +1042,7 @@ function vGrupos(){
         h += `<button class="chip" data-a="plano" data-g="${g}" data-aula="${esc(a)}">${esc(a)}${pa?' · propio':''}</button>${pa?`<button class="chip" data-a="imprimir-plano" data-g="${g}" data-aula="${esc(a)}">Imprimir ${esc(a)}</button>`:''}`; });
       h += `</div>`;
     } }
-  h += `<h3>Historial</h3>`;
+  h += `<h3 data-plegar="hist" data-res="${ses.length} ${ses.length===1?'sesión':'sesiones'}">Historial</h3>`;
   if(!ses.length) h += `<div class="vacio">Todavía no hay sesiones de este grupo.<br>Se registran desde <b>Día</b>.</div>`;
   else{
     h += `<ul class="hist">`;
