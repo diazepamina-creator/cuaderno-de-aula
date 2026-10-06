@@ -211,6 +211,19 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .plano .mesa small{display:block;font-size:10px;font-weight:400;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
 .plano.connom .mesa{height:48px}
 .nombres{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--gris);margin-top:8px}
+.revl{margin-top:10px;border:1px solid var(--linea);border-radius:10px;background:var(--papel)}
+.revl>summary{list-style:none;cursor:pointer;padding:10px 12px;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.revl>summary::-webkit-details-marker{display:none}
+.revl>summary::after{content:'▾';color:var(--gris)} .revl[open]>summary::after{content:'▴'}
+.revl .cuenta b{font-variant-numeric:tabular-nums}
+.revl .filas{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 10px;padding:0 8px 8px}
+.revl .fila{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;height:40px;padding:0 10px;border:1.5px solid var(--linea);border-radius:8px;background:var(--hoja);text-align:left;font-size:15px}
+.revl .fila .n{min-width:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.revl .fila .nom{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.revl .fila .est{font-size:13px;white-space:nowrap;padding:3px 9px;border-radius:12px;border:1px solid var(--linea);color:var(--grafito)}
+.revl .fila[aria-pressed="true"]{border-color:var(--rojo)}
+.revl .fila[aria-pressed="true"] .est{background:var(--rojo);border-color:var(--rojo);color:#fff;font-weight:700}
+.revl .filtro{display:flex;gap:6px;padding:0 8px 8px}
 .lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
 /* plano del aula */
 .pizarra{text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gris);border-bottom:3px solid var(--grafito);margin:10px 18% 8px;padding-bottom:2px}
@@ -320,6 +333,8 @@ const GRUPOS = {
    ni al borrador, ni a las copias de seguridad, ni a los informes. Se olvida al cerrar la app, con
    «Olvidar» o tras 20 minutos en segundo plano. El registro sigue guardando solo números. */
 let NOMBRES = null, NOMBRES_DE = '', tOculto = 0;
+// estado de pantalla de la lista de deberes (no se guarda): plegadas, filtro y revisiones quitadas por error
+const revPlegadas = new Set(), revFiltro = {}, revQuitadas = {};
 const normG = s => String(s||'').toUpperCase().replace(/ESO|[º°ª.\s-]/g,'');
 function grupoDeTexto(s){
   const n = normG(s); if(!n) return null;
@@ -405,7 +420,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.5.1';
+const VERSION_APP = '1.6.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -1362,14 +1377,20 @@ function pintarHoja(){
               const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i)) sin.push(i);
               if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>`<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`).join('')}</div>`;
             }else{
-              const cn = NOMBRES && NOMBRES[b.grupo];
-              h += `<div class="lista${cn?' connom':''}" role="group" aria-label="Números de lista que no los traen">`;
-              for(let i=1;i<=N;i++) h += cn
-                ? `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}" title="${esc(nomDe(b.grupo,i))}"><b>${i}</b><span>${esc(nomCorto(nomDe(b.grupo,i)))||'—'}</span></button>`
-                : `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`;
-              h += `</div>`;
+              // Lista desplegable: una fila por alumno con su estado escrito. Se guarda solo r.no (como siempre).
+              const no = new Set(r.no), traen = N - r.no.length, fil = revFiltro[id] || 'todos';
+              h += `<details class="revl" data-revl="${id}" ${revPlegadas.has(id)?'':'open'}>
+                <summary><span class="cuenta"><b>${traen}</b> los traen · <b style="color:var(--rojo)">${r.no.length}</b> no · de ${N}</span></summary>
+                <div class="filtro seg">${[['todos','Todos'],['si','Los traen'],['no','No']].map(([k,v])=>`<button data-h="rfil" data-id="${id}" data-v="${k}" aria-pressed="${fil===k}">${v}</button>`).join('')}</div>
+                <div class="filas" role="group" aria-label="Entrega de deberes por número de lista">`;
+              for(let i=1;i<=N;i++){
+                const m = no.has(i); if((fil==='si' && m) || (fil==='no' && !m)) continue;
+                const nom = nomDe(b.grupo,i);
+                h += `<button class="fila" data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${m}" title="${esc(nom)}"><span class="n">${i}</span><span class="nom">${nom?esc(nomCorto(nom)):''}</span><span class="est">${m?'✗ No los trae':'✓ Los trae'}</span></button>`;
+              }
+              h += `</div></details>`;
             }
-            h += `<div class="lista-nota">Toca ${modo==='plano'?'la mesa':'el número'} de quien <b>no</b> los trae. ${r.no.length? 'No los traen: '+r.no.map(n=>nomDe(b.grupo,n)?`${n} (${esc(nomCorto(nomDe(b.grupo,n)))})`:n).join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
+            h += `<div class="lista-nota">Toca ${modo==='plano'?'la mesa':'la fila'} de quien <b>no</b> los trae; otro toque lo deshace. ${r.no.length? 'No los traen: '+r.no.map(n=>nomDe(b.grupo,n)?`${n} (${esc(nomCorto(nomDe(b.grupo,n)))})`:n).join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
             h += NOMBRES
               ? `<div class="nombres">Nombres de «${esc(NOMBRES_DE)}», solo mientras la app está abierta.${NOMBRES[b.grupo]?'':' No hay ninguno de este grupo.'} <button class="chip" data-h="olvidar">Olvidar nombres</button></div>`
               : `<div class="nombres"><button class="chip" data-h="nombres">Ver nombres</button> abre tu listado (CSV) del OneDrive de la GVA. No se guarda.</div>`;
@@ -1643,6 +1664,10 @@ document.getElementById('archivo-prog').addEventListener('change', e=>{
   const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
   r.onload = ()=>{ e.target.value = ''; cargarProgramacion(r.result); }; r.readAsText(f);
 });
+document.getElementById('hoja').addEventListener('toggle', e=>{
+  const d = e.target; if(!d.matches || !d.matches('details[data-revl]')) return;
+  if(d.open) revPlegadas.delete(d.dataset.revl); else revPlegadas.add(d.dataset.revl);
+}, true);
 // ── NOMBRES: se leen y se quedan en memoria (ver NOMBRES arriba) ──
 // Excel en español guarda el CSV en Windows-1252 salvo que se elija «CSV UTF-8»: se prueban los dos.
 document.getElementById('archivo-nombres').addEventListener('change', e=>{
@@ -1741,8 +1766,10 @@ document.getElementById('hoja').addEventListener('click', e=>{
   else if(h==='rev'){
     const id = b.dataset.id; borrador.revisiones = borrador.revisiones||[];
     const i = borrador.revisiones.findIndex(r=>r.de===id);
-    if(i>=0) borrador.revisiones.splice(i,1); else borrador.revisiones.push({de:id, no:[]});
+    if(i>=0){ const r = borrador.revisiones.splice(i,1)[0]; if(r.no.length){ revQuitadas[id] = r.no; toast(`Revisión quitada. Si ha sido sin querer, toca «Revisar hoy» y vuelven las ${r.no.length} marcas`); } }
+    else{ borrador.revisiones.push({de:id, no: revQuitadas[id] || []}); delete revQuitadas[id]; }
   }
+  else if(h==='rfil'){ revFiltro[b.dataset.id] = b.dataset.v; }
   else if(h==='modo'){ store.cfg.revModo = store.cfg.revModo || {}; store.cfg.revModo[borrador.grupo] = b.dataset.v; guardarCfg(); }
   else if(h==='no'){
     const r = borrador.revisiones.find(x=>x.de===b.dataset.id); const n = Number(b.dataset.i);
