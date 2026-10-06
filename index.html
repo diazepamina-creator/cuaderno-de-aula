@@ -204,6 +204,13 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin-top:10px}
 .lista button{height:42px;border:1.5px solid var(--linea);background:var(--hoja);border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px}
 .lista button[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff;font-weight:700}
+.lista.connom{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.lista.connom button{display:flex;align-items:center;gap:8px;padding:0 10px;text-align:left;font-size:14px}
+.lista.connom button b{min-width:22px;font-size:16px}
+.lista.connom button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plano .mesa small{display:block;font-size:10px;font-weight:400;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.plano.connom .mesa{height:48px}
+.nombres{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--gris);margin-top:8px}
 .lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
 /* plano del aula */
 .pizarra{text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gris);border-bottom:3px solid var(--grafito);margin:10px 18% 8px;padding-bottom:2px}
@@ -285,6 +292,7 @@ h3{font-size:17px;margin:18px 0 8px}
      app en segundo plano y, al volver, la vista se repinta; si el selector estuviera
      dentro, se sustituiría y el archivo elegido se perdería. -->
 <input type="file" id="archivo-copia" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
+<input type="file" id="archivo-nombres" accept=".csv,.txt,text/csv,text/plain" class="sr" tabindex="-1" aria-hidden="true">
 <input type="file" id="archivo-prog" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
 
 <script>
@@ -306,6 +314,44 @@ const GRUPOS = {
   '2B':{nombre:'2.º ESO B', nivel:2},
   'R4':{nombre:'Refuerzo 4.º ESO', nivel:4},
 };
+/* ── NOMBRES (solo en memoria) ──
+   El listado nombre ↔ número vive en el OneDrive de la GVA, no aquí. Se abre con el selector de
+   archivos, se lee y se queda en esta variable mientras la app está abierta: no va a localStorage,
+   ni al borrador, ni a las copias de seguridad, ni a los informes. Se olvida al cerrar la app, con
+   «Olvidar» o tras 20 minutos en segundo plano. El registro sigue guardando solo números. */
+let NOMBRES = null, NOMBRES_DE = '', tOculto = 0;
+const normG = s => String(s||'').toUpperCase().replace(/ESO|[º°ª.\s-]/g,'');
+function grupoDeTexto(s){
+  const n = normG(s); if(!n) return null;
+  for(const k in GRUPOS){ if(normG(k)===n || normG(GRUPOS[k].nombre)===n) return k; }
+  if(/REF|TALLER|R4/.test(n)) return Object.keys(GRUPOS).find(k=>GRUPOS[k].nivel===4) || null;
+  return null;
+}
+function leerNombres(txt){
+  const lin = String(txt).replace(/^\uFEFF/,'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lin.length) return null;
+  const sep = [';','\t',','].find(c=>lin[0].includes(c)) || ';';
+  const out = {}; let n = 0, malas = 0;
+  for(const l of lin){
+    const c = l.split(sep).map(x=>x.trim().replace(/^"(.*)"$/,'$1').trim());
+    const g = grupoDeTexto(c[0]), num = parseInt(c[1]);
+    const nom = c.slice(2).filter(Boolean).join(', ');
+    if(!g || !(num>0) || !nom){ malas++; continue; }   // cabecera o fila rara
+    (out[g] = out[g] || {})[num] = nom; n++;
+  }
+  return n ? {out, n, malas} : null;
+}
+// «García López, Lucía» o «Lucía García López» → «Lucía G.»
+function nomCorto(s){
+  if(!s) return '';
+  let nom, ape;
+  if(s.includes(',')){ const [a, b] = s.split(','); nom = b.trim(); ape = a.trim(); }
+  else{ const w = s.trim().split(/\s+/); nom = w[0]; ape = w.slice(1).join(' '); }
+  const pila = nom.split(/\s+/).slice(0,2).join(' ');
+  return ape ? `${pila} ${ape[0].toUpperCase()}.` : pila;
+}
+const nomDe = (g, n) => NOMBRES && NOMBRES[g] && NOMBRES[g][n] || '';
+function olvidarNombres(aviso){ NOMBRES = null; NOMBRES_DE = ''; if(aviso) toast(aviso); }
 const OTRAS = {G:'Guardia', C:'Complementarias', RM:'Reunión de departamento', AF:'Atención a familias'};
 // HORARIO[día de la semana 1..5][franja] — del horario del centro.
 // pt: sesión con la PT en el aula (POR6 en el horario; solo en 1.º A y 1.º B).
@@ -359,7 +405,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.4.3';
+const VERSION_APP = '1.5.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -983,8 +1029,8 @@ let planoB = null, planoG = null, planoA = '';
 function abrirPlano(g, aula){ planoG = g; planoA = aula || '';
   planoB = clon((store.cfg.planos||{})[clavePlano(g, planoA)] || (planoA && planoLleno(g) ? {...planoLleno(g)} : null) || {filas:5, cols:6, sitios:{}});
   vista = 'plano'; pintar(); window.scrollTo(0,0); }
-function rejillaPlano(p, celda){
-  let h = `<div class="pizarra">pizarra</div><div class="plano" style="grid-template-columns:repeat(${p.cols},1fr)">`;
+function rejillaPlano(p, celda, cls){
+  let h = `<div class="pizarra">pizarra</div><div class="plano${cls?' '+cls:''}" style="grid-template-columns:repeat(${p.cols},1fr)">`;
   for(let f=1; f<=p.filas; f++) for(let c=1; c<=p.cols; c++) h += celda(`${f}-${c}`, p.sitios[`${f}-${c}`]);
   return h + `</div>`;
 }
@@ -1014,7 +1060,7 @@ function hojaPlano(g, aula){
   for(let f=1; f<=P.filas; f++){
     filas += '<tr>';
     for(let c=1; c<=P.cols; c++){ const n = P.sitios[`${f}-${c}`];
-      filas += n ? `<td class="m"><b>${n}</b><span></span></td>` : '<td class="v"></td>'; }
+      filas += n ? `<td class="m"><b>${n}</b><span>${esc(nomDe(g,n))}</span></td>` : '<td class="v"></td>'; }
     filas += '</tr>';
   }
   const N = store.cfg.alumnos[g]||25, en = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!en.has(i)) sin.push(i);
@@ -1024,14 +1070,14 @@ function hojaPlano(g, aula){
   .piz{text-align:center;font-size:9pt;letter-spacing:3px;text-transform:uppercase;border-bottom:3px solid #222;margin:0 30% 4mm;padding-bottom:1mm}
   table{width:100%;border-collapse:separate;border-spacing:3mm;table-layout:fixed}
   td{height:20mm;vertical-align:top;border-radius:2mm} td.m{border:1.2px solid #333;padding:1.5mm 2mm;position:relative}
-  td.m b{font-size:13pt} td.m span{position:absolute;left:2mm;right:2mm;bottom:3mm;border-bottom:1px solid #999}
+  td.m b{font-size:13pt} td.m span{position:absolute;left:2mm;right:2mm;bottom:3mm;border-bottom:1px solid #999;font-size:10pt;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
   td.v{border:1px dashed #ccc} .pie{font-size:8.5pt;color:#555;margin-top:2mm}
   </style></head><body>
   <h1>Plano del aula · ${esc(GRUPOS[g].nombre)}${aula?' · aula '+esc(aula):''}</h1>
   <p class="meta">${[store.cfg.docente, store.cfg.centro, store.cfg.curso].filter(Boolean).map(esc).join(' · ')} · ${larga(hoyK())}</p>
   <div class="piz">pizarra</div><table>${filas}</table>
   ${sin.length?`<p class="pie">Sin mesa: ${sin.join(', ')}.</p>`:''}
-  <p class="pie">Escribe el nombre a mano en cada mesa. Documento del profesor: no se entrega, no se publica y no se sube a Aules.</p>
+  <p class="pie">${NOMBRES&&NOMBRES[g]?'Nombres del listado cargado; corrige a mano lo que haya cambiado.':'Escribe el nombre a mano en cada mesa.'} Documento del profesor: no se entrega, no se publica y no se sube a Aules.</p>
   <script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`;
 }
 function accionPlano(a, b){
@@ -1187,7 +1233,11 @@ function vAjustes(){
   <div class="panel"><p><b>Protección de datos</b></p>
     <p class="nota">Apunta al alumnado solo por número de lista, nunca por nombre. Las notas de sesión son para el
     seguimiento del grupo; los datos personales van en ITACA y Aules. Nada de este cuaderno sale del móvil
-    salvo las copias que tú mandes.</p></div>
+    salvo las copias que tú mandes.</p>
+    <p class="nota"><b>Ver nombres.</b> En «Deberes para revisar» puedes abrir tu listado desde el OneDrive de la GVA:
+    un CSV con tres columnas, <i>grupo; número; nombre</i> (por ejemplo <i>1B; 7; García López, Lucía</i>), todos los
+    grupos en el mismo archivo. La app lo lee y lo olvida al cerrarse o tras 20 minutos fuera: no lo guarda, no va
+    en las copias ni en los informes. ${NOMBRES?`Ahora: cargados de «${esc(NOMBRES_DE)}». <button class="chip" data-a="olvidar">Olvidar</button>`:'Ahora: ninguno cargado.'}</p></div>
   <button class="bloque-btn lleno" data-a="guardar-aj">Guardar ajustes</button>
   <p class="nota" style="text-align:center;margin-top:14px">Cuaderno de aula · versión ${VERSION_APP}</p>`;
   return h;
@@ -1307,15 +1357,21 @@ function pintarHoja(){
             const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo, b.aula), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
             if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
             if(modo==='plano'){
-              h += rejillaPlano(P, (k,n)=> n ? `<button class="mesa llena" data-h="no" data-id="${id}" data-i="${n}" aria-pressed="${r.no.includes(n)}" aria-label="Número ${n}">${n}</button>` : `<button class="mesa" disabled></button>`);
+              h += rejillaPlano(P, (k,n)=> n ? `<button class="mesa llena" data-h="no" data-id="${id}" data-i="${n}" aria-pressed="${r.no.includes(n)}" aria-label="Número ${n}" title="${esc(nomDe(b.grupo,n))}">${n}${nomDe(b.grupo,n)?`<small>${esc(nomCorto(nomDe(b.grupo,n)))}</small>`:''}</button>` : `<button class="mesa" disabled></button>`, NOMBRES && NOMBRES[b.grupo] ? 'connom' : '');
               const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i)) sin.push(i);
               if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>`<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`).join('')}</div>`;
             }else{
-              h += `<div class="lista" role="group" aria-label="Números de lista que no los traen">`;
-              for(let i=1;i<=N;i++) h += `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`;
+              const cn = NOMBRES && NOMBRES[b.grupo];
+              h += `<div class="lista${cn?' connom':''}" role="group" aria-label="Números de lista que no los traen">`;
+              for(let i=1;i<=N;i++) h += cn
+                ? `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}" title="${esc(nomDe(b.grupo,i))}"><b>${i}</b><span>${esc(nomCorto(nomDe(b.grupo,i)))||'—'}</span></button>`
+                : `<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`;
               h += `</div>`;
             }
-            h += `<div class="lista-nota">Toca ${modo==='plano'?'la mesa':'el número'} de quien <b>no</b> los trae. ${r.no.length? 'No los traen: '+r.no.join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
+            h += `<div class="lista-nota">Toca ${modo==='plano'?'la mesa':'el número'} de quien <b>no</b> los trae. ${r.no.length? 'No los traen: '+r.no.map(n=>nomDe(b.grupo,n)?`${n} (${esc(nomCorto(nomDe(b.grupo,n)))})`:n).join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
+            h += NOMBRES
+              ? `<div class="nombres">Nombres de «${esc(NOMBRES_DE)}», solo mientras la app está abierta.${NOMBRES[b.grupo]?'':' No hay ninguno de este grupo.'} <button class="chip" data-h="olvidar">Olvidar nombres</button></div>`
+              : `<div class="nombres"><button class="chip" data-h="nombres">Ver nombres</button> abre tu listado (CSV) del OneDrive de la GVA. No se guarda.</div>`;
           }
           h += `</div>`;
         }
@@ -1544,6 +1600,7 @@ document.getElementById('app').addEventListener('click', async e=>{
     abrirFecha(null, {tipo:'examen', titulo:'Prueba: '+(sa?sa.n:''), notas:'', sa:b.dataset.sa, fechas:{[g]:b.dataset.k}});
   }
   else if(a==='cargar-prog'){ leerUnidades(); ponerUnidadesProg(true); guardarCfg(); toast('Unidades de la programación puestas'); pintar(); }
+  else if(a==='olvidar'){ olvidarNombres('Nombres olvidados'); pintar(); }
   else if(a==='archivo-prog'){ const i = $('#archivo-prog'); i.value=''; i.click(); }
   else if(a==='quitar-prog'){ if(confirm('¿Quitar la programación de este móvil? Lo marcado como hecho se conserva por si la vuelves a cargar.')){ store.programa = null; cachePlan = {}; guardarLocal(); pintar(); } }
   else if(a==='restaurar'){ const i = $('#archivo-copia'); i.value=''; i.click(); }
@@ -1583,6 +1640,24 @@ document.getElementById('archivo-prog').addEventListener('change', e=>{
   const f = e.target.files && e.target.files[0]; if(!f) return;
   const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
   r.onload = ()=>{ e.target.value = ''; cargarProgramacion(r.result); }; r.readAsText(f);
+});
+// ── NOMBRES: se leen y se quedan en memoria (ver NOMBRES arriba) ──
+// Excel en español guarda el CSV en Windows-1252 salvo que se elija «CSV UTF-8»: se prueban los dos.
+document.getElementById('archivo-nombres').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
+  r.onload = ()=>{
+    e.target.value = '';
+    let txt; try{ txt = new TextDecoder('utf-8',{fatal:true}).decode(r.result); }
+    catch(err){ txt = new TextDecoder('windows-1252').decode(r.result); }
+    const L = leerNombres(txt);
+    if(!L){ toast('No he encontrado filas «grupo; número; nombre»'); return; }
+    NOMBRES = L.out; NOMBRES_DE = f.name;
+    const gs = Object.keys(L.out).map(g=>GRUPOS[g].nombre).join(', ');
+    toast(`${L.n} nombres (${gs})${L.malas>1?` · ${L.malas} filas sin leer`:''}`);
+    if($('#hoja').classList.contains('abierta')) pintarHoja(); else pintar();
+  };
+  r.readAsArrayBuffer(f);
 });
 // ── RESTAURAR UNA COPIA ──
 // Se lee el archivo, se enseña qué trae y se pide confirmación dentro de la app
@@ -1653,6 +1728,8 @@ document.getElementById('hoja').addEventListener('click', e=>{
     const v = b.dataset.v; const cur = (borrador.material||'').trim();
     borrador.material = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
   }
+  else if(h==='nombres'){ const i = $('#archivo-nombres'); i.value=''; i.click(); return; }
+  else if(h==='olvidar'){ olvidarNombres('Nombres olvidados'); }
   else if(h==='igual'){
     const o = store.ses[b.dataset.id];
     if(o){ borrador.contenido = o.contenido||''; borrador.material = o.material||''; borrador.deberes = o.deberes||'';
@@ -1735,7 +1812,11 @@ document.getElementById('hoja').addEventListener('click', ev=>{
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
 // al volver a la app (cambio de pestaña o de hora) se repinta: la franja «ahora» se mueve sola
 document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden){ clearTimeout(tBorr); guardarBorrador(); return; }
+  if(document.hidden){ clearTimeout(tBorr); guardarBorrador(); tOculto = Date.now(); return; }
+  if(NOMBRES && tOculto && Date.now() - tOculto > 20*60000){
+    olvidarNombres('Nombres olvidados tras 20 minutos fuera de la app');
+    if($('#hoja').classList.contains('abierta')) pintarHoja();
+  }
   if(!borrador && !copiaPendiente) pintar();
 });
 window.addEventListener('pagehide', ()=>{ clearTimeout(tBorr); guardarBorrador(); });
