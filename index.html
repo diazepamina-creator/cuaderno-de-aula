@@ -234,6 +234,15 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .plano .mesa.st-medias,.sin-mesa button.st-medias{background:#b7791f!important;border-color:#b7791f!important;color:#fff}
 .plano .mesa.st-falta,.sin-mesa button.st-falta{background:var(--gris)!important;border-color:var(--gris)!important;color:#fff;border-style:dashed!important}
 .pincel{margin-top:10px}
+.bil-ic{vertical-align:-3px;margin-left:6px;color:#b7791f;--bil-f:#fff6e3;flex:none}
+.bil-ic.hecho{color:var(--gris);--bil-f:transparent}
+.bil-sem{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
+.bil-sem .g{min-width:96px;font-size:14px}
+.bil-sem .chip[aria-pressed="true"]{background:#b7791f;border-color:#b7791f;color:#fff;font-weight:700}
+.bil-sem .chip[aria-pressed="true"] .bil-ic{color:#fff;--bil-f:transparent}
+.bil-sem .chip .bil-ic{margin:0 4px 0 0}
+.bil{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.bil label{font-size:12px;color:var(--gris);min-width:0}.bil input{width:100%;min-width:0;box-sizing:border-box;text-align:center}
 .plano .mesa.st-baja,.sin-mesa button.st-baja{opacity:.35;text-decoration:line-through}
 .matr li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--linea);font-size:14px}
 .matr{list-style:none;padding:0;margin:6px 0 10px}
@@ -398,6 +407,26 @@ function ponAlumnos(g, n){
 }
 const bajasTxt = (g, f) => Object.entries(matr(g)).filter(([n])=>!activo(g, Number(n), f))
   .map(([n,m])=>`${n} (${m.baja && f>=m.baja ? 'baja desde el '+corta(m.baja) : 'llega el '+corta(m.alta)})`).join(', ');
+/* ── BILLETE DE SALIDA ── una pregunta corta en los últimos minutos; se corrige después y se
+   apunta el recuento (no quién): entregados, bien, a medias, mal y el error que más se repite. */
+const bilN = v => v===''||v===undefined||v===null ? null : Number(v);
+function bilTxt(s){
+  const B = s.billete; if(!B) return '';
+  const n = bilN(B.n), p = [['bien',B.bien],['a medias',B.medias],['mal',B.mal]].filter(([,v])=>bilN(v)!==null).map(([k,v])=>`${v} ${k}`);
+  return `Billete de salida${B.pregunta?` («${B.pregunta}»)`:''}: ${p.length?p.join(' · '):'sin corregir'}${n!==null?` de ${n}`:''}${B.error?`. Error más repetido: ${B.error}`:''}`;
+}
+/* Billete previsto: cfg.billetes = ['2-6', …] (día de la semana-franja, fijo cada semana) y
+   cfg.billeteDia = {'AAAA-MM-DD_n': true|false} para un día suelto (sí aunque no toque, o no aunque toque). */
+const slotDe = (k, n) => `${deClave(k).getDay()}-${n}`;
+function tocaBillete(k, n){
+  const o = (store.cfg.billeteDia||{})[`${k}_${n}`]; if(o!==undefined) return o;
+  return (store.cfg.billetes||[]).includes(slotDe(k, n));
+}
+const icoBillete = (hecho, t) => `<svg class="bil-ic${hecho?' hecho':''}" viewBox="0 0 28 18" width="26" height="17" role="img" aria-label="${t}"><title>${t}</title>
+  <path d="M2 3a1.5 1.5 0 0 1 1.5-1.5h21A1.5 1.5 0 0 1 26 3v3.2a2.8 2.8 0 0 0 0 5.6V15a1.5 1.5 0 0 1-1.5 1.5h-21A1.5 1.5 0 0 1 2 15v-3.2a2.8 2.8 0 0 0 0-5.6z" fill="var(--bil-f)" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M19 3.5v11" stroke="currentColor" stroke-width="1.1" stroke-dasharray="1.6 1.6"/>
+  ${hecho?'<path d="M8 9.3l2.4 2.4L15 6.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+    :'<path d="M7 11.5l3.2-1.2 3.6-4.3c.4-.5 1.2-.6 1.6-.1.4.4.3 1.1-.2 1.5l-4.2 3.6-.9 3.2-1-.4.2-2.4-2.3.3z" fill="currentColor"/>'}</svg>`;
 // diferencias entre el listado cargado y el cuaderno (número de alumnos y bajas marcadas en el CSV)
 let difListado = [];
 function revTxt(r, nom){
@@ -506,7 +535,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.9.1';
+const VERSION_APP = '1.11.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -540,7 +569,7 @@ function guardarLocal(){
 // Cada registro guarda cuándo se creó y un historial de qué campos se
 // cambiaron y cuándo: es lo que pide una auditoría para fiarse de un
 // registro que se puede editar.
-const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','reconstruido','fuente'];
+const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','billete','reconstruido','fuente'];
 function guardarSesion(id, datos){
   const ahora = new Date().toISOString(), prev = store.ses[id];
   const hist = prev ? clon(prev.historial||[]) : [];
@@ -882,6 +911,7 @@ function resumenAj(t){
     case 'Unidades y situaciones de aprendizaje': return Object.values(c.unidades||{}).reduce((a,L)=>a+(L||[]).length,0)+' unidades';
     case 'Alumnos por grupo': return Object.keys(GRUPOS).map(k=>c.alumnos[k]||25).reduce((a,b)=>a+b,0)+' en total';
     case 'Altas y bajas': { const n = Object.values(c.matricula||{}).reduce((a,m)=>a+Object.keys(m).length,0); return (difListado.length?'⚠ revisar listado · ':'') + (n ? n+(n===1?' cambio':' cambios') : 'ninguna'); }
+    case 'Billete de salida': { const n = (c.billetes||[]).length; return n ? n+(n===1?' clase por semana':' clases por semana') : 'ninguna fija'; }
     case 'Deberes «a medias»': return c.criterioMedias || DEF_MEDIAS;
     case 'Días no lectivos': return c.nolectivos.length+' días';
     case 'Dibujos del bosque': return c.deco===false ? 'sin dibujos' : (c.anim===false ? 'sin animación' : 'con animación');
@@ -987,7 +1017,7 @@ function vDia(){
       else if(!s && haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
       h += `<li><button class="fr${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
         <span class="hora"><b>${f.ini}</b>${f.fin}</span>
-        <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span><div class="sub">${sub}</div></span>
+        <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span>${s&&s.billete ? icoBillete(true,'Billete de salida hecho') : tocaBillete(dia,f.n) && !(s&&s.estado==='no') ? icoBillete(false,'Toca billete de salida') : ''}<div class="sub">${sub}</div></span>
         ${marca}</button></li>`;
     }else{
       const marca = borr.ses[id] ? `<span class="marca borr">✎ borrador</span>` : s ? `<span class="marca ok">✓ anotada</span>` : '';
@@ -1073,6 +1103,13 @@ function vGrupos(){
       AU.forEach(a=>{ const pa = planoLleno(clavePlano(g, a));
         h += `<button class="chip" data-a="plano" data-g="${g}" data-aula="${esc(a)}">${esc(a)}${pa?' · propio':''}</button>${pa?`<button class="chip" data-a="imprimir-plano" data-g="${g}" data-aula="${esc(a)}">Imprimir ${esc(a)}</button>`:''}`; });
       h += `</div>`;
+    } }
+  { const bs = ses.filter(([,s])=>s.billete).reverse();
+    if(bs.length){
+      const tot = bs.reduce((a,[,s])=>{ const B = s.billete; ['n','bien','medias','mal'].forEach(k=>a[k]+= bilN(B[k])||0); return a; }, {n:0,bien:0,medias:0,mal:0});
+      h += `<h3 data-plegar="bil" data-res="${bs.length} · ${tot.n?Math.round(100*tot.bien/tot.n)+' % bien':'sin corregir'}">Billetes de salida</h3><ul class="hist">`;
+      for(const [id,s] of bs) h += `<li><button data-a="ir" data-id="${id}"><div class="f">${corta(s.fecha)}</div><div class="d">${esc(bilTxt(s))}</div></button></li>`;
+      h += `</ul>`;
     } }
   h += `<h3 data-plegar="hist" data-res="${ses.length} ${ses.length===1?'sesión':'sesiones'}">Historial</h3>`;
   if(!ses.length) h += `<div class="vacio">Todavía no hay sesiones de este grupo.<br>Se registran desde <b>Día</b>.</div>`;
@@ -1395,6 +1432,12 @@ function vAjustes(){
       <label>Nº de lista<input type="number" id="mt-n" min="1" max="40" inputmode="numeric"></label>
       <button class="secundario" data-a="baja">Dar de baja ese número</button>
       <button class="secundario" data-a="alta">Incorporación (nº siguiente)</button></div></div>
+  <div class="panel"><p><b>Billete de salida</b><br><span class="nota">Las clases en que toca cada semana. En la vista del día salen con
+    un billete al lado; cuando lo apuntas en la sesión, el billete queda marcado.</span></p>
+    ${Object.keys(GRUPOS).map(g=>{ const cl = []; for(const d in HORARIO) for(const n in HORARIO[d]) if(HORARIO[d][n] && HORARIO[d][n].g===g) cl.push([Number(d), Number(n)]);
+      if(!cl.length) return '';
+      return `<div class="bil-sem"><span class="g"><b>${esc(GRUPOS[g].nombre)}</b></span>${cl.sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(([d,n])=>{ const sl = `${d}-${n}`;
+        return `<button class="chip" data-a="bil-slot" data-v="${sl}" aria-pressed="${(c.billetes||[]).includes(sl)}">${DIAS[d].slice(0,3)} ${FR[n]?FR[n].ini:n+'.ª'}</button>`; }).join('')}</div>`; }).join('')}</div>
   <div class="panel"><p><b>Deberes «a medias»</b><br><span class="nota">El criterio que aplicas siempre. Sale debajo de la lista al revisar.</span></p>
     <input type="text" id="aj-medias" value="${esc(c.criterioMedias || DEF_MEDIAS)}"></div>
   <div class="panel"><p><b>Días no lectivos</b><br><span class="nota">Festivos y días sin clase: no cuentan como sesiones sin registrar.</span></p>
@@ -1590,6 +1633,19 @@ function pintarHoja(){
         <div class="perd"><span>Inicio</span>${PERD_INI.map(m=>`<button class="chip" data-h="pini" data-v="${m}" aria-pressed="${b.perdIni!=='' && b.perdIni!==undefined && Number(b.perdIni)===m}">${m===30?'30+':m}</button>`).join('')}</div>
         <div class="perd"><span>Final</span>${PERD_FIN.map(m=>`<button class="chip" data-h="pfin" data-v="${m}" aria-pressed="${b.perdFin!=='' && b.perdFin!==undefined && Number(b.perdFin)===m}">${m}</button>`).join('')}</div>
       </div>
+      ${b.grupo && b.estado!=='no' ? `<div class="campo"><span class="et">Billete de salida <span class="ayuda">— el recuento, cuando lo corrijas</span></span>
+        ${(()=>{ const sem = (store.cfg.billetes||[]).includes(slotDe(b.fecha,b.franja)), o = (store.cfg.billeteDia||{})[`${b.fecha}_${b.franja}`];
+          return `<div class="bil-sem"><span class="nota">En esta clase:</span>
+            <button class="chip" data-h="bil-sem" aria-pressed="${sem}">${icoBillete(false,'')} cada ${DIAS[deClave(b.fecha).getDay()]}</button>
+            ${sem ? `<button class="chip" data-h="bil-dia" data-v="${o===false?'':'no'}" aria-pressed="${o===false}">hoy no toca</button>`
+                  : `<button class="chip" data-h="bil-dia" data-v="${o===true?'':'si'}" aria-pressed="${o===true}">solo hoy</button>`}</div>`; })()}
+        ${!b.billete ? `<button class="chip" data-h="bil-on">${tocaBillete(b.fecha,b.franja)?'Tocaba billete: ¿lo has hecho? Apúntalo':'Hoy ha habido billete'}</button>` : (()=>{ const B = b.billete, n = bilN(B.n), s = ['bien','medias','mal'].reduce((a,k)=>a+(bilN(B[k])||0),0);
+          return `<input type="text" data-fb="pregunta" value="${esc(B.pregunta||'')}" placeholder="Qué preguntaba (por ejemplo: ¿mcd o mcm?)">
+          <div class="bil">${[['n','Entregados'],['bien','Bien'],['medias','A medias'],['mal','Mal']].map(([k,v])=>`<label>${v}<input type="number" min="0" max="40" inputmode="numeric" data-fb="${k}" value="${esc(B[k]??'')}"></label>`).join('')}</div>
+          ${n!==null && s && s!==n ? `<div class="nota" style="color:var(--rojo)">Bien + a medias + mal suman ${s}, pero se han entregado ${n}.</div>` : ''}
+          <textarea data-fb="error" style="min-height:52px;margin-top:8px" placeholder="Error que más se repite y qué harás la próxima sesión">${esc(B.error||'')}</textarea>
+          <button class="chip" data-h="bil-off" style="margin-top:6px">Quitar el billete</button>`; })()}
+      </div>` : ''}
       <details ${b.cambio||b.observacion?'open':''}><summary>Pilotaje <span class="ayuda" style="font-weight:400">— para el diario de mejora</span></summary>
         <div class="campo"><label for="h-camb">Qué cambié respecto al grupo anterior</label>
           <textarea id="h-camb" data-f="cambio" style="min-height:64px">${esc(b.cambio)}</textarea></div>
@@ -1614,6 +1670,7 @@ function pintarHoja(){
 }
 function leerCampos(){
   document.querySelectorAll('#hoja [data-f]').forEach(el=>{ borrador[el.dataset.f] = el.value; });
+  if(borrador.billete) document.querySelectorAll('#hoja [data-fb]').forEach(el=>{ borrador.billete[el.dataset.fb] = el.value.trim ? el.value.trim() : el.value; });
 }
 
 /* ═══════════════════════════ EXPORTAR ═══════════════════════════ */
@@ -1649,11 +1706,11 @@ const textoRev = s => (s.revisiones||[]).map(r=>{
 }).join('; ');
 function csv(){
   const f = filasExport();
-  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Clima del aula','Min. perdidos al empezar','Min. perdidos al acabar','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
+  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Billete de salida','Clima del aula','Min. perdidos al empezar','Min. perdidos al acabar','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
   const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
   const filas = f.map(s=>[s.fecha, DIAS[deClave(s.fecha).getDay()], `${FR[s.franja].ini}-${FR[s.franja].fin}`,
     s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'', s.grupo?nombreUnidad(s.grupo,s.unidad):'',
-    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), s.clima?CLIMA[s.clima]:'', s.perdIni??'', s.perdFin??'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length, s.reconstruido?'Sí':'', s.reconstruido?(s.fuente||''):''].map(q).join(';'));
+    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), bilTxt(s), s.clima?CLIMA[s.clima]:'', s.perdIni??'', s.perdFin??'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length, s.reconstruido?'Sí':'', s.reconstruido?(s.fuente||''):''].map(q).join(';'));
   return '\ufeff' + [cab.map(q).join(';'), ...filas].join('\r\n');
 }
 function calendarioInforme(desde, hasta, gs){
@@ -1728,7 +1785,7 @@ function informe(){
       }else{
         cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(nombreUnidad(g,s.unidad))}</td>
           <td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.cambio?`<div class="mat">Cambio: ${esc(s.cambio)}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
-          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}</td><td>${s.clima?CLIMA[s.clima]:''}${perdTxt(s)?`<div class="mat">${perdTxt(s)}</div>`:''}</td><td class="reg">${reg}</td></tr>`;
+          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}${bilTxt(s)?`<div class="mat">${esc(bilTxt(s))}</div>`:''}</td><td>${s.clima?CLIMA[s.clima]:''}${perdTxt(s)?`<div class="mat">${perdTxt(s)}</div>`:''}</td><td class="reg">${reg}</td></tr>`;
       }
     }
     cuerpo += `</tbody></table>`;
@@ -1822,6 +1879,8 @@ document.getElementById('app').addEventListener('click', async e=>{
     else{ const M = (store.cfg.matricula = store.cfg.matricula || {}); (M[d.g] = M[d.g] || {})[d.n] = Object.assign(M[d.g][d.n]||{}, {baja:hoyK()}); }
     difListado.splice(Number(b.dataset.i), 1); guardarCfg(); pintar();
   }
+  else if(a==='bil-slot'){ const L = store.cfg.billetes = store.cfg.billetes || [], i = L.indexOf(b.dataset.v);
+    if(i>=0) L.splice(i,1); else L.push(b.dataset.v); abiertos.add('aj:Billete de salida'); guardarCfg(); pintar(); }
   else if(a==='csv-deberes'){
     const g = b.dataset.g, d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
     let s = 'grupo;número;revisiones presente;completos;a medias;no;faltas;% completos\r\n';
@@ -1994,6 +2053,15 @@ document.getElementById('hoja').addEventListener('click', e=>{
     const r = borrador.revisiones.find(x=>x.de===b.dataset.id); const n = Number(b.dataset.i);
     if(r){ ponEstado(r, n, b.dataset.v || revPincel[b.dataset.id] || 'no'); if(!(r.medias||[]).length) delete r.medias; if(!(r.falta||[]).length) delete r.falta; }
   }
+  else if(h==='bil-on'){ borrador.billete = {pregunta:'', n:'', bien:'', medias:'', mal:'', error:''};
+    const m = (borrador.material||'').split(/,\s*/).filter(Boolean); if(!m.some(x=>/billete/i.test(x))){ m.push('Billete de salida'); borrador.material = m.join(', '); } }
+  else if(h==='bil-off'){ delete borrador.billete; }
+  else if(h==='bil-sem'){ const sl = slotDe(borrador.fecha, borrador.franja), L = store.cfg.billetes = store.cfg.billetes || [];
+    const i = L.indexOf(sl); if(i>=0) L.splice(i,1); else L.push(sl);
+    delete (store.cfg.billeteDia||{})[`${borrador.fecha}_${borrador.franja}`]; guardarCfg();
+    toast(i>=0 ? 'Ya no se marca cada semana' : `Billete cada ${DIAS[deClave(borrador.fecha).getDay()]} en esta clase`); }
+  else if(h==='bil-dia'){ const D = store.cfg.billeteDia = store.cfg.billeteDia || {}, k = `${borrador.fecha}_${borrador.franja}`;
+    if(b.dataset.v==='si') D[k] = true; else if(b.dataset.v==='no') D[k] = false; else delete D[k]; guardarCfg(); }
   else if(h==='pincel'){ revPincel[b.dataset.id] = b.dataset.v; }
   else if(h==='guardar'){
     const b2 = borrador;
@@ -2014,7 +2082,7 @@ document.getElementById('hoja').addEventListener('click', e=>{
   pintarHoja(); guardarBorrador();
 });
 // lo escrito se guarda como borrador medio segundo después de dejar de teclear
-document.getElementById('hoja').addEventListener('input', e=>{ if(e.target.closest('[data-f]') && abiertoId) borradorLuego(); });
+document.getElementById('hoja').addEventListener('input', e=>{ if(e.target.closest('[data-f],[data-fb]') && abiertoId) borradorLuego(); });
 function hojaFaltan(){
   const lista = sinRegistrar();
   borrador = {}; abiertoId = null;
