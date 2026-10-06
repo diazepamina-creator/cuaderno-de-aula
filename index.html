@@ -405,7 +405,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.5.0';
+const VERSION_APP = '1.5.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -1237,7 +1237,8 @@ function vAjustes(){
     <p class="nota"><b>Ver nombres.</b> En «Deberes para revisar» puedes abrir tu listado desde el OneDrive de la GVA:
     un CSV con tres columnas, <i>grupo; número; nombre</i> (por ejemplo <i>1B; 7; García López, Lucía</i>), todos los
     grupos en el mismo archivo. La app lo lee y lo olvida al cerrarse o tras 20 minutos fuera: no lo guarda, no va
-    en las copias ni en los informes. ${NOMBRES?`Ahora: cargados de «${esc(NOMBRES_DE)}». <button class="chip" data-a="olvidar">Olvidar</button>`:'Ahora: ninguno cargado.'}</p></div>
+    en las copias ni en los informes. ${NOMBRES?`Ahora: cargados de «${esc(NOMBRES_DE)}». <button class="chip" data-a="olvidar">Olvidar</button>`:'Ahora: ninguno cargado.'}</p>
+    ${NOMBRES?'':'<button class="bloque-btn" data-a="nombres">Cargar el listado de nombres (CSV)</button>'}</div>
   <button class="bloque-btn lleno" data-a="guardar-aj">Guardar ajustes</button>
   <p class="nota" style="text-align:center;margin-top:14px">Cuaderno de aula · versión ${VERSION_APP}</p>`;
   return h;
@@ -1600,6 +1601,7 @@ document.getElementById('app').addEventListener('click', async e=>{
     abrirFecha(null, {tipo:'examen', titulo:'Prueba: '+(sa?sa.n:''), notas:'', sa:b.dataset.sa, fechas:{[g]:b.dataset.k}});
   }
   else if(a==='cargar-prog'){ leerUnidades(); ponerUnidadesProg(true); guardarCfg(); toast('Unidades de la programación puestas'); pintar(); }
+  else if(a==='nombres'){ const i = $('#archivo-nombres'); i.value=''; i.click(); }
   else if(a==='olvidar'){ olvidarNombres('Nombres olvidados'); pintar(); }
   else if(a==='archivo-prog'){ const i = $('#archivo-prog'); i.value=''; i.click(); }
   else if(a==='quitar-prog'){ if(confirm('¿Quitar la programación de este móvil? Lo marcado como hecho se conserva por si la vuelves a cargar.')){ store.programa = null; cachePlan = {}; guardarLocal(); pintar(); } }
