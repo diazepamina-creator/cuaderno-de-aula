@@ -223,6 +223,20 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .revl .fila .est{font-size:13px;white-space:nowrap;padding:3px 9px;border-radius:12px;border:1px solid var(--linea);color:var(--grafito)}
 .revl .fila[aria-pressed="true"]{border-color:var(--rojo)}
 .revl .fila[aria-pressed="true"] .est{background:var(--rojo);border-color:var(--rojo);color:#fff;font-weight:700}
+.revl .fila{cursor:default}
+.revl .fila .bt{display:flex;gap:4px;margin-left:auto}
+.revl .fila .bt button{height:30px;min-width:34px;padding:0 8px;border:1.5px solid var(--linea);border-radius:15px;background:var(--hoja);font-size:13px;color:var(--grafito)}
+.revl .fila .ok{font-size:13px;color:var(--gris);white-space:nowrap}
+.revl .fila.st-no{border-color:var(--rojo)} .revl .fila.st-medias{border-color:#b7791f} .revl .fila.st-falta{border-style:dashed;opacity:.75}
+.revl .fila .bt button[data-v="no"][aria-pressed="true"]{background:var(--rojo);border-color:var(--rojo);color:#fff;font-weight:700}
+.revl .fila .bt button[data-v="medias"][aria-pressed="true"]{background:#b7791f;border-color:#b7791f;color:#fff;font-weight:700}
+.revl .fila .bt button[data-v="falta"][aria-pressed="true"]{background:var(--gris);border-color:var(--gris);color:#fff;font-weight:700}
+.plano .mesa.st-medias,.sin-mesa button.st-medias{background:#b7791f!important;border-color:#b7791f!important;color:#fff}
+.plano .mesa.st-falta,.sin-mesa button.st-falta{background:var(--gris)!important;border-color:var(--gris)!important;color:#fff;border-style:dashed!important}
+.pincel{margin-top:10px}
+.porAl{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.porAl th,.porAl td{border-bottom:1px solid var(--linea);padding:5px 4px;text-align:center;font-variant-numeric:tabular-nums}
+.porAl th:nth-child(2),.porAl td:nth-child(2){text-align:left}
 .revl .filtro{display:flex;gap:6px;padding:0 8px 8px}
 .lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
 /* plano del aula */
@@ -333,8 +347,44 @@ const GRUPOS = {
    ni al borrador, ni a las copias de seguridad, ni a los informes. Se olvida al cerrar la app, con
    «Olvidar» o tras 20 minutos en segundo plano. El registro sigue guardando solo números. */
 let NOMBRES = null, NOMBRES_DE = '', tOculto = 0;
+/* ── REVISIÓN DE DEBERES: cuatro estados ──
+   Cada revisión guarda tres listas de números: no (no los trae), medias (a medias) y falta
+   (no ha venido). Quien no está en ninguna los trae. Las revisiones antiguas solo tienen «no»
+   y siguen valiendo igual. Los ausentes no cuentan en el porcentaje de entrega. */
+const EST = {no:'✗ No los trae', medias:'½ A medias', falta:'Falta'};
+const DEF_MEDIAS = 'Empezados, pero falta al menos un ejercicio.';
+const L = (r,k) => r[k] || (r[k] = []);
+const estadoDe = (r,n) => (r.no||[]).includes(n) ? 'no' : (r.medias||[]).includes(n) ? 'medias' : (r.falta||[]).includes(n) ? 'falta' : 'si';
+function ponEstado(r, n, st){
+  const prev = estadoDe(r, n);
+  for(const k of ['no','medias','falta']) r[k] = (r[k]||[]).filter(x=>x!==n);
+  if(st!=='si' && st!==prev) r[st] = [...r[st], n].sort((x,y)=>x-y);
+}
+function cuentaRev(r, N){
+  const no = (r.no||[]).length, medias = (r.medias||[]).length, falta = (r.falta||[]).length;
+  return {no, medias, falta, si: N - no - medias - falta, presentes: N - falta};
+}
+function revTxt(r, nom){
+  const f = a => a.map(n=> nom && nomDe(nom,n) ? `${n} (${esc(nomCorto(nomDe(nom,n)))})` : n).join(', ');
+  const p = [];
+  if((r.no||[]).length) p.push('no los traen '+f(r.no));
+  if((r.medias||[]).length) p.push('a medias '+f(r.medias));
+  if((r.falta||[]).length) p.push('faltan '+f(r.falta));
+  return p.length ? p.join(' · ') : 'los traen todos';
+}
 // estado de pantalla de la lista de deberes (no se guarda): plegadas, filtro y revisiones quitadas por error
-const revPlegadas = new Set(), revFiltro = {}, revQuitadas = {};
+const revPlegadas = new Set(), revFiltro = {}, revQuitadas = {}, revPincel = {};
+let paDesde = '', paHasta = '';
+/* Deberes por alumno (número de lista) en un periodo: base para el instrumento «trabajo diario»
+   si la programación lo recoge. Cuenta solo revisiones en las que el alumno estaba. */
+function deberesPorAlumno(g, desde, hasta){
+  const N = store.cfg.alumnos[g] || 25, A = {};
+  for(let i=1;i<=N;i++) A[i] = {si:0, medias:0, no:0, falta:0};
+  let nRev = 0;
+  sesionesDe(g).forEach(([,s])=>{ if(s.estado==='no' || s.fecha<desde || s.fecha>hasta) return;
+    (s.revisiones||[]).forEach(r=>{ nRev++; for(let i=1;i<=N;i++) A[i][estadoDe(r,i)]++; }); });
+  return {N, nRev, A};
+}
 const normG = s => String(s||'').toUpperCase().replace(/ESO|[º°ª.\s-]/g,'');
 function grupoDeTexto(s){
   const n = normG(s); if(!n) return null;
@@ -420,7 +470,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.6.0';
+const VERSION_APP = '1.7.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -582,8 +632,8 @@ function indicadores(g, desde, hasta){
   const ses = sesionesDe(g).map(([,s])=>s).filter(s=>s.fecha>=desde && s.fecha<=hasta);
   const dadas = ses.filter(s=>s.estado!=='no');
   const N = store.cfg.alumnos[g] || 25;
-  let revisadas = 0, traen = 0, total = 0;
-  dadas.forEach(s=>(s.revisiones||[]).forEach(r=>{ revisadas++; total += N; traen += N - (r.no||[]).length; }));
+  let revisadas = 0, traen = 0, total = 0, medias = 0;
+  dadas.forEach(s=>(s.revisiones||[]).forEach(r=>{ const c = cuentaRev(r, N); revisadas++; total += c.presentes; traen += c.si; medias += c.medias; }));
   const clima = {bien:0, regular:0, mal:0};
   dadas.forEach(s=>{ if(clima[s.clima]!==undefined) clima[s.clima]++; });
   const pt = dadas.filter(s=>s.pt); const ptSi = pt.filter(s=>s.pt!=='no').length;
@@ -596,7 +646,7 @@ function indicadores(g, desde, hasta){
   return {previstas, registradas: ses.filter(s=>s.fecha<=fin).length, dadas: dadas.length, noDadas: ses.length - dadas.length,
     sinRegistrar: sinRegistrar().filter(x=>x.g===g && x.k>=desde && x.k<=hasta).length,
     puestos: dadas.filter(s=>s.deberes && s.deberes.trim()).length, revisadas,
-    entrega: total ? Math.round(100*traen/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
+    entrega: total ? Math.round(100*traen/total) : null, entregaMedias: total ? Math.round(100*medias/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
     pt: pt.length, ptSi, porUnidad, sinUnidad, perd};
 }
 // Clima por franja horaria, sumando todos los grupos
@@ -881,7 +931,7 @@ function vGrupos(){
   h += `</div><p class="estado-sync" id="sync"></p>
   <div class="cifras">
     <div class="cifra"><b>${I.dadas}</b><span>impartidas de ${I.previstas} previstas</span></div>
-    <div class="cifra"><b>${I.entrega===null?'—':I.entrega+' %'}</b><span>entrega de deberes</span></div>
+    <div class="cifra"><b>${I.entrega===null?'—':I.entrega+' %'}</b><span>deberes completos${I.entregaMedias?` · ${I.entregaMedias} % a medias`:''}</span></div>
     <div class="cifra"><b>${pendDeb.length}</b><span>deberes por revisar</span></div>
   </div>`;
   if(I.climaN){
@@ -914,6 +964,20 @@ function vGrupos(){
     for(const [id,s] of pendDeb) h += `<li><button data-a="ir" data-id="${id}"><div class="f">Puestos el ${corta(s.fecha)}</div><div class="d">${esc(s.deberes)}</div></button></li>`;
     h += `</ul>`;
   }
+  { const d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
+    h += `<h3>Deberes por alumno</h3>
+      <div class="fila2"><input type="date" id="pa-desde" value="${d}" aria-label="Desde"><input type="date" id="pa-hasta" value="${hs}" aria-label="Hasta"></div>`;
+    if(!D.nRev) h += `<p class="leyenda">No hay revisiones de deberes en estas fechas.</p>`;
+    else{
+      h += `<details${NOMBRES&&NOMBRES[g]?' open':''}><summary>${D.nRev} ${D.nRev===1?'revisión':'revisiones'} · ver la tabla</summary>
+        <table class="porAl"><thead><tr><th>Nº</th><th>${NOMBRES&&NOMBRES[g]?'Nombre':''}</th><th>✓</th><th>½</th><th>✗</th><th>Falta</th><th>% ✓</th></tr></thead><tbody>`;
+      for(let i=1;i<=D.N;i++){ const a = D.A[i], pres = a.si + a.medias + a.no;
+        h += `<tr><td>${i}</td><td>${esc(nomCorto(nomDe(g,i)))}</td><td>${a.si}</td><td>${a.medias}</td><td>${a.no}</td><td>${a.falta}</td><td>${pres?Math.round(100*a.si/pres):'—'}</td></tr>`; }
+      h += `</tbody></table></details>
+        <p class="leyenda">% ✓ = completos sobre las revisiones en las que estaba. El CSV va solo con números, para pegarlo junto a tu listado de notas.</p>
+        <div class="chips"><button class="chip" data-a="csv-deberes" data-g="${g}">Descargar CSV (por número)</button></div>`;
+    }
+  }
   { const P = planoLleno(g), N = store.cfg.alumnos[g]||25, AU = aulasDe(g);
     h += `<h3>Plano del aula</h3>${P ? `<p class="leyenda">${Object.keys(P.sitios).length} de ${N} en su mesa. En «Deberes para revisar» se toca la mesa de quien no los trae.</p>`
       : `<p class="leyenda">Coloca los números de lista en sus mesas y, al revisar deberes, toca la mesa en vez de buscar el número. Solo se guardan números.</p>`}
@@ -932,7 +996,7 @@ function vGrupos(){
     for(const [id,s] of [...ses].reverse()){
       const rev = (s.revisiones||[]).map(r=>{
         const o = store.ses[r.de]; const f = o ? corta(o.fecha) : corta(r.de.split('_')[0]);
-        return `Deberes del ${f}: ${r.no && r.no.length ? 'no los traen '+r.no.join(', ') : 'los traen todos'}`;
+        return `Deberes del ${f}: ${revTxt(r)}`;
       }).join(' · ');
       h += `<li><button data-a="ir" data-id="${id}">
         <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${perdTxt(s)?' · '+perdTxt(s):''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
@@ -1235,6 +1299,8 @@ function vAjustes(){
   <div class="panel"><p><b>Alumnos por grupo</b><br><span class="nota">Para la cuadrícula de números de lista.</span></p><div class="alumnos">`;
   for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
   h += `</div></div>
+  <div class="panel"><p><b>Deberes «a medias»</b><br><span class="nota">El criterio que aplicas siempre. Sale debajo de la lista al revisar.</span></p>
+    <input type="text" id="aj-medias" value="${esc(c.criterioMedias || DEF_MEDIAS)}"></div>
   <div class="panel"><p><b>Días no lectivos</b><br><span class="nota">Festivos y días sin clase: no cuentan como sesiones sin registrar.</span></p>
     ${CAL.dias.some(k=>!c.nolectivos.includes(k)) ? `<button class="bloque-btn" data-a="cal" style="margin-top:0">Cargar los festivos del ${CAL.nombre}</button>` : `<p class="nota">Cargados los festivos del ${CAL.nombre}. Fin de las clases: ${larga(CAL.fin)}.</p>`}
     <div class="fila2"><input type="date" id="aj-nl"><button class="secundario" data-a="add-nl">Añadir</button></div>
@@ -1372,25 +1438,36 @@ function pintarHoja(){
           if(r){
             const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo, b.aula), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
             if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
+            const C = cuentaRev(r, N), crit = store.cfg.criterioMedias || DEF_MEDIAS;
             if(modo==='plano'){
-              h += rejillaPlano(P, (k,n)=> n ? `<button class="mesa llena" data-h="no" data-id="${id}" data-i="${n}" aria-pressed="${r.no.includes(n)}" aria-label="Número ${n}" title="${esc(nomDe(b.grupo,n))}">${n}${nomDe(b.grupo,n)?`<small>${esc(nomCorto(nomDe(b.grupo,n)))}</small>`:''}</button>` : `<button class="mesa" disabled></button>`, NOMBRES && NOMBRES[b.grupo] ? 'connom' : '');
+              // en el plano, un toque aplica el «pincel» elegido; otro toque en la misma mesa la devuelve a «los trae»
+              const pin = revPincel[id] || 'no';
+              h += `<div class="seg pincel" role="group" aria-label="Qué marca un toque">${Object.entries(EST).map(([k,v])=>`<button data-h="pincel" data-id="${id}" data-v="${k}" aria-pressed="${pin===k}">${v}</button>`).join('')}</div>`;
+              const mesa = (n, cls) => { const e = estadoDe(r,n), nom = nomDe(b.grupo,n);
+                return `<button class="${cls} st-${e}" data-h="est" data-id="${id}" data-i="${n}" aria-pressed="${e!=='si'}" aria-label="Número ${n}: ${e==='si'?'los trae':EST[e]}" title="${esc(nom)}">${n}${cls.includes('mesa')&&nom?`<small>${esc(nomCorto(nom))}</small>`:''}</button>`; };
+              h += rejillaPlano(P, (k,n)=> n ? mesa(n,'mesa llena') : `<button class="mesa" disabled></button>`, NOMBRES && NOMBRES[b.grupo] ? 'connom' : '');
               const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i)) sin.push(i);
-              if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>`<button data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${r.no.includes(i)}">${i}</button>`).join('')}</div>`;
+              if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>mesa(i,'')).join('')}</div>`;
             }else{
-              // Lista desplegable: una fila por alumno con su estado escrito. Se guarda solo r.no (como siempre).
-              const no = new Set(r.no), traen = N - r.no.length, fil = revFiltro[id] || 'todos';
+              // Lista desplegable: una fila por alumno; todos empiezan en «los trae» y se toca solo la excepción.
+              const fil = revFiltro[id] || 'todos';
               h += `<details class="revl" data-revl="${id}" ${revPlegadas.has(id)?'':'open'}>
-                <summary><span class="cuenta"><b>${traen}</b> los traen · <b style="color:var(--rojo)">${r.no.length}</b> no · de ${N}</span></summary>
-                <div class="filtro seg">${[['todos','Todos'],['si','Los traen'],['no','No']].map(([k,v])=>`<button data-h="rfil" data-id="${id}" data-v="${k}" aria-pressed="${fil===k}">${v}</button>`).join('')}</div>
+                <summary><span class="cuenta"><b>${C.si}</b> ✓ · <b style="color:#b7791f">${C.medias}</b> ½ · <b style="color:var(--rojo)">${C.no}</b> ✗ · <b>${C.falta}</b> faltan · de ${N}</span></summary>
+                <div class="filtro seg">${[['todos','Todos'],['si','Los traen'],['exc','Excepciones']].map(([k,v])=>`<button data-h="rfil" data-id="${id}" data-v="${k}" aria-pressed="${fil===k}">${v}</button>`).join('')}</div>
                 <div class="filas" role="group" aria-label="Entrega de deberes por número de lista">`;
               for(let i=1;i<=N;i++){
-                const m = no.has(i); if((fil==='si' && m) || (fil==='no' && !m)) continue;
+                const e = estadoDe(r,i); if((fil==='si' && e!=='si') || (fil==='exc' && e==='si')) continue;
                 const nom = nomDe(b.grupo,i);
-                h += `<button class="fila" data-h="no" data-id="${id}" data-i="${i}" aria-pressed="${m}" title="${esc(nom)}"><span class="n">${i}</span><span class="nom">${nom?esc(nomCorto(nom)):''}</span><span class="est">${m?'✗ No los trae':'✓ Los trae'}</span></button>`;
+                h += `<div class="fila st-${e}" title="${esc(nom)}"><span class="n">${i}</span><span class="nom">${nom?esc(nomCorto(nom)):''}</span>
+                  ${e==='si'?'<span class="ok">✓</span>':''}<span class="bt">
+                  <button data-h="est" data-id="${id}" data-i="${i}" data-v="no" aria-pressed="${e==='no'}" aria-label="${i}: no los trae">✗</button>
+                  <button data-h="est" data-id="${id}" data-i="${i}" data-v="medias" aria-pressed="${e==='medias'}" aria-label="${i}: a medias">½</button>
+                  <button data-h="est" data-id="${id}" data-i="${i}" data-v="falta" aria-pressed="${e==='falta'}" aria-label="${i}: falta">Falta</button></span></div>`;
               }
               h += `</div></details>`;
             }
-            h += `<div class="lista-nota">Toca ${modo==='plano'?'la mesa':'la fila'} de quien <b>no</b> los trae; otro toque lo deshace. ${r.no.length? 'No los traen: '+r.no.map(n=>nomDe(b.grupo,n)?`${n} (${esc(nomCorto(nomDe(b.grupo,n)))})`:n).join(', ') : 'Ahora mismo: los traen todos.'}</div>`;
+            h += `<div class="lista-nota">Todos empiezan en <b>los trae</b>: marca solo ${modo==='plano'?'las mesas':'las filas'} que no; otro toque lo deshace.
+              <b>½</b> = ${esc(crit)} Los que faltan no cuentan en el porcentaje.<br>${revTxt(r, b.grupo)}.</div>`;
             h += NOMBRES
               ? `<div class="nombres">Nombres de «${esc(NOMBRES_DE)}», solo mientras la app está abierta.${NOMBRES[b.grupo]?'':' No hay ninguno de este grupo.'} <button class="chip" data-h="olvidar">Olvidar nombres</button></div>`
               : `<div class="nombres"><button class="chip" data-h="nombres">Ver nombres</button> abre tu listado (CSV) del OneDrive de la GVA. No se guarda.</div>`;
@@ -1469,7 +1546,7 @@ function filasExport(){
 const perdTxt = s => { const a = s.perdIni!==undefined && s.perdIni!=='', b = s.perdFin!==undefined && s.perdFin!=='';
   return a||b ? `perdidos ${a?s.perdIni:'?'} + ${b?s.perdFin:'?'} min` : ''; };
 const textoRev = s => (s.revisiones||[]).map(r=>{
-  const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])}: ${r.no&&r.no.length?'no los traen nº '+r.no.join(', '):'los traen todos'}`;
+  const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])} (nº de lista): ${revTxt(r)}`;
 }).join('; ');
 function csv(){
   const f = filasExport();
@@ -1501,14 +1578,14 @@ function informe(){
   for(const g of gs){
     const I = indicadores(g, desde, hasta);
     resumen += `<tr><td>${GRUPOS[g].nombre}</td><td>${I.previstas}</td><td>${I.dadas}</td><td>${I.noDadas}</td><td>${I.sinRegistrar}</td>
-      <td>${I.entrega===null?'—':I.entrega+' % ('+I.revisadas+' revisiones)'}</td>
+      <td>${I.entrega===null?'—':I.entrega+' % completos'+(I.entregaMedias?' + '+I.entregaMedias+' % a medias':'')+' ('+I.revisadas+' revisiones)'}</td>
       <td>${I.climaN?`${pct(I.clima.bien,I.climaN)} / ${pct(I.clima.regular,I.climaN)} / ${pct(I.clima.mal,I.climaN)} %`:'—'}</td>
       <td>${I.perd.n?`${I.perd.mIni} + ${I.perd.mFin} (${I.perd.n} ses.; total ${minTxt(I.perd.total)})`:'—'}</td>
       <td>${I.pt?`${I.ptSi} de ${I.pt}`:'—'}</td></tr>`;
   }
   const nRec = f.filter(s=>s.reconstruido).length;
   resumen += `</tbody></table>${nRec?`<p class="meta">${nRec} ${nRec===1?'sesión se registró después, reconstruida':'sesiones se registraron después, reconstruidas'} a partir de lo indicado en cada una.</p>`:''}<p class="meta">«Previstas»: sesiones del horario en días lectivos del periodo que ya han pasado.
-    «Entrega de deberes»: porcentaje de alumnado que los trae, sobre las revisiones registradas.</p>`;
+    «Entrega de deberes»: porcentaje del alumnado presente que los trae completos (y a medias), sobre las revisiones registradas; los ausentes no cuentan.</p>`;
   // 2. clima por franja horaria
   const cf = climaPorFranja(desde, hasta);
   const hayClima = Object.values(cf).some(x=>x.bien+x.regular+x.mal);
@@ -1623,6 +1700,13 @@ document.getElementById('app').addEventListener('click', async e=>{
   }
   else if(a==='cargar-prog'){ leerUnidades(); ponerUnidadesProg(true); guardarCfg(); toast('Unidades de la programación puestas'); pintar(); }
   else if(a==='nombres'){ const i = $('#archivo-nombres'); i.value=''; i.click(); }
+  else if(a==='csv-deberes'){
+    const g = b.dataset.g, d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
+    let s = 'grupo;número;revisiones presente;completos;a medias;no;faltas;% completos\r\n';
+    for(let i=1;i<=D.N;i++){ const x = D.A[i], pres = x.si + x.medias + x.no;
+      s += [g, i, pres, x.si, x.medias, x.no, x.falta, pres?Math.round(100*x.si/pres):''].join(';') + '\r\n'; }
+    await descargar(`deberes-${g}_${d}_${hs}.csv`, '\uFEFF'+s, 'text/csv');
+  }
   else if(a==='olvidar'){ olvidarNombres('Nombres olvidados'); pintar(); }
   else if(a==='archivo-prog'){ const i = $('#archivo-prog'); i.value=''; i.click(); }
   else if(a==='quitar-prog'){ if(confirm('¿Quitar la programación de este móvil? Lo marcado como hecho se conserva por si la vuelves a cargar.')){ store.programa = null; cachePlan = {}; guardarLocal(); pintar(); } }
@@ -1655,6 +1739,7 @@ document.getElementById('app').addEventListener('click', async e=>{
     c.copia = {dia: Number($('#aj-cdia').value), hora: $('#aj-chora').value || '14:10'};
     c.docente = $('#aj-doc').value.trim(); c.centro = $('#aj-centro').value.trim(); c.curso = $('#aj-curso').value.trim();
     if($('#aj-inicio').value) c.inicio = $('#aj-inicio').value;
+    { const v = $('#aj-medias').value.trim(); if(v && v!==DEF_MEDIAS) c.criterioMedias = v; else delete c.criterioMedias; }
     document.querySelectorAll('.aj-n').forEach(i=>{ const n = Math.max(1, Math.min(40, parseInt(i.value)||25)); c.alumnos[i.dataset.g] = n; });
     guardarCfg(); toast('Ajustes guardados'); pintar();
   }
@@ -1668,6 +1753,10 @@ document.getElementById('hoja').addEventListener('toggle', e=>{
   const d = e.target; if(!d.matches || !d.matches('details[data-revl]')) return;
   if(d.open) revPlegadas.delete(d.dataset.revl); else revPlegadas.add(d.dataset.revl);
 }, true);
+document.getElementById('app').addEventListener('change', e=>{
+  if(e.target.id==='pa-desde'){ paDesde = e.target.value; pintar(); }
+  else if(e.target.id==='pa-hasta'){ paHasta = e.target.value; pintar(); }
+});
 // ── NOMBRES: se leen y se quedan en memoria (ver NOMBRES arriba) ──
 // Excel en español guarda el CSV en Windows-1252 salvo que se elija «CSV UTF-8»: se prueban los dos.
 document.getElementById('archivo-nombres').addEventListener('change', e=>{
@@ -1766,15 +1855,17 @@ document.getElementById('hoja').addEventListener('click', e=>{
   else if(h==='rev'){
     const id = b.dataset.id; borrador.revisiones = borrador.revisiones||[];
     const i = borrador.revisiones.findIndex(r=>r.de===id);
-    if(i>=0){ const r = borrador.revisiones.splice(i,1)[0]; if(r.no.length){ revQuitadas[id] = r.no; toast(`Revisión quitada. Si ha sido sin querer, toca «Revisar hoy» y vuelven las ${r.no.length} marcas`); } }
-    else{ borrador.revisiones.push({de:id, no: revQuitadas[id] || []}); delete revQuitadas[id]; }
+    if(i>=0){ const r = borrador.revisiones.splice(i,1)[0], m = (r.no||[]).length + (r.medias||[]).length + (r.falta||[]).length;
+      if(m){ revQuitadas[id] = r; toast(`Revisión quitada. Si ha sido sin querer, toca «Revisar hoy» y vuelven las ${m} marcas`); } }
+    else{ borrador.revisiones.push(revQuitadas[id] || {de:id, no:[]}); delete revQuitadas[id]; }
   }
   else if(h==='rfil'){ revFiltro[b.dataset.id] = b.dataset.v; }
   else if(h==='modo'){ store.cfg.revModo = store.cfg.revModo || {}; store.cfg.revModo[borrador.grupo] = b.dataset.v; guardarCfg(); }
-  else if(h==='no'){
+  else if(h==='est'){
     const r = borrador.revisiones.find(x=>x.de===b.dataset.id); const n = Number(b.dataset.i);
-    if(r){ r.no = r.no.includes(n) ? r.no.filter(x=>x!==n) : [...r.no, n].sort((x,y)=>x-y); }
+    if(r){ ponEstado(r, n, b.dataset.v || revPincel[b.dataset.id] || 'no'); if(!(r.medias||[]).length) delete r.medias; if(!(r.falta||[]).length) delete r.falta; }
   }
+  else if(h==='pincel'){ revPincel[b.dataset.id] = b.dataset.v; }
   else if(h==='guardar'){
     const b2 = borrador;
     if(b2.grupo && b2.estado==='no' && !b2.motivo){ toast('Elige el motivo'); return; }
