@@ -234,6 +234,14 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .plano .mesa.st-medias,.sin-mesa button.st-medias{background:#b7791f!important;border-color:#b7791f!important;color:#fff}
 .plano .mesa.st-falta,.sin-mesa button.st-falta{background:var(--gris)!important;border-color:var(--gris)!important;color:#fff;border-style:dashed!important}
 .pincel{margin-top:10px}
+.plano .mesa.st-baja,.sin-mesa button.st-baja{opacity:.35;text-decoration:line-through}
+.matr li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--linea);font-size:14px}
+.matr{list-style:none;padding:0;margin:6px 0 10px}
+.mt{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.mt select{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px}
+.mt label{font-size:13px;color:var(--gris);min-width:0}.mt input{width:100%;min-width:0;box-sizing:border-box}
+.mt button{min-width:0;font-size:14px}
+.dif{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:8px 10px;margin:8px 0;font-size:14px}
 .porAl{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
 .porAl th,.porAl td{border-bottom:1px solid var(--linea);padding:5px 4px;text-align:center;font-variant-numeric:tabular-nums}
 .porAl th:nth-child(2),.porAl td:nth-child(2){text-align:left}
@@ -371,10 +379,27 @@ function ponEstado(r, n, st){
   for(const k of ['no','medias','falta']) r[k] = (r[k]||[]).filter(x=>x!==n);
   if(st!=='si' && st!==prev) r[st] = [...r[st], n].sort((x,y)=>x-y);
 }
-function cuentaRev(r, N){
-  const no = (r.no||[]).length, medias = (r.medias||[]).length, falta = (r.falta||[]).length;
-  return {no, medias, falta, si: N - no - medias - falta, presentes: N - falta};
+/* ── ALTAS Y BAJAS ── por número de lista y con fecha (no es un dato personal).
+   cfg.matricula[g][n] = {alta:'AAAA-MM-DD'} para quien se incorpora y/o {baja:'…'} para quien deja de venir.
+   El número no se reutiliza: el alumno que se va conserva el suyo y quien llega recibe el siguiente.
+   En cada revisión solo cuentan los que estaban de alta ese día; así las revisiones antiguas no cambian. */
+const matr = g => ((store.cfg.matricula||{})[g]) || {};
+const activo = (g, n, f) => { const m = matr(g)[n]; return !m || !((m.alta && f < m.alta) || (m.baja && f >= m.baja)); };
+function cuentaRev(r, g, f){
+  const N = store.cfg.alumnos[g] || 25, act = [];
+  for(let i=1;i<=N;i++) if(activo(g,i,f)) act.push(i);
+  const S = new Set(act), c = k => (r[k]||[]).filter(n=>S.has(n)).length;
+  const no = c('no'), medias = c('medias'), falta = c('falta');
+  return {no, medias, falta, si: act.length - no - medias - falta, presentes: act.length - falta, activos: act.length};
 }
+function ponAlumnos(g, n){
+  store.cfg.alumnos[g] = n;
+  const H = store.cfg.hor; if(H && Array.isArray(H.grupos)){ const x = H.grupos.find(y=>y.id===g); if(x) x.alumnos = n; }
+}
+const bajasTxt = (g, f) => Object.entries(matr(g)).filter(([n])=>!activo(g, Number(n), f))
+  .map(([n,m])=>`${n} (${m.baja && f>=m.baja ? 'baja desde el '+corta(m.baja) : 'llega el '+corta(m.alta)})`).join(', ');
+// diferencias entre el listado cargado y el cuaderno (número de alumnos y bajas marcadas en el CSV)
+let difListado = [];
 function revTxt(r, nom){
   const f = a => a.map(n=> nom && nomDe(nom,n) ? `${n} (${esc(nomCorto(nomDe(nom,n)))})` : n).join(', ');
   const p = [];
@@ -393,7 +418,7 @@ function deberesPorAlumno(g, desde, hasta){
   for(let i=1;i<=N;i++) A[i] = {si:0, medias:0, no:0, falta:0};
   let nRev = 0;
   sesionesDe(g).forEach(([,s])=>{ if(s.estado==='no' || s.fecha<desde || s.fecha>hasta) return;
-    (s.revisiones||[]).forEach(r=>{ nRev++; for(let i=1;i<=N;i++) A[i][estadoDe(r,i)]++; }); });
+    (s.revisiones||[]).forEach(r=>{ nRev++; for(let i=1;i<=N;i++) if(activo(g,i,s.fecha)) A[i][estadoDe(r,i)]++; }); });
   return {N, nRev, A};
 }
 const normG = s => String(s||'').toUpperCase().replace(/ESO|[º°ª.\s-]/g,'');
@@ -419,7 +444,7 @@ function leerNombres(txt){
 }
 // «García López, Lucía» o «Lucía García López» → «Lucía G.»
 function nomCorto(s){
-  if(!s) return '';
+  if(!s) return ''; s = s.replace(/\(\s*baja\s*\)/i,'').trim();
   let nom, ape;
   if(s.includes(',')){ const [a, b] = s.split(','); nom = b.trim(); ape = a.trim(); }
   else{ const w = s.trim().split(/\s+/); nom = w[0]; ape = w.slice(1).join(' '); }
@@ -481,7 +506,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.8.0';
+const VERSION_APP = '1.9.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -644,7 +669,7 @@ function indicadores(g, desde, hasta){
   const dadas = ses.filter(s=>s.estado!=='no');
   const N = store.cfg.alumnos[g] || 25;
   let revisadas = 0, traen = 0, total = 0, medias = 0;
-  dadas.forEach(s=>(s.revisiones||[]).forEach(r=>{ const c = cuentaRev(r, N); revisadas++; total += c.presentes; traen += c.si; medias += c.medias; }));
+  dadas.forEach(s=>(s.revisiones||[]).forEach(r=>{ const c = cuentaRev(r, g, s.fecha); revisadas++; total += c.presentes; traen += c.si; medias += c.medias; }));
   const clima = {bien:0, regular:0, mal:0};
   dadas.forEach(s=>{ if(clima[s.clima]!==undefined) clima[s.clima]++; });
   const pt = dadas.filter(s=>s.pt); const ptSi = pt.filter(s=>s.pt!=='no').length;
@@ -856,6 +881,7 @@ function resumenAj(t){
     case 'Programación de aula': return store.programa ? '✓ cargada' : 'sin cargar';
     case 'Unidades y situaciones de aprendizaje': return Object.values(c.unidades||{}).reduce((a,L)=>a+(L||[]).length,0)+' unidades';
     case 'Alumnos por grupo': return Object.keys(GRUPOS).map(k=>c.alumnos[k]||25).reduce((a,b)=>a+b,0)+' en total';
+    case 'Altas y bajas': { const n = Object.values(c.matricula||{}).reduce((a,m)=>a+Object.keys(m).length,0); return (difListado.length?'⚠ revisar listado · ':'') + (n ? n+(n===1?' cambio':' cambios') : 'ninguna'); }
     case 'Deberes «a medias»': return c.criterioMedias || DEF_MEDIAS;
     case 'Días no lectivos': return c.nolectivos.length+' días';
     case 'Dibujos del bosque': return c.deco===false ? 'sin dibujos' : (c.anim===false ? 'sin animación' : 'con animación');
@@ -881,6 +907,12 @@ function plegar(root){
     d.append(s, c); h.replaceWith(d);
   });
 }
+// Al tocar una casilla de número se selecciona lo que tiene: lo que escribas lo sustituye
+// (antes se añadía detrás: «22» + «22» = «2222», que se recortaba en silencio a 40).
+document.addEventListener('focusin', e=>{ const i = e.target; if(i.matches && i.matches('input[type=number]')) setTimeout(()=>{ try{ i.select(); }catch(err){} }, 0); });
+let errNum = false;
+const numAlumnos = (v, nombre) => { const n = parseInt(v);
+  if(n>=1 && n<=40) return n; errNum = true; toast(`${nombre}: «${v}» no vale (de 1 a 40); se queda como estaba`); return null; };
 document.getElementById('app').addEventListener('toggle', e=>{
   const d = e.target; if(!d.dataset || !d.dataset.k) return;
   if(d.open) abiertos.add(d.dataset.k); else abiertos.delete(d.dataset.k);
@@ -1352,6 +1384,17 @@ function vAjustes(){
   <div class="panel"><p><b>Alumnos por grupo</b><br><span class="nota">Para la cuadrícula de números de lista.</span></p><div class="alumnos">`;
   for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
   h += `</div></div>
+  <div class="panel"><p><b>Altas y bajas</b><br><span class="nota">Por número de lista y con fecha. Quien se va conserva su número;
+    quien llega recibe el siguiente. Las revisiones anteriores no cambian.</span></p>
+    ${difListado.length?`<div class="dif"><b>El listado cargado no coincide con el cuaderno:</b>${difListado.map((d,i)=>`<div style="margin-top:6px">${esc(d.txt)}
+      <button class="chip" data-a="aplicar-dif" data-i="${i}">${d.tipo==='n'?'Actualizar':'Dar de baja desde hoy'}</button></div>`).join('')}</div>`:''}
+    <ul class="matr">${Object.keys(GRUPOS).flatMap(g=>Object.entries(matr(g)).map(([n,m])=>`<li><span><b>${esc(GRUPOS[g].nombre)}</b> · nº ${n} · ${[m.alta?'llega el '+corta(m.alta):'', m.baja?'baja desde el '+corta(m.baja):''].filter(Boolean).join(' · ')}</span>
+      <button class="chip" data-a="quitar-mat" data-g="${g}" data-n="${n}">Deshacer</button></li>`)).join('') || '<li class="nota">Ninguna todavía.</li>'}</ul>
+    <div class="mt"><select id="mt-g" aria-label="Grupo">${Object.keys(GRUPOS).map(g=>`<option value="${g}">${esc(GRUPOS[g].nombre)}</option>`).join('')}</select>
+      <label>Desde<input type="date" id="mt-f" value="${hoyK()}"></label>
+      <label>Nº de lista<input type="number" id="mt-n" min="1" max="40" inputmode="numeric"></label>
+      <button class="secundario" data-a="baja">Dar de baja ese número</button>
+      <button class="secundario" data-a="alta">Incorporación (nº siguiente)</button></div></div>
   <div class="panel"><p><b>Deberes «a medias»</b><br><span class="nota">El criterio que aplicas siempre. Sale debajo de la lista al revisar.</span></p>
     <input type="text" id="aj-medias" value="${esc(c.criterioMedias || DEF_MEDIAS)}"></div>
   <div class="panel"><p><b>Días no lectivos</b><br><span class="nota">Festivos y días sin clase: no cuentan como sesiones sin registrar.</span></p>
@@ -1491,24 +1534,26 @@ function pintarHoja(){
           if(r){
             const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo, b.aula), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
             if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
-            const C = cuentaRev(r, N), crit = store.cfg.criterioMedias || DEF_MEDIAS;
+            const C = cuentaRev(r, b.grupo, b.fecha), crit = store.cfg.criterioMedias || DEF_MEDIAS;
             if(modo==='plano'){
               // en el plano, un toque aplica el «pincel» elegido; otro toque en la misma mesa la devuelve a «los trae»
               const pin = revPincel[id] || 'no';
               h += `<div class="seg pincel" role="group" aria-label="Qué marca un toque">${Object.entries(EST).map(([k,v])=>`<button data-h="pincel" data-id="${id}" data-v="${k}" aria-pressed="${pin===k}">${v}</button>`).join('')}</div>`;
               const mesa = (n, cls) => { const e = estadoDe(r,n), nom = nomDe(b.grupo,n);
+                if(!activo(b.grupo, n, b.fecha)) return `<button class="${cls} st-baja" disabled aria-label="Número ${n}: no está de alta">${n}</button>`;
                 return `<button class="${cls} st-${e}" data-h="est" data-id="${id}" data-i="${n}" aria-pressed="${e!=='si'}" aria-label="Número ${n}: ${e==='si'?'los trae':EST[e]}" title="${esc(nom)}">${n}${cls.includes('mesa')&&nom?`<small>${esc(nomCorto(nom))}</small>`:''}</button>`; };
               h += rejillaPlano(P, (k,n)=> n ? mesa(n,'mesa llena') : `<button class="mesa" disabled></button>`, NOMBRES && NOMBRES[b.grupo] ? 'connom' : '');
-              const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i)) sin.push(i);
+              const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i) && activo(b.grupo,i,b.fecha)) sin.push(i);
               if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>mesa(i,'')).join('')}</div>`;
             }else{
               // Lista desplegable: una fila por alumno; todos empiezan en «los trae» y se toca solo la excepción.
               const fil = revFiltro[id] || 'todos';
               h += `<details class="revl" data-revl="${id}" ${revPlegadas.has(id)?'':'open'}>
-                <summary><span class="cuenta"><b>${C.si}</b> ✓ · <b style="color:#b7791f">${C.medias}</b> ½ · <b style="color:var(--rojo)">${C.no}</b> ✗ · <b>${C.falta}</b> faltan · de ${N}</span></summary>
+                <summary><span class="cuenta"><b>${C.si}</b> ✓ · <b style="color:#b7791f">${C.medias}</b> ½ · <b style="color:var(--rojo)">${C.no}</b> ✗ · <b>${C.falta}</b> faltan · de ${C.activos}</span></summary>
                 <div class="filtro seg">${[['todos','Todos'],['si','Los traen'],['exc','Excepciones']].map(([k,v])=>`<button data-h="rfil" data-id="${id}" data-v="${k}" aria-pressed="${fil===k}">${v}</button>`).join('')}</div>
                 <div class="filas" role="group" aria-label="Entrega de deberes por número de lista">`;
               for(let i=1;i<=N;i++){
+                if(!activo(b.grupo, i, b.fecha)) continue;
                 const e = estadoDe(r,i); if((fil==='si' && e!=='si') || (fil==='exc' && e==='si')) continue;
                 const nom = nomDe(b.grupo,i);
                 h += `<div class="fila st-${e}" title="${esc(nom)}"><span class="n">${i}</span><span class="nom">${nom?esc(nomCorto(nom)):''}</span>
@@ -1520,7 +1565,8 @@ function pintarHoja(){
               h += `</div></details>`;
             }
             h += `<div class="lista-nota">Todos empiezan en <b>los trae</b>: marca solo ${modo==='plano'?'las mesas':'las filas'} que no; otro toque lo deshace.
-              <b>½</b> = ${esc(crit)} Los que faltan no cuentan en el porcentaje.<br>${revTxt(r, b.grupo)}.</div>`;
+              <b>½</b> = ${esc(crit)} Los que faltan no cuentan en el porcentaje.<br>${revTxt(r, b.grupo)}.
+              ${bajasTxt(b.grupo, b.fecha)?`<br>No salen (no están de alta este día): ${bajasTxt(b.grupo, b.fecha)}.`:''}</div>`;
             h += NOMBRES
               ? `<div class="nombres">Nombres de «${esc(NOMBRES_DE)}», solo mientras la app está abierta.${NOMBRES[b.grupo]?'':' No hay ninguno de este grupo.'} <button class="chip" data-h="olvidar">Olvidar nombres</button></div>`
               : `<div class="nombres"><button class="chip" data-h="nombres">Ver nombres</button> abre tu listado (CSV) del OneDrive de la GVA. No se guarda.</div>`;
@@ -1753,6 +1799,29 @@ document.getElementById('app').addEventListener('click', async e=>{
   }
   else if(a==='cargar-prog'){ leerUnidades(); ponerUnidadesProg(true); guardarCfg(); toast('Unidades de la programación puestas'); pintar(); }
   else if(a==='nombres'){ const i = $('#archivo-nombres'); i.value=''; i.click(); }
+  else if(a==='baja' || a==='alta'){
+    const g = $('#mt-g').value, f = $('#mt-f').value || hoyK(), M = (store.cfg.matricula = store.cfg.matricula || {}), m = (M[g] = M[g] || {});
+    if(a==='baja'){
+      const n = parseInt($('#mt-n').value), N = store.cfg.alumnos[g]||25;
+      if(!(n>=1 && n<=N)){ toast(`Escribe un número de lista entre 1 y ${N}`); return; }
+      m[n] = Object.assign(m[n]||{}, {baja:f}); toast(`${GRUPOS[g].nombre}: nº ${n} de baja desde el ${corta(f)}`);
+    }else{
+      const n = (store.cfg.alumnos[g]||25) + 1; ponAlumnos(g, n); m[n] = {alta:f};
+      toast(`${GRUPOS[g].nombre}: nuevo nº ${n}, desde el ${corta(f)}. Ponlo también en tu listado.`);
+    }
+    abiertos.add('aj:Altas y bajas'); guardarCfg(); pintar();
+  }
+  else if(a==='quitar-mat'){
+    const g = b.dataset.g, n = Number(b.dataset.n), m = matr(g)[n]; if(!m) return;
+    if(m.alta && n===(store.cfg.alumnos[g]||25)) ponAlumnos(g, n-1);   // deshacer una incorporación quita el último número
+    delete store.cfg.matricula[g][n]; guardarCfg(); pintar();
+  }
+  else if(a==='aplicar-dif'){
+    const d = difListado[Number(b.dataset.i)]; if(!d) return;
+    if(d.tipo==='n') ponAlumnos(d.g, d.n);
+    else{ const M = (store.cfg.matricula = store.cfg.matricula || {}); (M[d.g] = M[d.g] || {})[d.n] = Object.assign(M[d.g][d.n]||{}, {baja:hoyK()}); }
+    difListado.splice(Number(b.dataset.i), 1); guardarCfg(); pintar();
+  }
   else if(a==='csv-deberes'){
     const g = b.dataset.g, d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
     let s = 'grupo;número;revisiones presente;completos;a medias;no;faltas;% completos\r\n';
@@ -1793,8 +1862,8 @@ document.getElementById('app').addEventListener('click', async e=>{
     c.docente = $('#aj-doc').value.trim(); c.centro = $('#aj-centro').value.trim(); c.curso = $('#aj-curso').value.trim();
     if($('#aj-inicio').value) c.inicio = $('#aj-inicio').value;
     { const v = $('#aj-medias').value.trim(); if(v && v!==DEF_MEDIAS) c.criterioMedias = v; else delete c.criterioMedias; }
-    document.querySelectorAll('.aj-n').forEach(i=>{ const n = Math.max(1, Math.min(40, parseInt(i.value)||25)); c.alumnos[i.dataset.g] = n; });
-    guardarCfg(); toast('Ajustes guardados'); pintar();
+    document.querySelectorAll('.aj-n').forEach(i=>{ const n = numAlumnos(i.value, GRUPOS[i.dataset.g].nombre); if(n) c.alumnos[i.dataset.g] = n; });
+    guardarCfg(); if(!errNum) toast('Ajustes guardados'); errNum = false; pintar();
   }
 });
 document.getElementById('archivo-prog').addEventListener('change', e=>{
@@ -1822,8 +1891,15 @@ document.getElementById('archivo-nombres').addEventListener('change', e=>{
     const L = leerNombres(txt);
     if(!L){ toast('No he encontrado filas «grupo; número; nombre»'); return; }
     NOMBRES = L.out; NOMBRES_DE = f.name;
+    difListado = [];
+    for(const g in L.out){
+      const nums = Object.keys(L.out[g]).map(Number), max = Math.max(...nums), N = store.cfg.alumnos[g]||25;
+      if(max !== N) difListado.push({tipo:'n', g, n:max, txt:`${GRUPOS[g].nombre}: el listado llega al nº ${max} y el cuaderno tiene ${N}.`});
+      nums.forEach(n=>{ if(/\(\s*baja\s*\)/i.test(L.out[g][n]) && !(matr(g)[n]||{}).baja) difListado.push({tipo:'b', g, n, txt:`${GRUPOS[g].nombre}: el nº ${n} está marcado como baja en el listado.`}); });
+    }
     const gs = Object.keys(L.out).map(g=>GRUPOS[g].nombre).join(', ');
-    toast(`${L.n} nombres (${gs})${L.malas>1?` · ${L.malas} filas sin leer`:''}`);
+    toast(`${L.n} nombres (${gs})${L.malas>1?` · ${L.malas} filas sin leer`:''}${difListado.length?' · hay diferencias: míralas en Ajustes → Altas y bajas':''}`);
+    if(difListado.length) abiertos.add('aj:Altas y bajas');
     if($('#hoja').classList.contains('abierta')) pintarHoja(); else pintar();
   };
   r.readAsArrayBuffer(f);
