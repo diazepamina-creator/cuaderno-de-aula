@@ -234,6 +234,25 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .plano .mesa.st-medias,.sin-mesa button.st-medias{background:#b7791f!important;border-color:#b7791f!important;color:#fff}
 .plano .mesa.st-falta,.sin-mesa button.st-falta{background:var(--gris)!important;border-color:var(--gris)!important;color:#fff;border-style:dashed!important}
 .pincel{margin-top:10px}
+.mes-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.mes-cab .nav{display:flex;gap:6px;align-items:center}
+.mes{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
+.mes-dsem{text-align:center;font-size:12px;font-weight:700;color:var(--gris);padding:2px 0}
+.mes-d{min-height:66px;border:1px solid var(--linea);border-radius:8px;background:var(--hoja);padding:3px 4px 5px;text-align:left;display:flex;flex-direction:column;gap:3px;color:var(--tinta)}
+.mes-d .n{font-size:13px;font-weight:700;line-height:1}
+.mes-d.fuera{opacity:.38}
+.mes-d.festivo{background:transparent;border-style:dashed}
+.mes-d.festivo .n{color:var(--gris);font-weight:400}
+.mes-d.hoy{border:2px solid var(--tinta)}
+.m-cs{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}
+.m-c{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--gc);border:1.5px solid var(--gc);box-sizing:border-box;vertical-align:-1px;position:relative}
+.m-c.st-pend{background:transparent;border:2px solid var(--rojo)}
+.m-c.st-no{background:repeating-linear-gradient(135deg,var(--gc) 0 2px,transparent 2px 4px);opacity:.6}
+.m-c.st-fut{background:transparent;opacity:.75}
+.m-c.bil::after{content:'';position:absolute;right:-3px;top:-3px;width:5px;height:5px;border-radius:50%;background:#b7791f;border:1px solid var(--hoja)}
+.m-evs{display:flex;flex-wrap:wrap;gap:2px}
+.m-ev{font-size:10px;line-height:1.2;padding:0 3px;border-radius:3px;color:#fff;background:var(--gc);font-weight:700}
+.mes-ley{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin-top:10px}
 .bil-ic{vertical-align:-3px;margin-left:6px;color:#b7791f;--bil-f:#fff6e3;flex:none}
 .bil-ic.hecho{color:var(--gris);--bil-f:transparent}
 .bil-sem{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
@@ -535,7 +554,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.11.0';
+const VERSION_APP = '1.12.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -948,9 +967,10 @@ document.getElementById('app').addEventListener('toggle', e=>{
   if(d.open) abiertos.add(d.dataset.k); else abiertos.delete(d.dataset.k);
 }, true);
 function pintar(){
-  document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===vista?'page':'false'));
+  document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===(vista==='mes'?'dia':vista)?'page':'false'));
   const app = $('#app');
   if(vista==='dia') app.innerHTML = vDia();
+  else if(vista==='mes') app.innerHTML = vMes();
   else if(vista==='grupos') app.innerHTML = vGrupos();
   else if(vista==='fechas') app.innerHTML = vFechas();
   else if(vista==='exportar') app.innerHTML = vExportar();
@@ -960,6 +980,45 @@ function pintar(){
   pintarSync();
 }
 
+/* ── VISTA DEL MES ── de lunes a viernes. Cada clase es una marca del color de su grupo:
+   llena si está registrada, con borde rojo si ya ha pasado y falta registrarla, tachada si no se
+   impartió y tenue si todavía no ha llegado. Encima, las pruebas; el billete, si toca. */
+let mesSel = '';
+function vMes(){
+  if(!mesSel) mesSel = (dia||hoyK()).slice(0,7);
+  const [y,m] = mesSel.split('-').map(Number), d1 = new Date(y, m-1, 1), dN = new Date(y, m, 0), hoy = hoyK();
+  let d = masDias(d1, -((d1.getDay()+6)%7));
+  const evDia = {}; for(const e of Object.values(store.ev||{})) for(const [g,k] of Object.entries(e.fechas||{})) (evDia[k] = evDia[k] || []).push({g, e});
+  let reg = 0, pend = 0, prev = 0, h = `<header class="mes-cab"><h1 class="titulo" style="margin:0">${MESES[m-1][0].toUpperCase()+MESES[m-1].slice(1)} ${y}</h1>
+    <div class="nav"><button class="hoy" data-a="mes-vuelve">Día</button>${mesSel!==hoy.slice(0,7)?'<button class="hoy" data-a="mes-hoy">Hoy</button>':''}
+    <button class="btn-r" data-a="mes-mov" data-v="-1" aria-label="Mes anterior">‹</button><button class="btn-r" data-a="mes-mov" data-v="1" aria-label="Mes siguiente">›</button></div></header>
+    <p class="estado-sync" id="sync"></p>
+    <div class="mes" role="grid">${['L','M','X','J','V'].map(x=>`<span class="mes-dsem">${x}</span>`).join('')}`;
+  while(d <= dN || d.getDay()!==1){
+    if(d.getDay()===0 || d.getDay()===6){ d = masDias(d,1); continue; }
+    if(d > dN && d.getDay()===1) break;
+    const k = clave(d), fuera = d.getMonth()!==m-1, lect = esLectivo(k) && k >= store.cfg.inicio;
+    let marcas = '';
+    if(lect){
+      const fr = franjasDe(k);
+      for(const n of Object.keys(fr).map(Number).sort((a,b)=>a-b)){ const x = fr[n]; if(!x || !x.g) continue;
+        const s = store.ses[idSes(k,n)], st = s ? (s.estado==='no' ? 'no' : 'ok') : haTerminado(k,n) ? 'pend' : 'fut';
+        if(!fuera){ if(st==='ok') reg++; else if(st==='pend') pend++; else if(st==='fut') prev++; }
+        const bil = (s && s.billete) || (st!=='no' && tocaBillete(k,n));
+        marcas += `<i class="m-c st-${st}${bil?' bil':''}" style="--gc:${gc(x.g)}" title="${esc(GRUPOS[x.g].nombre)}"></i>`; }
+    }
+    const pr = (evDia[k]||[]).map(({g,e})=>`<b class="m-ev" style="--gc:${gc(g)}" title="${esc(TIPOS[e.tipo]+': '+e.titulo+' · '+GRUPOS[g].nombre)}">${esc(GRUPOS[g].nombre.replace(/ ?ESO ?/,'').replace('Refuerzo 4.º','R4'))}</b>`).join('');
+    h += `<button class="mes-d${fuera?' fuera':''}${k===hoy?' hoy':''}${!esLectivo(k)?' festivo':''}" data-a="mes-dia" data-k="${k}" aria-label="${larga(k)}">
+      <span class="n">${d.getDate()}</span>${pr?`<span class="m-evs">${pr}</span>`:''}<span class="m-cs">${marcas}</span></button>`;
+    d = masDias(d,1);
+  }
+  h += `</div>
+    <p class="leyenda mes-ley"><i class="m-c st-ok" style="--gc:var(--tinta)"></i> registrada · <i class="m-c st-pend" style="--gc:var(--tinta)"></i> por registrar ·
+      <i class="m-c st-no" style="--gc:var(--tinta)"></i> no impartida · <i class="m-c st-fut" style="--gc:var(--tinta)"></i> por venir · <i class="m-c st-fut bil" style="--gc:var(--tinta)"></i> billete ·
+      <b class="m-ev" style="--gc:var(--gris)">1A</b> prueba o entrega</p>
+    <p class="leyenda">Este mes: <b>${reg}</b> clases registradas${pend?` · <b style="color:var(--rojo)">${pend}</b> por registrar`:''}${prev?` · ${prev} por venir`:''}. Toca un día para abrirlo.</p>`;
+  return h;
+}
 function vDia(){
   const d = deClave(dia), w = d.getDay();
   const faltan = sinRegistrar();
@@ -967,6 +1026,7 @@ function vDia(){
     <div class="fecha"><span class="dia">${DIAS[w]}${dia===hoyK()?' · hoy':''}</span>
       <span class="num">${d.getDate()}</span><span class="mes">${MESES[d.getMonth()]}</span></div>
     <div class="nav">
+      <button class="hoy" data-a="mes" aria-label="Ver el mes">Mes</button>
       <button class="btn-r" data-a="prev" aria-label="Día anterior">‹</button>
       ${dia!==hoyK()?'<button class="hoy" data-a="hoy">Hoy</button>':''}
       <button class="btn-r" data-a="next" aria-label="Día siguiente">›</button>
@@ -1831,6 +1891,11 @@ document.getElementById('app').addEventListener('click', async e=>{
     dia = clave(d); pintar();
   }
   else if(a==='hoy'){ dia = hoyK(); pintar(); }
+  else if(a==='mes'){ mesSel = dia.slice(0,7); vista = 'mes'; pintar(); window.scrollTo(0,0); }
+  else if(a==='mes-mov'){ const [y,m] = mesSel.split('-').map(Number), d = new Date(y, m-1+Number(b.dataset.v), 1); mesSel = clave(d).slice(0,7); pintar(); }
+  else if(a==='mes-hoy'){ mesSel = hoyK().slice(0,7); pintar(); }
+  else if(a==='mes-dia'){ dia = b.dataset.k; vista = 'dia'; pintar(); window.scrollTo(0,0); }
+  else if(a==='mes-vuelve'){ vista = 'dia'; pintar(); }
   else if(a==='abrir'){ abrir(dia, Number(b.dataset.n)); }
   else if(a==='faltan'){ hojaFaltan(); }
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
