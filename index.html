@@ -394,7 +394,7 @@ const GRUPOS = {
    archivos, se lee y se queda en esta variable mientras la app está abierta: no va a localStorage,
    ni al borrador, ni a las copias de seguridad, ni a los informes. Se olvida al cerrar la app, con
    «Olvidar» o tras 20 minutos en segundo plano. El registro sigue guardando solo números. */
-let NOMBRES = null, NOMBRES_DE = '', tOculto = 0;
+let NOMBRES = null, NOMBRES_DE = '', tOculto = 0, avisoLetra = '';
 /* ── REVISIÓN DE DEBERES: cuatro estados ──
    Cada revisión guarda tres listas de números: no (no los trae), medias (a medias) y falta
    (no ha venido). Quien no está en ninguna los trae. Las revisiones antiguas solo tienen «no»
@@ -554,7 +554,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.12.0';
+const VERSION_APP = '1.12.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -912,9 +912,9 @@ function pintarSync(){
   el.innerHTML = 'Guardado en este móvil · ' + (d===null ? '<b>sin copia de seguridad todavía</b>'
     : d===0 ? 'copia de seguridad de hoy' : `última copia hace ${d} ${d===1?'día':'días'}`);
 }
-function toast(t){
+function toast(t, ms){
   const el = $('#toast'); el.textContent = t; el.classList.add('si');
-  clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('si'), 1800);
+  clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('si'), ms || 1800);
 }
 /* Desplegables: Ajustes entero y las secciones de consulta de Grupos (marcadas con data-plegar).
    Se cierran por defecto y recuerdan lo abierto mientras la app está abierta (al guardar o
@@ -2132,6 +2132,15 @@ document.getElementById('hoja').addEventListener('click', e=>{
     const b2 = borrador;
     if(b2.grupo && b2.estado==='no' && !b2.motivo){ toast('Elige el motivo'); return; }
     if(b2.grupo && b2.estado!=='no' && !b2.contenido.trim() && !b2.material.trim()){ toast('Escribe qué se ha hecho'); return; }
+    // Letra suelta al final de un texto (la «w» de la fila de arriba del teclado al ir a tocar
+    // otra cosa): se avisa una vez; si se vuelve a pulsar Guardar, se guarda tal cual.
+    { const NOM = {contenido:'Qué se ha hecho', deberes:'Deberes', cambio:'Qué cambié', observacion:'Observación', notas:'Notas', ptNotas:'Trabajo con la PT'};
+      const sosp = Object.keys(NOM).find(k=>{ const v = String(b2[k]||'').trim(); return /(^|[\s.,;:])[a-zñ]$/i.test(v) && !/(^|\s)[yoeuaYOEUA]$/.test(v) || /[a-záéíóúñ]w$/i.test(v); });
+      if(sosp && avisoLetra !== abiertoId+sosp){ avisoLetra = abiertoId+sosp;
+        const v = String(b2[sosp]).trim(); toast(`«${NOM[sosp]}» acaba en «${v.slice(-1)}»: ¿se ha colado? Corrígelo o pulsa Guardar otra vez`, 5000);
+        const el = document.querySelector(`#hoja [data-f="${sosp}"]`); if(el){ el.focus(); try{ el.setSelectionRange(el.value.length, el.value.length); }catch(e){} }
+        return; }
+      avisoLetra = ''; }
     if(b2.material){
       const nuevos = b2.material.split(/,\s*/).map(x=>x.trim()).filter(Boolean);
       const m = store.cfg.materiales; let cambio = false;
