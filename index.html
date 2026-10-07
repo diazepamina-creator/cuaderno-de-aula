@@ -234,6 +234,22 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .plano .mesa.st-medias,.sin-mesa button.st-medias{background:#b7791f!important;border-color:#b7791f!important;color:#fff}
 .plano .mesa.st-falta,.sin-mesa button.st-falta{background:var(--gris)!important;border-color:var(--gris)!important;color:#fff;border-style:dashed!important}
 .pincel{margin-top:10px}
+details.pends{border-top:0;margin:0 0 14px;padding:8px 12px;border:1px solid var(--linea);border-radius:12px;background:var(--hoja)}
+.pend-l{list-style:none;padding:0;margin:6px 0}
+.pend{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--linea)}
+.pend:first-child{border-top:0}
+.pend-ok{flex:none;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--linea);background:var(--hoja);font-weight:700;color:var(--tinta);padding:0}
+.pend-ok[aria-pressed="true"]{background:var(--tinta);color:#fff;border-color:var(--tinta)}
+.pend-t{flex:1;text-align:left;border:0;background:none;padding:0;font-size:15px;color:var(--tinta)}
+.pend-t small{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+.pend.hecho .pend-t{color:var(--gris);text-decoration:line-through}
+.ev-pasos{margin:-6px 0 12px;padding:8px 10px;border:1px solid var(--linea);border-top:0;border-radius:0 0 12px 12px;background:var(--papel)}
+.ev-paso{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
+.ev-paso .chip[aria-pressed="true"]{background:var(--tinta);color:#fff;border-color:var(--tinta)}
+.res-gs{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.res-g{border:1px solid var(--linea);border-radius:12px;background:var(--hoja);padding:10px 12px}
+.res-g ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.res-g li{margin:2px 0}
 .mes-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
 .mes-cab .nav{display:flex;gap:6px;align-items:center}
 .mes{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
@@ -554,7 +570,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.12.1';
+const VERSION_APP = '1.13.0';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -967,10 +983,11 @@ document.getElementById('app').addEventListener('toggle', e=>{
   if(d.open) abiertos.add(d.dataset.k); else abiertos.delete(d.dataset.k);
 }, true);
 function pintar(){
-  document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===(vista==='mes'?'dia':vista)?'page':'false'));
+  document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===(vista==='mes'||vista==='resumen'?'dia':vista)?'page':'false'));
   const app = $('#app');
   if(vista==='dia') app.innerHTML = vDia();
   else if(vista==='mes') app.innerHTML = vMes();
+  else if(vista==='resumen') app.innerHTML = vResumen();
   else if(vista==='grupos') app.innerHTML = vGrupos();
   else if(vista==='fechas') app.innerHTML = vFechas();
   else if(vista==='exportar') app.innerHTML = vExportar();
@@ -979,6 +996,98 @@ function pintar(){
   plegar(app);
   pintarSync();
 }
+
+/* ── PENDIENTES ── lo que escribes en una sesión como «Pendiente: …» (en notas u observación)
+   y el paso siguiente de cada prueba ya hecha (corregir → devolver → pasar a ITACA).
+   Lo resuelto se guarda en cfg.pendHechos {clave: fecha}, que va en la copia de seguridad. */
+const PASOS = [['corregida','corregir'],['devuelta','devolver'],['itaca','pasar las notas a ITACA']];
+const PASO_N = {corregida:'Corregida', devuelta:'Devuelta', itaca:'En ITACA'};
+const hashTxt = s => { let h = 0; for(const c of s) h = (h*31 + c.charCodeAt(0)) | 0; return (h>>>0).toString(36); };
+function pendientes(){
+  const H = store.cfg.pendHechos || {}, L = [];
+  for(const [id,s] of Object.entries(store.ses)){
+    for(const campo of ['notas','observacion']){
+      const txt = String(s[campo]||''); const re = /Pendiente:\s*([\s\S]+?)(?=\s*Pendiente:|$)/gi; let m;
+      while((m = re.exec(txt))){ const q = m[1].trim().replace(/[.;,]+$/,''); if(!q) continue;
+        const k = `n|${id}|${hashTxt(q)}`;
+        L.push({k, tipo:'nota', txt:q, fecha:s.fecha, g:s.grupo, o:s.otra, id, hecho:H[k]||''}); }
+    }
+  }
+  const hoy = hoyK();
+  for(const [eid,e] of Object.entries(store.ev||{})){
+    if(e.tipo==='otro') continue;
+    for(const [g,k] of Object.entries(e.fechas||{})){
+      if(k > hoy || !GRUPOS[g]) continue;
+      const E = (e.estado||{})[g] || {}, sig = PASOS.find(([c])=>!E[c]);
+      if(sig) L.push({k:`e|${eid}|${g}|${sig[0]}`, tipo:'prueba', eid, paso:sig[0], txt:`${e.titulo}: ${sig[1]}`, fecha:k, g, hecho:''});
+    }
+  }
+  return L.sort((a,b)=>a.fecha<b.fecha?-1:1);
+}
+function marcaPaso(eid, g, paso, valor){
+  const e = store.ev[eid]; if(!e) return;
+  e.estado = e.estado || {}; e.estado[g] = e.estado[g] || {};
+  if(valor) e.estado[g][paso] = valor; else delete e.estado[g][paso];
+  e.actualizado = new Date().toISOString(); guardarLocal();
+}
+let verResueltos = false;
+function bloquePendientes(){
+  const L = pendientes(), abiertos = L.filter(x=>!x.hecho), hechos = L.filter(x=>x.hecho);
+  if(!L.length) return '';
+  const et = x => x.g ? `<span class="grupo" style="--gc:${gc(x.g)}">${esc(GRUPOS[x.g].nombre.replace(' ESO',''))}</span>` : x.o ? `<span class="grupo" style="--gc:var(--gX)">${esc(OTRAS[x.o]||'')}</span>` : '';
+  const fila = x => `<li class="pend${x.hecho?' hecho':''}"><button class="pend-ok" data-a="pend" data-k="${esc(x.k)}" aria-pressed="${!!x.hecho}" aria-label="${x.hecho?'Volver a abrir':'Hecho'}">${x.hecho?'✓':''}</button>
+    <button class="pend-t" data-a="${x.tipo==='nota'?'ir':'ir-fecha'}" data-id="${x.tipo==='nota'?x.id:x.eid}">${et(x)} ${esc(x.txt)}
+      <small>${x.tipo==='nota'?'apuntado el '+corta(x.fecha):'prueba del '+corta(x.fecha)}${x.hecho?' · hecho el '+corta(x.hecho):''}</small></button></li>`;
+  return `<details class="pleg pends" data-k="g:pend" ${abiertosP(abiertos.length) ? 'open' : ''}><summary><b>Pendientes</b><span class="res">${abiertos.length ? abiertos.length+' por hacer' : 'nada pendiente'}</span></summary>
+    <ul class="pend-l">${abiertos.map(fila).join('') || '<li class="nota">Todo hecho.</li>'}</ul>
+    ${hechos.length ? `<button class="chip" data-a="pend-ver">${verResueltos?'Ocultar':'Ver'} los resueltos (${hechos.length})</button>${verResueltos?`<ul class="pend-l">${hechos.map(fila).join('')}</ul>`:''}` : ''}
+    <p class="leyenda">Se recoge lo que escribes como «Pendiente: …» en una sesión, y el paso siguiente de cada prueba ya hecha.</p></details>`;
+}
+// abierto si hay algo por hacer, salvo que lo hayas cerrado tú; recuerda lo que eliges mientras la app está abierta
+const pendToc = { };
+function abiertosP(n){ return pendToc.k !== undefined ? pendToc.k : n > 0; }
+document.getElementById('app').addEventListener('toggle', e=>{ const d = e.target; if(d.dataset && d.dataset.k==='g:pend') pendToc.k = d.open; }, true);
+
+/* ── RESUMEN DE LA SEMANA ── */
+let semRes = '';
+function vResumen(){
+  if(!semRes) semRes = dia || hoyK();
+  const d = deClave(semRes), lun = masDias(d, -((d.getDay()+6)%7)), vie = masDias(lun, 4);
+  const l = clave(lun), v = clave(vie), hoy = hoyK();
+  const fin = v < hoy ? v : hoy;
+  let txt = [`Semana del ${corta(l)} al ${corta(v)}`], h = `<header class="mes-cab"><h1 class="titulo" style="margin:0">La semana</h1>
+    <div class="nav"><button class="hoy" data-a="res-vuelve">Día</button>
+    <button class="btn-r" data-a="res-mov" data-v="-7" aria-label="Semana anterior">‹</button><button class="btn-r" data-a="res-mov" data-v="7" aria-label="Semana siguiente">›</button></div></header>
+    <p class="leyenda" style="margin-top:2px">Del ${larga(l)} al ${larga(v)}</p><p class="estado-sync" id="sync"></p>`;
+  h += `<div class="res-gs">`;
+  for(const g of Object.keys(GRUPOS)){
+    const I = indicadores(g, l, fin);
+    const ses = sesionesDe(g).map(([,s])=>s).filter(s=>s.fecha>=l && s.fecha<=v);
+    const bil = ses.filter(s=>s.billete), bn = bil.reduce((a,s)=>a+(bilN(s.billete.n)||0),0), bb = bil.reduce((a,s)=>a+(bilN(s.billete.bien)||0),0);
+    const prs = Object.values(store.ev||{}).filter(e=>e.fechas && e.fechas[g] && e.fechas[g]>=l && e.fechas[g]<=v);
+    if(!I.previstas && !ses.length && !prs.length) continue;
+    const linea = [
+      `${I.dadas} de ${I.previstas} clases impartidas${I.noDadas?` (${I.noDadas} sin impartir)`:''}${I.sinRegistrar?` · <b style="color:var(--rojo)">${I.sinRegistrar} sin registrar</b>`:''}`,
+      I.perd.n ? `${I.perd.mIni} + ${I.perd.mFin} min perdidos por clase (${minTxt(I.perd.total)} en total)` : '',
+      I.climaN ? `clima: ${I.clima.bien} bien, ${I.clima.regular} a ratos, ${I.clima.mal} mal` : '',
+      I.entrega!==null ? `deberes completos: ${I.entrega} %${I.entregaMedias?` (+${I.entregaMedias} % a medias)`:''}` : '',
+      bil.length ? `billete${bil.length>1?'s':''}: ${bn ? Math.round(100*bb/bn)+' % bien' : 'sin corregir'}` : '',
+      prs.length ? prs.map(e=>`${TIPOS[e.tipo].toLowerCase()} el ${corta(e.fechas[g])}`).join(', ') : ''
+    ].filter(Boolean);
+    h += `<div class="res-g"><span class="grupo" style="--gc:${gc(g)}">${esc(GRUPOS[g].nombre)}</span><ul>${linea.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+    txt.push(`${GRUPOS[g].nombre}: ${linea.map(x=>x.replace(/<[^>]+>/g,'')).join('; ')}.`);
+  }
+  h += `</div>`;
+  const P = pendientes(), ab = P.filter(x=>!x.hecho), res = P.filter(x=>x.hecho && x.hecho>=l && x.hecho<=v);
+  h += `<div class="res-g"><b>Pendientes</b><ul>${ab.length ? ab.map(x=>`<li>${x.g?esc(GRUPOS[x.g].nombre.replace(' ESO',''))+': ':''}${esc(x.txt)}</li>`).join('') : '<li>Nada pendiente.</li>'}</ul>
+    ${res.length?`<p class="leyenda">Resueltos esta semana: ${res.length}.</p>`:''}</div>`;
+  txt.push(`Pendientes: ${ab.length ? ab.map(x=>(x.g?GRUPOS[x.g].nombre.replace(' ESO','')+': ':'')+x.txt).join('; ') : 'ninguno'}.`);
+  resumenTexto = txt.join('\n');
+  h += `<button class="bloque-btn" data-a="res-copiar">Copiar como texto</button>
+    <p class="leyenda">Para el diario de mejora o una reunión. Solo números de grupo y recuentos: no lleva datos de alumnos.</p>`;
+  return h;
+}
+let resumenTexto = '';
 
 /* ── VISTA DEL MES ── de lunes a viernes. Cada clase es una marca del color de su grupo:
    llena si está registrada, con borde rojo si ya ha pasado y falta registrarla, tachada si no se
@@ -1016,6 +1125,7 @@ function vMes(){
     <p class="leyenda mes-ley"><i class="m-c st-ok" style="--gc:var(--tinta)"></i> registrada · <i class="m-c st-pend" style="--gc:var(--tinta)"></i> por registrar ·
       <i class="m-c st-no" style="--gc:var(--tinta)"></i> no impartida · <i class="m-c st-fut" style="--gc:var(--tinta)"></i> por venir · <i class="m-c st-fut bil" style="--gc:var(--tinta)"></i> billete ·
       <b class="m-ev" style="--gc:var(--gris)">1A</b> prueba o entrega</p>
+    <button class="chip" data-a="resumen" style="margin-top:8px">Resumen de la semana</button>
     <p class="leyenda">Este mes: <b>${reg}</b> clases registradas${pend?` · <b style="color:var(--rojo)">${pend}</b> por registrar`:''}${prev?` · ${prev} por venir`:''}. Toca un día para abrirlo.</p>`;
   return h;
 }
@@ -1038,8 +1148,11 @@ function vDia(){
   }
   if(tocaCopia()){
     h += `<button class="aviso copia" data-a="copia"><span>Toca la copia de seguridad de la semana
-      <small>Un toque: elige OneDrive y la carpeta de copias</small></span><span aria-hidden="true">›</span></button>`;
+      <small>Un toque: elige OneDrive y la carpeta de copias</small></span><span aria-hidden="true">›</span></button>
+      <button class="aviso" data-a="resumen"><span>Antes, mira el resumen de la semana
+      <small>Clases, minutos, deberes, billetes y pendientes</small></span><span aria-hidden="true">›</span></button>`;
   }
+  h += bloquePendientes();
   const px = proximas(14);
   if(px.length){
     h += `<ul class="prox" aria-label="Próximas fechas">${px.slice(0,5).map(x=>`<li><button data-a="ir-fecha" data-id="${x.id}">
@@ -1363,6 +1476,14 @@ function accionPlano(a, b){
   const y = window.scrollY; pintar(); window.scrollTo(0,y);
 }
 
+function pasosEv(id, e){
+  if(e.tipo==='otro') return '';
+  const hoy = hoyK(), gs = Object.entries(e.fechas||{}).filter(([g,k])=>k<=hoy && GRUPOS[g]).sort((a,b)=>a[1]<b[1]?-1:1);
+  if(!gs.length) return '';
+  return `<div class="ev-pasos">${gs.map(([g])=>{ const E = (e.estado||{})[g] || {};
+    return `<div class="ev-paso"><span class="grupo" style="--gc:${gc(g)}">${esc(GRUPOS[g].nombre.replace(' ESO',''))}</span>
+      ${PASOS.map(([c])=>`<button class="chip" data-a="ev-paso" data-id="${id}" data-g="${g}" data-p="${c}" aria-pressed="${!!E[c]}">${E[c]?'✓ ':''}${PASO_N[c]}${E[c]?' '+corta(E[c]):''}</button>`).join('')}</div>`; }).join('')}</div>`;
+}
 function vFechas(){
   const hoy = hoyK();
   const evs = Object.entries(store.ev||{}).map(([id,e])=>{
@@ -1373,7 +1494,7 @@ function vFechas(){
   const tarjeta = ({id,e}) => `<button class="ev" data-a="ir-fecha" data-id="${id}"><h4>${TIPOS[e.tipo]}: ${esc(e.titulo)}</h4>
     <ul>${Object.entries(e.fechas).sort((a,b)=>a[1]<b[1]?-1:1).map(([g,k])=>{ const f = diasHasta(k);
       return `<li><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span> ${larga(k)}${f>=0?` <span class="t">· ${cuenta({g,k,falta:f})}</span>`:''}</li>`; }).join('')}</ul>
-    ${e.notas?`<div class="t" style="margin-top:4px">${esc(e.notas)}</div>`:''}</button>`;
+    ${e.notas?`<div class="t" style="margin-top:4px">${esc(e.notas)}</div>`:''}</button>${pasosEv(id, e)}`;
   let h = `<h1 class="titulo">Fechas</h1><p class="estado-sync" id="sync"></p>
     <button class="bloque-btn lleno" data-a="nueva-fecha" style="margin:0 0 16px">Añadir prueba o entrega</button>`;
   h += futuras.length ? futuras.map(tarjeta).join('') : `<div class="vacio">No hay fechas próximas.<br>Apunta pruebas y entregas en cuanto las fijes: la app te dirá cuántas clases te quedan.</div>`;
@@ -1416,6 +1537,7 @@ function leerFecha(){
 function vExportar(){
   const hoy = hoyK();
   let h = `<h1 class="titulo">Exportar</h1><p class="estado-sync" id="sync"></p>
+  <button class="bloque-btn" data-a="resumen" style="margin:0 0 14px">Resumen de la semana</button>
   <div class="panel">
     <p>El registro de aula de las fechas y grupos que elijas, listo para imprimir o enseñar en una auditoría.</p>
     <div class="fila2">
@@ -1896,6 +2018,21 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='mes-hoy'){ mesSel = hoyK().slice(0,7); pintar(); }
   else if(a==='mes-dia'){ dia = b.dataset.k; vista = 'dia'; pintar(); window.scrollTo(0,0); }
   else if(a==='mes-vuelve'){ vista = 'dia'; pintar(); }
+  else if(a==='resumen'){ semRes = dia || hoyK(); vista = 'resumen'; pintar(); window.scrollTo(0,0); }
+  else if(a==='res-mov'){ semRes = clave(masDias(deClave(semRes), Number(b.dataset.v))); pintar(); }
+  else if(a==='res-vuelve'){ vista = 'dia'; pintar(); }
+  else if(a==='res-copiar'){ try{ await navigator.clipboard.writeText(resumenTexto); toast('Resumen copiado'); }catch(e){ toast('No se ha podido copiar'); } }
+  else if(a==='pend-ver'){ verResueltos = !verResueltos; abiertos.add('g:pend'); pintar(); }
+  else if(a==='pend'){
+    const k = b.dataset.k;
+    if(k.startsWith('e|')){ const [, eid, g, paso] = k.split('|'); marcaPaso(eid, g, paso, hoyK()); toast(`${PASO_N[paso]}: apuntado con fecha de hoy`); }
+    else{ const H = store.cfg.pendHechos = store.cfg.pendHechos || {}; if(H[k]) delete H[k]; else H[k] = hoyK(); guardarCfg(); }
+    pintar();
+  }
+  else if(a==='ev-paso'){
+    const e = store.ev[b.dataset.id], g = b.dataset.g, paso = b.dataset.p, E = ((e&&e.estado)||{})[g] || {};
+    marcaPaso(b.dataset.id, g, paso, E[paso] ? '' : hoyK()); pintar();
+  }
   else if(a==='abrir'){ abrir(dia, Number(b.dataset.n)); }
   else if(a==='faltan'){ hojaFaltan(); }
   else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
