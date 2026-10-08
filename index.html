@@ -155,6 +155,7 @@ details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:
 .recreo{font-size:13px;color:var(--gris);text-align:center;margin:2px 0 10px;letter-spacing:.3px}
 .pt{display:inline-block;font-size:12px;font-weight:700;color:var(--tinta);border:1.5px solid var(--tinta);
   border-radius:10px;padding:0 6px;margin-left:6px;line-height:18px;vertical-align:1px}
+.pt.no{opacity:.4;border-style:dashed}
 .vacio{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:18px;text-align:center;color:var(--gris)}
 .vacio b{color:var(--grafito)}
 
@@ -457,6 +458,7 @@ function tocaBillete(k, n){
   const o = (store.cfg.billeteDia||{})[`${k}_${n}`]; if(o!==undefined) return o;
   return (store.cfg.billetes||[]).includes(slotDe(k, n));
 }
+const icoPT = no => `<span class="pt${no?' no':''}" title="${no?'La PT no ha venido':'Con PT'}" aria-label="${no?'La PT no ha venido':'Con PT'}">PT</span>`;
 const icoBillete = (hecho, t) => `<svg class="bil-ic${hecho?' hecho':''}" viewBox="0 0 28 18" width="26" height="17" role="img" aria-label="${t}"><title>${t}</title>
   <path d="M2 3a1.5 1.5 0 0 1 1.5-1.5h21A1.5 1.5 0 0 1 26 3v3.2a2.8 2.8 0 0 0 0 5.6V15a1.5 1.5 0 0 1-1.5 1.5h-21A1.5 1.5 0 0 1 2 15v-3.2a2.8 2.8 0 0 0 0-5.6z" fill="var(--bil-f)" stroke="currentColor" stroke-width="1.4"/>
   <path d="M19 3.5v11" stroke="currentColor" stroke-width="1.1" stroke-dasharray="1.6 1.6"/>
@@ -570,7 +572,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.13.0';
+const VERSION_APP = '1.13.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -1183,14 +1185,16 @@ function vDia(){
     const ahora = dia===hoyK() && ahoraMin()>=minutos(f.ini) && ahoraMin()<minutos(f.fin);
     if(x.g){
       const fx = fechasDe(x.g, dia).map(e=>`<span class="etq">${TIPOS[e.tipo]}</span>`).join('');
-      let marca = '', sub = `Aula ${x.aula}${x.pt?'<span class="pt">con PT</span>':''}${fx}`;
+      let marca = '', sub = `Aula ${x.aula}${fx}`;
+      // la PT, junto al grupo: se ve también con la sesión registrada; translúcida si no ha venido
+      const ptHoy = (x.pt || (s && s.pt)) && !(s && s.estado==='no') ? icoPT(s && s.pt==='no') : '';
       if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
       else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
       if(borr.ses[id]){ marca = `<span class="marca borr">✎ borrador</span>`; }
       else if(!s && haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
       h += `<li><button class="fr${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
         <span class="hora"><b>${f.ini}</b>${f.fin}</span>
-        <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span>${s&&s.billete ? icoBillete(true,'Billete de salida hecho') : tocaBillete(dia,f.n) && !(s&&s.estado==='no') ? icoBillete(false,'Toca billete de salida') : ''}<div class="sub">${sub}</div></span>
+        <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span>${ptHoy}${s&&s.billete ? icoBillete(true,'Billete de salida hecho') : tocaBillete(dia,f.n) && !(s&&s.estado==='no') ? icoBillete(false,'Toca billete de salida') : ''}<div class="sub">${sub}</div></span>
         ${marca}</button></li>`;
     }else{
       const marca = borr.ses[id] ? `<span class="marca borr">✎ borrador</span>` : s ? `<span class="marca ok">✓ anotada</span>` : '';
