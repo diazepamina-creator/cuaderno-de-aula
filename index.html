@@ -184,6 +184,7 @@ details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:
 .cerrar{height:44px;padding:0 14px;border-radius:22px;border:1.5px solid var(--linea);background:var(--hoja)}
 .campo{margin:16px 0}
 .campo > label,.campo > .et{display:block;font-weight:700;margin-bottom:6px}
+.priv{display:inline-block;font-size:12px;font-weight:400;color:var(--gris);margin:2px 0 4px}
 .campo .ayuda{font-size:14px;color:var(--gris);font-weight:400}
 textarea,input[type=text],input[type=date],input[type=number]{
   width:100%;border:1.5px solid var(--linea);background:var(--hoja);border-radius:10px;padding:10px 12px;font-size:17px}
@@ -606,6 +607,33 @@ function guardarLocal(){
 // Cada registro guarda cuándo se creó y un historial de qué campos se
 // cambiaron y cuándo: es lo que pide una auditoría para fiarse de un
 // registro que se puede editar.
+/* ══ LA FRONTERA DE LA IA (1.3) ══════════════════════════════════════════
+   Lo que puede salir del móvil hacia una IA (Claude, la API o cualquier otra) y
+   lo que NUNCA sale. Se decide aquí, en el código, no a ojo cada vez:
+   · Sale (IA_SI): lo que se hizo con el grupo, a nivel de grupo.
+   · Nunca sale: la revisión de deberes por número de lista, los planos del
+     aula, las notas de la PT y «Otras notas» (ahí van alumnos concretos,
+     incidencias, convivencia), y la configuración (número de alumnos, bajas).
+   Aun así, en lo que sale se buscan resbalones (IA_RIESGO: ACIS, NEAE,
+   convivencia, «el n.º 12», «un alumno con…») y se avisan antes de copiar.
+   Cualquier función que mande algo a una IA tiene que pasar por paraIA(). */
+const IA_SI = ['fecha','franja','grupo','unidad','estado','contenido','material','deberes','clima','perdIni','perdFin','cambio','observacion'];
+const IA_PRIVADO = ['revisiones','pt','ptNotas','notas','motivo','aula','historial','creado','actualizado'];
+const IA_RIESGO = [/(?<![\p{L}\d])(ACIS|ACI|NEAE|NESE|NEE|TDAH|TEA)(?![\p{L}\d])/gu,   // las siglas, en mayúsculas
+  /(?<![\p{L}\d])(dislexia|orientaci[oó]n|convivencia|expulsi[oó]n|expulsad[oa]s?|parte de (?:incidencia|disciplina)|familia|madre|padre|n\.?\s?º\s?\d+|n[uú]mero\s+\d+|(?:un|una|el|la)\s+alumn[oa]|(?:un|una|el|la)\s+chic[oa])(?![\p{L}\d])/giu];
+function paraIA(s){
+  const o = {};
+  IA_SI.forEach(k=>{ const v = s[k]; if(v!==undefined && v!==null && v!=='') o[k] = v; });
+  if(s.billete) o.billete = {pregunta: s.billete.pregunta||'', entregados: s.billete.n||'', bien: s.billete.bien||'', medias: s.billete.medias||'', mal: s.billete.mal||'', error: s.billete.error||''};
+  return o;
+}
+function riesgosIA(o){
+  const r = [];
+  const mira = (campo, t) => { if(typeof t !== 'string') return; for(const re of IA_RIESGO) for(const m of t.matchAll(re)) r.push({campo, palabra: m[0]}); };
+  for(const [k,v] of Object.entries(o)){ if(v && typeof v === 'object') for(const [k2,v2] of Object.entries(v)) mira(k+'.'+k2, v2); else mira(k, v); }
+  return r;
+}
+/* fin de la frontera */
 const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','billete','reconstruido','fuente'];
 function guardarSesion(id, datos){
   const ahora = new Date().toISOString(), prev = store.ses[id];
@@ -1553,6 +1581,9 @@ function vExportar(){
   h += `<label><input type="checkbox" class="ex-g" value="otras" checked> Guardias y otras</label></div>
     <button class="bloque-btn lleno" data-a="ex-html">Descargar el registro (para imprimir)</button>
     <button class="bloque-btn" data-a="ex-csv">Descargar la tabla (CSV)</button>
+    <button class="bloque-btn" data-a="ex-ia">Copiar para la IA (sin lo privado)</button>
+    <p class="nota" style="margin-top:6px">Solo lo que se hizo con cada grupo. Nunca la revisión por número, los planos, la PT ni «Otras notas».</p>
+    <div id="ex-ia-aviso"></div>
   </div>
   <div class="panel">
     <p>Una copia de todo el cuaderno. Los datos solo están en este móvil: guárdala en Drive cada semana.
@@ -1793,7 +1824,7 @@ function pintarHoja(){
               }
               h += `</div></details>`;
             }
-            h += `<div class="lista-nota">Todos empiezan en <b>los trae</b>: marca solo ${modo==='plano'?'las mesas':'las filas'} que no; otro toque lo deshace.
+            h += `<div class="lista-nota"><span class="priv">🔒 La revisión por número no sale nunca del móvil.</span><br>Todos empiezan en <b>los trae</b>: marca solo ${modo==='plano'?'las mesas':'las filas'} que no; otro toque lo deshace.
               <b>½</b> = ${esc(crit)} Los que faltan no cuentan en el porcentaje.<br>${revTxt(r, b.grupo)}.
               ${bajasTxt(b.grupo, b.fecha)?`<br>No salen (no están de alta este día): ${bajasTxt(b.grupo, b.fecha)}.`:''}</div>`;
             h += NOMBRES
@@ -1810,7 +1841,7 @@ function pintarHoja(){
       ${b.pt ? `<div class="campo"><span class="et">Apoyo de PT en el aula</span>
         <div class="seg dos"><button data-h="pt" data-v="si" aria-pressed="${b.pt!=='no'}">Ha estado</button>
         <button data-h="pt" data-v="no" aria-pressed="${b.pt==='no'}">No ha venido</button></div>
-        ${b.pt!=='no' ? `<textarea id="h-pt" data-f="ptNotas" style="min-height:64px;margin-top:8px" placeholder="Qué se ha hecho con la PT: apoyo a un grupo, adaptación de la ficha…">${esc(b.ptNotas||'')}</textarea>` : ''}
+        ${b.pt!=='no' ? `<span class="priv">🔒 solo en este móvil: no sale hacia ninguna IA</span><textarea id="h-pt" data-f="ptNotas" style="min-height:64px;margin-top:8px" placeholder="Qué se ha hecho con la PT: apoyo a un grupo, adaptación de la ficha…">${esc(b.ptNotas||'')}</textarea>` : ''}
       </div>` : ''}
       <div class="campo"><span class="et">¿Cómo ha ido el aula?</span><div class="seg">
         ${Object.entries(CLIMA).map(([k,v])=>`<button data-h="clima" data-v="${k}" aria-pressed="${b.clima===k}">${v}</button>`).join('')}
@@ -1838,7 +1869,7 @@ function pintarHoja(){
         <div class="campo"><label for="h-obs">Qué observé</label>
           <textarea id="h-obs" data-f="observacion" style="min-height:64px" placeholder="Errores típicos, qué funcionó, qué no">${esc(b.observacion)}</textarea></div>
       </details>
-      <div class="campo"><label for="h-notas">Otras notas</label><textarea id="h-notas" data-f="notas" style="min-height:56px">${esc(b.notas)}</textarea></div>`;
+      <div class="campo"><label for="h-notas">Otras notas <span class="priv">🔒 solo en este móvil</span></label><textarea id="h-notas" data-f="notas" style="min-height:56px">${esc(b.notas)}</textarea></div>`;
     }
   }
   const orig = store.ses[abiertoId];
@@ -1890,6 +1921,14 @@ const perdTxt = s => { const a = s.perdIni!==undefined && s.perdIni!=='', b = s.
 const textoRev = s => (s.revisiones||[]).map(r=>{
   const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])} (nº de lista): ${revTxt(r)}`;
 }).join('; ');
+/* el texto que se copia para una IA: solo lo que deja pasar paraIA() */
+function textoIA(f){
+  return f.map(o=>[`${o.fecha} · ${o.grupo?GRUPOS[o.grupo].nombre:'Otras'}${o.grupo&&o.unidad?' · '+nombreUnidad(o.grupo,o.unidad):''}${o.estado==='no'?' · no impartida':''}`,
+    o.contenido?'Qué se hizo: '+o.contenido:'', o.material?'Material: '+o.material:'', o.deberes?'Deberes: '+o.deberes:'',
+    o.clima?'Clima: '+CLIMA[o.clima]:'', (o.perdIni!==undefined||o.perdFin!==undefined)?`Minutos perdidos: ${o.perdIni??'—'} al empezar, ${o.perdFin??'—'} al acabar`:'',
+    o.billete?`Billete de salida: ${o.billete.pregunta}${o.billete.entregados?` (${o.billete.entregados} entregados; bien ${o.billete.bien||'—'}, a medias ${o.billete.medias||'—'}, mal ${o.billete.mal||'—'})`:''}${o.billete.error?'. Error: '+o.billete.error:''}`:'',
+    o.cambio?'Cambio: '+o.cambio:'', o.observacion?'Observación: '+o.observacion:''].filter(Boolean).join('\n')).join('\n\n');
+}
 function csv(){
   const f = filasExport();
   const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Billete de salida','Clima del aula','Min. perdidos al empezar','Min. perdidos al acabar','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
@@ -2102,6 +2141,16 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='ir-fecha'){ abrirFecha(b.dataset.id); }
   else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
   else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
+  else if(a==='ex-ia'){
+    const f = filasExport().map(paraIA), r = f.flatMap((o,i)=>riesgosIA(o).map(x=>({...x, fecha:o.fecha, grupo:o.grupo})));
+    const txt = textoIA(f);
+    const av = $('#ex-ia-aviso');
+    if(r.length && !(av && av.dataset.visto==='1')){
+      av.innerHTML = `<div class="nota" style="color:var(--rojo);margin-top:8px"><b>Antes de copiar, revisa ${r.length===1?'esto':'estas '+r.length+' cosas'}</b> (pueden señalar a un alumno concreto):<br>${r.slice(0,12).map(x=>`${x.fecha} · ${x.grupo?GRUPOS[x.grupo].nombre:''} · ${esc(x.campo)}: «${esc(x.palabra)}»`).join('<br>')}${r.length>12?'<br>…':''}<br>Corrígelo en esas sesiones, o vuelve a pulsar para copiar igualmente.</div>`;
+      av.dataset.visto = '1'; return; }
+    if(av){ av.innerHTML = ''; delete av.dataset.visto; }
+    try{ await navigator.clipboard.writeText(txt); toast(`Copiadas ${f.length} sesiones, sin lo privado`); }catch(e){ toast('No se ha podido copiar'); }
+  }
   else if(a==='ex-csv'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.csv`, csv(), 'text/csv'); }
   else if(a==='ex-json' || a==='copia'){ await copiaSeguridad(); }
   else if(a==='instalar'){ if(instalable){ instalable.prompt(); instalable = null; } }
