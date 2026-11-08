@@ -388,6 +388,7 @@ details.pleg>summary{font-size:17px;padding:4px 0}
 <input type="file" id="archivo-nombres" accept=".csv,.txt,text/csv,text/plain" class="sr" tabindex="-1" aria-hidden="true">
 <input type="file" id="archivo-prog" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
 
+<script src="capacitor.js"></script>
 <script>
 /* ═══════════════════════════ DATOS FIJOS ═══════════════════════════ */
 const FRANJAS = [
@@ -573,7 +574,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.14.2';
+const VERSION_APP = '1.15';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -601,6 +602,7 @@ function leerLocal(){
 }
 let avisado = false;
 function guardarLocal(){
+  if(typeof avProgramar==='function') avProgramar();   // en la APK, los avisos se rehacen con cada cambio
   try{ localStorage.setItem(LS, JSON.stringify({store})); }
   catch(e){ if(!avisado){ avisado = true; alert('El móvil no ha dejado guardar. Haz una copia de seguridad desde Exportar.'); } }
 }
@@ -719,11 +721,93 @@ const mismos = (a,b) => CAMPOS.every(k => JSON.stringify(a[k]??'') === JSON.stri
 function quitarBorrador(id){ if(borr.ses[id]){ delete borr.ses[id]; guardarBorr(); } }
 let instalable = null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); instalable = e; if(vista==='ajustes') pintar(); });
-const instalada = () => window.matchMedia('(display-mode: standalone)').matches;
+/* ── LA APP DE ANDROID (1.15) ──
+   El mismo index.html va dentro de una APK (Capacitor, carpeta apk/ del repositorio).
+   En la web, capacitor.js no hace nada y todo sigue igual. En la APK cambian tres cosas:
+   las copias y los informes salen por el menú de compartir del sistema (Filesystem +
+   Share: allí no hay navigator.share con archivos ni carpeta de descargas), el botón
+   «atrás» cierra la hoja abierta en vez de salir, y hay avisos (LocalNotifications).
+   Los datos de la APK y los de la web son independientes: se pasan con una copia. */
+const nativa = () => !!(window.Capacitor && typeof Capacitor.isNativePlatform==='function' && Capacitor.isNativePlatform());
+const capP = n => ((window._capP ||= {})[n] ||= Capacitor.registerPlugin(n));
+const instalada = () => nativa() || window.matchMedia('(display-mode: standalone)').matches;
 async function conectar(){
   // que el navegador no borre los datos si se queda sin espacio
   try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){}
+  if(nativa()){ atrasNativo(); avProgramar(); return; }
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js'); }catch(e){} }
+}
+function atrasNativo(){
+  try{
+    capP('App').addListener('backButton', ()=>{
+      if($('#hoja').classList.contains('abierta')){ if(copiaPendiente) copiaPendiente = null; cerrar(); return; }
+      if(vista!=='dia'){ vista = 'dia'; pintar(); window.scrollTo(0,0); return; }
+      capP('App').minimizeApp();   // como el botón de inicio: el borrador ya se ha guardado
+    });
+  }catch(e){}
+}
+
+/* ── AVISOS (solo en la APK) ──
+   Al acabar cada clase, si aún no está registrada: «2.º ESO B ha acabado. ¿Dictas la sesión?».
+   Al final del día, las que queden. Y la copia de seguridad semanal, si no está hecha.
+   El texto del aviso solo lleva el grupo y la hora (sale en la pantalla de bloqueo): nada
+   de alumnos. Se programan los próximos 7 días lectivos y se rehacen cada vez que cambia
+   algo (al guardar una sesión, el aviso de esa clase desaparece). */
+const AV_DEF = {on:false, clase:true, retraso:5, dia:true, diaHora:'14:30', copia:true};
+const avCfg = () => Object.assign({}, AV_DEF, store.cfg.avisos||{});
+const avId = (k, n) => Number(k.replace(/-/g,'').slice(2))*10 + n;   // aammdd·10 + franja (8: día, 9: copia)
+let avT = null, avEsc = false;
+function avProgramar(){ if(!nativa()) return; clearTimeout(avT); avT = setTimeout(avHaz, 800); }
+async function avHaz(){
+  let ln; try{ ln = capP('LocalNotifications'); }catch(e){ return; }
+  try{
+    if(!avEsc){ avEsc = true;
+      ln.addListener('localNotificationActionPerformed', ev=>{
+        const x = (ev && ev.notification && ev.notification.extra) || {};
+        if(x.vista==='exportar'){ vista = 'exportar'; pintar(); return; }
+        if(x.k){ dia = x.k; vista = 'dia'; pintar(); if(x.n && franjasDe(x.k)[x.n] && !store.ses[idSes(x.k, x.n)]) abrir(x.k, x.n); }
+      }); }
+    const pend = await ln.getPending();
+    if(pend && pend.notifications && pend.notifications.length) await ln.cancel({notifications: pend.notifications.map(n=>({id:Number(n.id)}))});
+    const c = avCfg(); if(!c.on) return;
+    const p = await ln.checkPermissions(); if(p.display!=='granted') return;
+    const ahora = Date.now(), L = [];
+    const cuando = (k, hm, mas) => { const d = deClave(k); const [h,m] = hm.split(':').map(Number); d.setHours(h, m + (mas||0), 0, 0); return d; };
+    let d = deClave(hoyK());
+    for(let i=0, dias=0; i<21 && dias<7; i++, d = masDias(d,1)){
+      const k = clave(d); if(!esLectivo(k)) continue; dias++;
+      const h = franjasDe(k), faltan = [];
+      for(const n in h){
+        if(!h[n].g || store.ses[idSes(k,n)]) continue;
+        faltan.push(Number(n));
+        const t = cuando(k, FR[n].fin, Number(c.retraso)||0);
+        if(c.clase && t > ahora) L.push({id:avId(k,Number(n)), title:`${GRUPOS[h[n].g].nombre} ha acabado`,
+          body:'¿Dictas la sesión? Toca para abrirla.', schedule:{at:t, allowWhileIdle:true}, extra:{k, n:Number(n)}});
+      }
+      const td = cuando(k, c.diaHora);
+      if(c.dia && faltan.length && td > ahora) L.push({id:avId(k,8), title:'Sesiones de hoy',
+        body: faltan.length===1 ? 'Te queda 1 clase por registrar.' : `Te quedan ${faltan.length} clases por registrar.`,
+        schedule:{at:td, allowWhileIdle:true}, extra:{k}});
+    }
+    if(c.copia && Object.keys(store.ses).length){
+      // la próxima vez que toque, o mañana a esa hora si ya tocaba y sigue sin hacerse
+      let t = momentoCopia(); if(!tocaCopia()) t.setDate(t.getDate()+7);
+      while(t <= ahora) t.setDate(t.getDate()+1);
+      L.push({id:avId(clave(t),9), title:'Copia de seguridad', body:'Toca hacerla y subirla al OneDrive de la GVA.',
+        schedule:{at:t, allowWhileIdle:true}, extra:{vista:'exportar'}});
+    }
+    if(L.length) await ln.schedule({notifications:L});
+  }catch(e){ console.warn('avisos', e); }
+}
+async function avActivar(on){
+  if(!on){ store.cfg.avisos = Object.assign(avCfg(), {on:false}); guardarCfg(); return true; }
+  try{
+    const ln = capP('LocalNotifications');
+    let p = await ln.checkPermissions(); if(p.display!=='granted') p = await ln.requestPermissions();
+    if(p.display!=='granted'){ toast('Android no da permiso para avisar: actívalo en Ajustes del móvil → Apps → Cuaderno', 5000); return false; }
+    try{ const e = await ln.checkExactNotificationSetting(); if(e && e.exact_alarm && e.exact_alarm!=='granted') toast('Los avisos pueden llegar con unos minutos de retraso', 4000); }catch(err){}
+  }catch(e){ toast('No se han podido activar los avisos'); return false; }
+  store.cfg.avisos = Object.assign(avCfg(), {on:true}); guardarCfg(); return true;
 }
 
 /* ═══════════════════════════ LÓGICA ═══════════════════════════ */
@@ -1029,7 +1113,8 @@ function resumenAj(t){
     case 'Deberes «a medias»': return c.criterioMedias || DEF_MEDIAS;
     case 'Días no lectivos': return c.nolectivos.length+' días';
     case 'Dibujos del bosque': return c.deco===false ? 'sin dibujos' : (c.anim===false ? 'sin animación' : 'con animación');
-    case 'En el móvil': return instalada() ? 'instalada' : 'sin instalar';
+    case 'En el móvil': return nativa() ? 'app de Android' : instalada() ? 'instalada' : 'sin instalar';
+    case 'Avisos': { const v = avCfg(); return !v.on ? 'desactivados' : [v.clase&&'al acabar cada clase', v.dia&&'al final del día', v.copia&&'copia'].filter(Boolean).join(' · ') || 'ninguno marcado'; }
     case 'Protección de datos': return NOMBRES ? 'nombres cargados' : 'solo números';
     case 'La IA (opcional)': { const ia = iaCfg(); return !ia.clave ? 'sin configurar' : ia.ok ? '✓ conectada · ' + (MODELOS_IA.find(m=>m[0]===ia.modelo)||['',''])[1].split(' ·')[0] + ', ' + (INTENSIDAD_IA.find(x=>x[0]===ia.esfuerzo)||['',''])[1].toLowerCase() : ia.probado ? '✗ no conecta' : 'sin probar'; }
   }
@@ -1722,8 +1807,19 @@ function vAjustes(){
     <div class="fila2"><input type="date" id="aj-nl"><button class="secundario" data-a="add-nl">Añadir</button></div>
     <ul class="nolect">${[...c.nolectivos].sort().map(k=>`<li>${larga(k)}<button data-a="del-nl" data-k="${k}">Quitar</button></li>`).join('') || '<li class="nota">Ninguno todavía.</li>'}</ul>
   </div>
+  ${nativa() ? (()=>{ const v = avCfg(), sel = 'style="display:block;box-sizing:border-box;width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px;margin-top:4px"';
+    return `<div class="panel"><p><b>Avisos</b><br><span class="nota">Solo en la app de Android. El aviso dice el grupo y la hora, nada más: sale en la pantalla de bloqueo.</span></p>
+    <button class="bloque-btn${v.on?'':' lleno'}" data-a="av-on" style="margin-top:0">${v.on?'Desactivar los avisos':'Activar los avisos'}</button>
+    ${v.on?`<label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="av-clase" ${v.clase?'checked':''}> Al acabar cada clase sin registrar</label>
+      <label style="display:block;margin-top:6px">Cuánto después<select id="av-retraso" ${sel}>${[[0,'Al tocar el timbre'],[5,'5 minutos después'],[10,'10 minutos después'],[20,'20 minutos después']].map(([m,t])=>`<option value="${m}" ${Number(v.retraso)===m?'selected':''}>${t}</option>`).join('')}</select></label>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="av-dia" ${v.dia?'checked':''}> Al final del día, las que queden</label>
+      <label style="display:block;margin-top:6px">A las<input type="time" id="av-diahora" value="${v.diaHora}" ${sel}></label>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="av-copia" ${v.copia?'checked':''}> La copia de seguridad (el día y la hora de «Aviso de copia»)</label>
+      <button class="secundario" data-a="av-guardar" style="margin-top:12px">Guardar los avisos</button>`:''}
+  </div>`; })() : ''}
   <div class="panel"><p><b>En el móvil</b></p>
-    ${instalada() ? '<p class="nota" style="margin:0">Instalada como app.</p>'
+    ${nativa() ? '<p class="nota" style="margin:0">App de Android. Sus datos son solo suyos: para pasarlos a otro sitio, copia de seguridad.</p>'
+      : instalada() ? '<p class="nota" style="margin:0">Instalada como app.</p>'
       : instalable ? '<button class="bloque-btn lleno" data-a="instalar" style="margin-top:0">Instalar en este móvil</button>'
       : '<p class="nota" style="margin:0">Para instalarla: menú ⋮ de Chrome → «Instalar aplicación» o «Añadir a pantalla de inicio».</p>'}
   </div>
@@ -1961,6 +2057,14 @@ function leerCampos(){
 // Con el menú de compartir de Android se puede mandar al OneDrive de la GVA, al correo…;
 // si el navegador no lo permite, se descarga en la carpeta de Descargas.
 async function descargar(nombre, datos, tipo){
+  if(nativa()){
+    // en la APK: el archivo se escribe en la caché de la app y sale por el menú de compartir
+    try{
+      const r = await capP('Filesystem').writeFile({path:nombre, data:datos, directory:'CACHE', encoding:'utf8'});
+      await capP('Share').share({title:nombre, files:[r.uri], dialogTitle:'Guardar o enviar'});
+      toast('Enviado'); return true;
+    }catch(e){ if(/cancel/i.test((e && e.message) || '')){ toast('Cancelado'); return false; } toast('No se ha podido compartir el archivo'); return false; }
+  }
   const f = new File([datos], nombre, {type:tipo});
   if(navigator.canShare && navigator.canShare({files:[f]})){
     try{ await navigator.share({files:[f], title:nombre}); toast('Enviado'); return true; }
@@ -2231,6 +2335,12 @@ document.getElementById('app').addEventListener('click', async e=>{
   }
   else if(a==='ex-csv'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.csv`, csv(), 'text/csv'); }
   else if(a==='ex-json' || a==='copia'){ await copiaSeguridad(); }
+  else if(a==='av-on'){ if(await avActivar(!avCfg().on)){ toast(avCfg().on?'Avisos activados':'Avisos desactivados'); abiertos.add('aj:Avisos'); pintar(); } }
+  else if(a==='av-guardar'){
+    store.cfg.avisos = Object.assign(avCfg(), {clase:$('#av-clase').checked, retraso:Number($('#av-retraso').value), dia:$('#av-dia').checked,
+      diaHora:$('#av-diahora').value || '14:30', copia:$('#av-copia').checked});
+    guardarCfg(); toast('Avisos guardados'); pintar();
+  }
   else if(a==='instalar'){ if(instalable){ instalable.prompt(); instalable = null; } }
   else if(a==='add-nl'){ const v = $('#aj-nl').value; if(v && !store.cfg.nolectivos.includes(v)){ store.cfg.nolectivos.push(v); guardarCfg(); pintar(); } }
   else if(a==='cal'){ const n = CAL.dias.filter(k=>!store.cfg.nolectivos.includes(k)); store.cfg.nolectivos.push(...n); guardarCfg(); toast(`${n.length} días no lectivos añadidos`); pintar(); }

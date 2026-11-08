@@ -1,0 +1,19 @@
+{
+  "name": "cuaderno-android",
+  "private": true,
+  "description": "Envoltorio de Capacitor para compilar el cuaderno de aula como APK de Android",
+  "scripts": {
+    "www": "rm -rf www && mkdir www && cp ../index.html ../manifest.webmanifest ../*.png www/ && cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/share": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  }
+}

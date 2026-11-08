@@ -11,7 +11,21 @@ PUBLICARLA (una vez)
 3. Settings → Pages → Branch: main, carpeta / (root) → Save.
 4. Queda en https://diazepamina-creator.github.io/cuaderno-de-aula/
 
-INSTALARLA EN ANDROID
+LA APP DE ANDROID (APK, desde 1.15)
+La forma buena: con avisos al acabar cada clase y los datos fuera del alcance de
+Chrome. GitHub Actions la compila con cada cambio (carpeta apk/ y
+.github/workflows/apk.yml del repositorio público) y la deja en
+https://github.com/diazepamina-creator/cuaderno-de-aula/releases/latest
+- La firma NO está en el repositorio: va en dos secretos de GitHub Actions
+  (APK_FIRMA y APK_CLAVE); el original se guarda aparte, en privado.
+- Las versiones nuevas se instalan encima y conservan los datos.
+- android:allowBackup="false": la APK no manda sus datos a la copia de Google.
+- Los datos de la APK y los de la web son independientes. Para pasar: copia en
+  la web → instalar la APK → Restaurar la copia → volver a poner la clave de la
+  IA (la clave nunca va en las copias). Después, usar solo una de las dos.
+- Probarla sin móvil: node pruebas/apk-simulada.cjs (un Capacitor falso).
+
+INSTALARLA EN ANDROID (la web)
 Abre esa dirección en Chrome → menú ⋮ → «Instalar aplicación» (o «Añadir a
 pantalla de inicio»). Sale el icono y se abre a pantalla completa.
 
@@ -19,7 +33,9 @@ LOS DATOS
 - Están en el almacenamiento de Chrome del móvil. Nada va a GitHub ni a
   ningún servidor: el repositorio solo contiene la app vacía.
 - Si desinstalas la app o borras los datos de Chrome, se pierden. Por eso:
-  Exportar → «Guardar copia de seguridad» → Drive, una vez por semana.
+  Exportar → «Guardar copia de seguridad» → OneDrive de la GVA (el corporativo
+  de Microsoft), una vez por semana. El nombre lleva la fecha y la hora, porque
+  OneDrive da error si ya hay un archivo con el mismo nombre.
   La app te avisa cuando hace 7 días de la última copia.
 - «Restaurar una copia» recupera una copia (también las del cuaderno de Claude).
 
@@ -33,6 +49,35 @@ OJO: el repositorio es público, así que el horario (grupos y aulas) se puede
 leer en el código. Ningún dato de alumnos ni de sesiones está ahí.
 
 VERSIONES
+1.15    App de Android (APK). Copias e informes por el menú de compartir del sistema;
+       el botón «atrás» cierra la hoja abierta; avisos al acabar cada clase sin
+       registrar (al timbre o 5, 10, 20 min después), al final del día con las que
+       queden y para la copia semanal. Panel «Avisos» en Ajustes, solo en la APK.
+       En la web no cambia nada. (cuaderno-v32)
+1.14.2  Al guardar la clave se quitan los espacios que se cuelan al pegar y se avisa si
+       no empieza por sk-ant- o parece incompleta. (cuaderno-v31)
+1.14.1  La IA dice si está bien configurada: al guardar, prueba la conexión con
+       una llamada mínima (sin nada del cuaderno) y Ajustes enseña «✓ conectada»
+       (modelo e intensidad) o «✗ no conecta» con el motivo.
+       Para actualizar: sube index.html y sw.js (cuaderno-v30).
+1.14 (8 nov 2026) · La IA, opcional. En Ajustes → «La IA»: la clave de la API de Claude (se
+     queda solo en este móvil, fuera del cuaderno: no va en la copia de
+     seguridad), el modelo (Haiku, Sonnet u Opus) y la intensidad (baja, media,
+     alta). En cada sesión, «Dictar la sesión»: dictas con el micrófono del
+     teclado y «Ordenar con IA» rellena qué se ha hecho, material, deberes,
+     clima, cambio, observación y unidad; si falta algo, pregunta. Nada se
+     guarda hasta pulsar Guardar. Sale solo lo dictado (revisado antes por si
+     señala a un alumno) y la sesión pasada por paraIA(); lo de un alumno que
+     se haya dictado vuelve en «aparte» y se pone en «Otras notas».
+     Además, la copia de seguridad lleva la hora en el nombre (cuaderno-de-aula_copia_
+     AAAA-MM-DD_HHMM.txt) y la app dice OneDrive de la GVA, no Drive.
+     Y la frontera de la IA: lo que puede salir del móvil hacia una IA se decide
+     en el código (paraIA). Sale lo que se hizo con el grupo; nunca la revisión
+     por número de lista, los planos, la PT ni «Otras notas» (marcados con 🔒).
+     En Exportar, «Copiar para la IA»: copia solo eso y antes avisa de lo que
+     podría señalar a un alumno (ACIS, «un alumno con…», «el n.º 12»).
+     Prueba: node --test pruebas/ (solo en originales).
+     Para actualizar: sube index.html y sw.js (cuaderno-v29).
 1.2  Fechas: pruebas escritas, entregas y otras fechas, con una fecha por
      grupo; aviso en el Día con los días que faltan y las clases que te
      quedan con ese grupo; etiqueta en la franja de ese día; calendario en el
