@@ -573,7 +573,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.14';
+const VERSION_APP = '1.14.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -652,6 +652,19 @@ Campos: contenido (qué se ha hecho), material (apps, fichas, libro…; usa los 
 Nunca escribas en esos campos nada de un alumno concreto (nombres, números de lista, necesidades educativas, incidencias de convivencia, familias): si lo ha dictado, ponlo SOLO en «aparte», que se queda en su móvil.
 Si falta algo importante para el registro (qué se ha hecho, deberes o clima), escribe hasta tres preguntas cortas en «preguntas».
 Responde SOLO con un objeto JSON: {"contenido":"","material":"","deberes":"","clima":"","cambio":"","observacion":"","unidad":"","aparte":"","preguntas":[]}`;
+/* la prueba de conexión (1.14.1): una llamada mínima, sin nada del cuaderno; guarda si fue bien */
+async function iaPrueba(){
+  const c = iaCfg(); if(!c.clave){ c.ok = false; c.msg = 'Falta la clave'; iaGuarda(c); return c; }
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
+        'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:c.modelo, max_tokens:300, output_config:{effort:'low'}, messages:[{role:'user', content:'Responde solo: ok'}]})});
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error((d.error && d.error.message) || ('Error '+r.status));
+    c.ok = true; c.msg = '';
+  }catch(e){ c.ok = false; c.msg = e.message || 'No se ha podido conectar'; }
+  c.probado = new Date().toISOString(); iaGuarda(c); return c;
+}
 async function iaOrdena(dictado, ses){
   const c = iaCfg(); if(!c.clave) throw new Error('Falta la clave de la API (Ajustes → La IA).');
   const anterior = Object.values(store.ses).filter(x=>x.grupo===ses.grupo && x.fecha<ses.fecha && x.estado!=='no').sort((a,b)=>a.fecha<b.fecha?1:-1)[0];
@@ -1018,6 +1031,7 @@ function resumenAj(t){
     case 'Dibujos del bosque': return c.deco===false ? 'sin dibujos' : (c.anim===false ? 'sin animación' : 'con animación');
     case 'En el móvil': return instalada() ? 'instalada' : 'sin instalar';
     case 'Protección de datos': return NOMBRES ? 'nombres cargados' : 'solo números';
+    case 'La IA (opcional)': { const ia = iaCfg(); return !ia.clave ? 'sin configurar' : ia.ok ? '✓ conectada · ' + (MODELOS_IA.find(m=>m[0]===ia.modelo)||['',''])[1].split(' ·')[0] + ', ' + (INTENSIDAD_IA.find(x=>x[0]===ia.esfuerzo)||['',''])[1].toLowerCase() : ia.probado ? '✗ no conecta' : 'sin probar'; }
   }
   return '';
 }
@@ -1649,14 +1663,14 @@ function vAjustes(){
     <div class="campo"><label for="aj-inicio">Primer día de clase</label><input type="date" id="aj-inicio" value="${c.inicio}">
       <div class="nota">Desde aquí se cuentan las sesiones sin registrar.</div></div>
   </div>
-  ${(()=>{ const ia = iaCfg(); return `<div class="panel"><p><b>La IA (opcional)</b><br><span class="nota">Para dictar una sesión y que se ordene sola en sus campos. La clave de la API de Claude se queda solo en este móvil: no va en la copia de seguridad ni en la app publicada. Nunca salen la revisión por número, los planos, la PT ni «Otras notas».</span></p>
+  ${(()=>{ const ia = iaCfg(); return `<div class="panel"><p><b>La IA (opcional)</b> <span style="display:block;margin-bottom:6px">${!ia.clave ? '<span class="nota">· sin configurar</span>' : ia.ok ? `<span style="color:var(--verde,#1F7A3A);font-weight:700">✓ conectada</span> <span class="nota">· ${(MODELOS_IA.find(m=>m[0]===ia.modelo)||['',''])[1].split(' ·')[0]}, intensidad ${(INTENSIDAD_IA.find(x=>x[0]===ia.esfuerzo)||['',''])[1].toLowerCase()} · probada el ${fechaHora(ia.probado)}</span>` : ia.probado ? `<span style="color:var(--rojo);font-weight:700">✗ no conecta</span> <span class="nota">· ${esc(ia.msg||'')}</span>` : '<span class="nota">· sin probar</span>'}</span><span class="nota">Para dictar una sesión y que se ordene sola en sus campos. La clave de la API de Claude se queda solo en este móvil: no va en la copia de seguridad ni en la app publicada. Nunca salen la revisión por número, los planos, la PT ni «Otras notas».</span></p>
     <div class="campo"><label for="ia-clave">Clave de la API</label><input type="password" id="ia-clave" autocomplete="off" value="${esc(ia.clave)}" placeholder="sk-ant-…"></div>
     <div class="fila2"><label>Modelo<select id="ia-modelo" style="width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px">
       ${MODELOS_IA.map(([v,t])=>`<option value="${v}" ${ia.modelo===v?'selected':''}>${t}</option>`).join('')}</select></label>
       <label>Intensidad<select id="ia-esfuerzo" style="width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px">
       ${INTENSIDAD_IA.map(([v,t])=>`<option value="${v}" ${ia.esfuerzo===v?'selected':''}>${t}</option>`).join('')}</select></label></div>
     <p class="nota">Para ordenar una sesión basta Sonnet con intensidad baja: rápido y barato. Más intensidad piensa más, tarda más y gasta más.</p>
-    <button class="bloque-btn" data-a="ia-guardar">Guardar los ajustes de la IA</button>
+    <button class="bloque-btn" data-a="ia-guardar">Guardar y probar la conexión</button>
     ${ia.clave?'<button class="chip" data-a="ia-borrar" style="margin-top:8px">Borrar la clave de este móvil</button>':''}
   </div>`; })()}
   <div class="panel"><p><b>Aviso de copia de seguridad</b><br><span class="nota">Cada semana, a partir de ese momento, el cuaderno te pide la copia hasta que la hagas.</span></p>
@@ -2196,7 +2210,10 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='ir-fecha'){ abrirFecha(b.dataset.id); }
   else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
   else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
-  else if(a==='ia-guardar'){ iaGuarda({clave: $('#ia-clave').value.trim(), modelo: $('#ia-modelo').value, esfuerzo: $('#ia-esfuerzo').value}); toast('Ajustes de la IA guardados en este móvil'); pintar(); }
+  else if(a==='ia-guardar'){
+    iaGuarda({clave: $('#ia-clave').value.trim(), modelo: $('#ia-modelo').value, esfuerzo: $('#ia-esfuerzo').value});
+    toast('Probando la conexión…'); const c = await iaPrueba(); pintar();
+    toast(c.ok ? '✓ Conectada: ya puedes dictar' : '✗ No conecta: ' + (c.msg||'')); }
   else if(a==='ia-borrar'){ if(confirm('¿Borrar la clave de la API de este móvil?')){ const c = iaCfg(); c.clave = ''; iaGuarda(c); toast('Clave borrada'); pintar(); } }
   else if(a==='ex-ia'){
     const f = filasExport().map(paraIA), r = f.flatMap((o,i)=>riesgosIA(o).map(x=>({...x, fecha:o.fecha, grupo:o.grupo})));
