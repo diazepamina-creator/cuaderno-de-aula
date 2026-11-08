@@ -573,7 +573,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.14.1';
+const VERSION_APP = '1.14.2';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -2211,7 +2211,11 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
   else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
   else if(a==='ia-guardar'){
-    iaGuarda({clave: $('#ia-clave').value.trim(), modelo: $('#ia-modelo').value, esfuerzo: $('#ia-esfuerzo').value});
+    const clave = $('#ia-clave').value.replace(/\s+/g, '');   // una clave no lleva espacios ni saltos: fuera los que se cuelan al pegar
+    iaGuarda({clave, modelo: $('#ia-modelo').value, esfuerzo: $('#ia-esfuerzo').value});
+    if(clave && (!/^sk-ant-/.test(clave) || clave.length < 90)){ const c = iaCfg(); c.ok = false; c.probado = new Date().toISOString();
+      c.msg = !/^sk-ant-/.test(clave) ? 'la clave tiene que empezar por sk-ant-' : `la clave parece incompleta: tiene ${clave.length} caracteres y una entera tiene más de cien`;
+      iaGuarda(c); pintar(); toast('✗ ' + c.msg); return; }
     toast('Probando la conexión…'); const c = await iaPrueba(); pintar();
     toast(c.ok ? '✓ Conectada: ya puedes dictar' : '✗ No conecta: ' + (c.msg||'')); }
   else if(a==='ia-borrar'){ if(confirm('¿Borrar la clave de la API de este móvil?')){ const c = iaCfg(); c.clave = ''; iaGuarda(c); toast('Clave borrada'); pintar(); } }
