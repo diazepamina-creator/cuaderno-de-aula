@@ -1,0 +1,9 @@
+{
+  "appId": "com.diazepamina.cuaderno",
+  "appName": "Cuaderno",
+  "webDir": "www",
+  "android": { "backgroundColor": "#FBFCFD" },
+  "plugins": {
+    "LocalNotifications": { "smallIcon": "ic_stat_cuaderno", "iconColor": "#1D3A8A" }
+  }
+}

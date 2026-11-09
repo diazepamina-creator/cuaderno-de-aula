@@ -1,4 +1,8 @@
-/* Cuaderno de aula · © Andrés Asensio · CC BY-NC-ND 4.0 · https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es · aula 2026-11-09 · 1fe47f9+cambios sin guardar */
+// Cuaderno de aula · service worker
+// La app se guarda en el móvil para abrirse sin conexión. Con red, pide
+// primero la versión nueva (así llegan las actualizaciones que subas a
+// GitHub); sin red, abre la guardada. Los datos NO pasan por aquí: están
+// en el almacenamiento del navegador.
 const VERSION = 'cuaderno-v36';
 const BASE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './capacitor.js'];
 

@@ -1,0 +1,121 @@
+CUADERNO DE AULA · app para el móvil
+
+Qué es: el registro diario de clases (qué se ha hecho, material, deberes,
+revisión por número de lista, clima del aula, PT y pilotaje) como aplicación
+web instalable. Funciona sin conexión y los datos se guardan SOLO en el móvil.
+
+PUBLICARLA (una vez)
+1. En GitHub, crea un repositorio nuevo, por ejemplo «cuaderno-de-aula».
+2. Sube estos seis archivos a la raíz: index.html, manifest.webmanifest,
+   sw.js, icon-192.png, icon-512.png, icon-maskable-512.png.
+3. Settings → Pages → Branch: main, carpeta / (root) → Save.
+4. Queda en https://diazepamina-creator.github.io/cuaderno-de-aula/
+
+LA APP DE ANDROID (APK, desde 1.15)
+La forma buena: con avisos al acabar cada clase y los datos fuera del alcance de
+Chrome. GitHub Actions la compila con cada cambio (carpeta apk/ y
+.github/workflows/apk.yml del repositorio público) y la deja en
+https://github.com/diazepamina-creator/cuaderno-de-aula/releases/latest
+- La firma NO está en el repositorio: va en dos secretos de GitHub Actions
+  (APK_FIRMA y APK_CLAVE); el original se guarda aparte, en privado.
+- Las versiones nuevas se instalan encima y conservan los datos.
+- android:allowBackup="false": la APK no manda sus datos a la copia de Google.
+- Los datos de la APK y los de la web son independientes. Para pasar: copia en
+  la web → instalar la APK → Restaurar la copia → volver a poner la clave de la
+  IA (la clave nunca va en las copias). Después, usar solo una de las dos.
+- Probarla sin móvil: node pruebas/apk-simulada.cjs (un Capacitor falso).
+
+INSTALARLA EN ANDROID (la web)
+Abre esa dirección en Chrome → menú ⋮ → «Instalar aplicación» (o «Añadir a
+pantalla de inicio»). Sale el icono y se abre a pantalla completa.
+
+LOS DATOS
+- Están en el almacenamiento de Chrome del móvil. Nada va a GitHub ni a
+  ningún servidor: el repositorio solo contiene la app vacía.
+- Si desinstalas la app o borras los datos de Chrome, se pierden. Por eso:
+  Exportar → «Guardar copia de seguridad» → OneDrive de la GVA (el corporativo
+  de Microsoft), una vez por semana. El nombre lleva la fecha y la hora, porque
+  OneDrive da error si ya hay un archivo con el mismo nombre.
+  La app te avisa cuando hace 7 días de la última copia.
+- «Restaurar una copia» recupera una copia (también las del cuaderno de Claude).
+
+ACTUALIZARLA
+Sube el index.html nuevo al repositorio. La próxima vez que abras la app con
+conexión, carga la versión nueva; los datos no se tocan.
+Si cambias algo más que el index.html, sube también sw.js con VERSION nueva
+(cuaderno-v2, v3…).
+
+OJO: el repositorio es público, así que el horario (grupos y aulas) se puede
+leer en el código. Ningún dato de alumnos ni de sesiones está ahí.
+
+VERSIONES
+1.15.4  El número de lista, escrito como sea. Ahora BLOQUEAN también «n°» (el signo de grados, el
+       que sale en muchos teclados), «núm. 12», «nro 12», «#12», «alumno 12», «la 7 de la lista» y
+       «el 12» / «la 7» / «al 12» seguidos de lo que hace una persona («el 12 va aquí o allá», «la 7
+       no la traía», «al 12 le he cambiado de sitio», «el 3 y el 15 hablan»). «La 12» a secas puede
+       ser un ejercicio: solo AVISA (se puede enviar); no avisa si cerca dice de qué es («la ficha 2
+       y la 3», «de la página 40, la 12»), si es fecha u hora o si es cuenta («el 12 es múltiplo de
+       3»). Para que no haya duda: «el ejercicio 12». Avisado por Andrés al probar la 1.15.3.
+       (cuaderno-v36)
+1.15.3  «Mis criterios para la IA» en Ajustes → La IA: tus reglas, con tus palabras («proyectar una
+       ficha es corregirla en la pizarra»…), que se añaden a las instrucciones de «Ordenar con IA»
+       en cada dictado, sin poder saltarse la fidelidad ni lo de los alumnos. Van en la copia de
+       seguridad. Con un nombre del listado o un número de lista no se guardan ni se envían.
+       (cuaderno-v35)
+1.15.2«Ordenar con IA», más fiel a lo dictado: usa tus verbos y tus hechos tal cual (no junta
+       acciones como «repasar y empezar la misma ficha», no añade relleno), reparte cada cosa en
+       su campo (qué se ha hecho, material, deberes solo si son para casa, cambio respecto a lo
+       previsto, observación) y, si algo no cuadra o no se sabe (¿de clase o de casa?), lo deja
+       fuera y lo pregunta: «Antes de guardar, aclárame…». (cuaderno-v34)
+1.15.1La frontera de la IA, más firme. Un número de lista («el n.º 12») o el nombre de un
+       alumno del listado cargado (dos palabras suyas seguidas) BLOQUEAN el dictado: «No se
+       envía» y no hay «enviar igualmente»; hay que quitarlo (va en «Otras notas», a mano).
+       Las palabras de riesgo (familia, convivencia…) siguen siendo un aviso. Y una última
+       puerta (vigilaIA) mira la petición entera antes de cada llamada: campos privados,
+       revisión por número, números y nombres. Pruebas: node --test pruebas/frontera.test.mjs
+       y node pruebas/dictado-bloqueo.cjs (solo en originales). (cuaderno-v33)
+1.15App de Android (APK). Copias e informes por el menú de compartir del sistema;
+       el botón «atrás» cierra la hoja abierta; avisos al acabar cada clase sin
+       registrar (al timbre o 5, 10, 20 min después), al final del día con las que
+       queden y para la copia semanal. Panel «Avisos» en Ajustes, solo en la APK.
+       En la web no cambia nada. (cuaderno-v32)
+1.14.2  Al guardar la clave se quitan los espacios que se cuelan al pegar y se avisa si
+       no empieza por sk-ant- o parece incompleta. (cuaderno-v31)
+1.14.1  La IA dice si está bien configurada: al guardar, prueba la conexión con
+       una llamada mínima (sin nada del cuaderno) y Ajustes enseña «✓ conectada»
+       (modelo e intensidad) o «✗ no conecta» con el motivo.
+       Para actualizar: sube index.html y sw.js (cuaderno-v30).
+1.14 (8 nov 2026) · La IA, opcional. En Ajustes → «La IA»: la clave de la API de Claude (se
+     queda solo en este móvil, fuera del cuaderno: no va en la copia de
+     seguridad), el modelo (Haiku, Sonnet u Opus) y la intensidad (baja, media,
+     alta). En cada sesión, «Dictar la sesión»: dictas con el micrófono del
+     teclado y «Ordenar con IA» rellena qué se ha hecho, material, deberes,
+     clima, cambio, observación y unidad; si falta algo, pregunta. Nada se
+     guarda hasta pulsar Guardar. Sale solo lo dictado (revisado antes por si
+     señala a un alumno) y la sesión pasada por paraIA(); lo de un alumno que
+     se haya dictado vuelve en «aparte» y se pone en «Otras notas».
+     Además, la copia de seguridad lleva la hora en el nombre (cuaderno-de-aula_copia_
+     AAAA-MM-DD_HHMM.txt) y la app dice OneDrive de la GVA, no Drive.
+     Y la frontera de la IA: lo que puede salir del móvil hacia una IA se decide
+     en el código (paraIA). Sale lo que se hizo con el grupo; nunca la revisión
+     por número de lista, los planos, la PT ni «Otras notas» (marcados con 🔒).
+     En Exportar, «Copiar para la IA»: copia solo eso y antes avisa de lo que
+     podría señalar a un alumno (ACIS, «un alumno con…», «el n.º 12»).
+     Prueba: node --test pruebas/ (solo en originales).
+     Para actualizar: sube index.html y sw.js (cuaderno-v29).
+1.2  Fechas: pruebas escritas, entregas y otras fechas, con una fecha por
+     grupo; aviso en el Día con los días que faltan y las clases que te
+     quedan con ese grupo; etiqueta en la franja de ese día; calendario en el
+     registro imprimible. Registro reconstruido: las sesiones que se escriben
+     dos días o más después se marcan como reconstruidas, con la fuente
+     (Aules, fichas…), y así salen en el registro.
+     Para actualizar: sube index.html y sw.js (cambia a cuaderno-v3).
+1.1  Aviso fijo de copia de seguridad (por defecto, el viernes a las 14:10;
+     se cambia en Ajustes). Si la app está vacía, ofrece restaurar una copia
+     nada más abrirla. Unidades o situaciones de aprendizaje con sesiones
+     previstas: seguimiento de la programación. Cada registro guarda cuándo
+     se creó y el historial de cambios; lo borrado queda listado. Resumen de
+     indicadores por grupo (previstas, impartidas, entrega de deberes, clima,
+     PT) y clima por franja horaria, en Grupos y en el registro imprimible.
+     Para actualizar: sube index.html y sw.js (cambia a cuaderno-v2).
+1.0  Primera versión.

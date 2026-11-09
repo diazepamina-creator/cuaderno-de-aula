@@ -1,11 +1,6 @@
 <!doctype html>
 <html lang="es">
 <head>
-<!--
-  Cuaderno de aula
-  © Andrés Asensio · CC BY-NC-ND 4.0 · https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es
-  Versión de aula generada el 2026-11-09 a partir del original 1fe47f9+cambios sin guardar.
--->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cuaderno de aula</title>
@@ -18,6 +13,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
+/* ── Cuaderno de aula ─────────────────────────────────────────────────────
+   Un cuaderno de profesor de matemáticas: papel cuadriculado, tinta de
+   bolígrafo azul, el rojo de corregir, y cada grupo subrayado con el color
+   que tiene en el horario del centro. */
 :root{
   --papel:#FBFCFD; --cuad:#DDE7F1; --tinta:#1D3A8A; --grafito:#262A31;
   --gris:#687180; --linea:#C8D5E2; --rojo:#C8322B; --hoja:#FFFFFF;
@@ -58,6 +57,7 @@ button{cursor:pointer}
 :focus-visible{outline:3px solid var(--tinta);outline-offset:2px;border-radius:6px}
 .app{max-width:680px;margin:0 auto;padding:14px 16px 110px}
 
+/* cabecera: la fecha es lo grande, escrita en tinta */
 .cab{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 0 4px}
 .fecha{color:var(--tinta);line-height:1.05}
 .fecha .dia{font-size:15px;font-weight:700;display:block;margin-bottom:2px}
@@ -83,6 +83,7 @@ button{cursor:pointer}
 .unidad .n{display:flex;justify-content:space-between;gap:10px;font-size:15px}
 .prog{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin-top:4px}
 .prog span{display:block;height:100%;background:var(--tinta)}
+/* programación: barra con la raya de dónde dice el plan que deberías ir */
 .pbar{position:relative;height:12px;border-radius:6px;background:var(--linea);margin:4px 0 6px}
 .pbar>span{display:block;height:100%;border-radius:6px;background:var(--tinta)}
 .pbar>i{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1px;background:var(--rojo);border-radius:2px}
@@ -131,6 +132,7 @@ details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:
 .u-fila{display:grid;grid-template-columns:1fr 70px 40px;gap:6px;margin-bottom:6px;align-items:center}
 .u-fila button{height:40px;border:0;background:none;color:var(--rojo);font-size:20px}
 
+/* las franjas: renglones del día */
 .franjas{list-style:none;margin:0;padding:0}
 .fr{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:10px;
   background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px;
@@ -157,6 +159,7 @@ details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:
 .vacio{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:18px;text-align:center;color:var(--gris)}
 .vacio b{color:var(--grafito)}
 
+/* barra inferior */
 .barra{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);
   padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
 .barra nav{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
@@ -165,6 +168,7 @@ details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:
 .barra button[aria-current="page"]{color:var(--tinta);font-weight:700}
 .barra svg{width:24px;height:24px}
 
+/* la hoja de la sesión */
 .velo{position:fixed;inset:0;background:rgba(10,14,20,.45);z-index:10;display:none}
 .velo.abierto{display:block}
 .hoja{position:fixed;left:0;right:0;bottom:0;top:0;z-index:11;background:var(--papel);
@@ -289,6 +293,7 @@ details.pends{border-top:0;margin:0 0 14px;padding:8px 12px;border:1px solid var
 .porAl th:nth-child(2),.porAl td:nth-child(2){text-align:left}
 .revl .filtro{display:flex;gap:6px;padding:0 8px 8px}
 .lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
+/* plano del aula */
 .pizarra{text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gris);border-bottom:3px solid var(--grafito);margin:10px 18% 8px;padding-bottom:2px}
 .plano{display:grid;gap:5px;margin-bottom:8px}
 .plano .mesa{height:40px;border:1.5px dashed var(--linea);background:transparent;border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px;padding:0}
@@ -312,6 +317,7 @@ summary{font-weight:700;cursor:pointer;padding:4px 0}
 .secundario{height:50px;border-radius:12px;border:1.5px solid var(--linea);background:var(--hoja);padding:0 16px}
 .peligro{color:var(--rojo);border-color:var(--rojo)}
 
+/* grupos */
 h1.titulo{font-size:28px;color:var(--tinta);margin:8px 0 12px;line-height:1.1}
 .sel-grupo{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .sel-grupo button{border:1.5px solid var(--linea);background:var(--hoja);border-radius:20px;padding:8px 14px;font-weight:700}
@@ -328,8 +334,10 @@ h3{font-size:17px;margin:18px 0 8px}
 .hist .d{font-size:14px;color:var(--tinta);margin-top:4px}
 .hist .r{font-size:14px;color:var(--rojo);margin-top:2px}
 
+/* exportar y ajustes */
 .panel{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:14px;margin-bottom:14px}
 .panel p{margin:0 0 10px}
+/* desplegables de Ajustes y de Grupos: cerrados por defecto, con un resumen a la derecha (como «Pasadas» en Fechas) */
 details.aj{padding:0}
 details.aj>summary,details.pleg>summary{list-style:none;display:flex;align-items:baseline;gap:10px;cursor:pointer}
 details.aj>summary{padding:14px}
@@ -373,12 +381,16 @@ details.pleg>summary{font-size:17px;padding:4px 0}
   <button data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2 1.2M17.8 15.3l2 1.2M4.2 16.5l2-1.2M17.8 8.7l2-1.2"/></svg>Ajustes</button>
 </nav></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- El selector de la copia vive fuera de #app: al elegir un archivo, Android deja la
+     app en segundo plano y, al volver, la vista se repinta; si el selector estuviera
+     dentro, se sustituiría y el archivo elegido se perdería. -->
 <input type="file" id="archivo-copia" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
 <input type="file" id="archivo-nombres" accept=".csv,.txt,text/csv,text/plain" class="sr" tabindex="-1" aria-hidden="true">
 <input type="file" id="archivo-prog" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
 
 <script src="capacitor.js"></script>
 <script>
+/* ═══════════════════════════ DATOS FIJOS ═══════════════════════════ */
 const FRANJAS = [
   {n:1, ini:'8:15',  fin:'9:10'},
   {n:2, ini:'9:10',  fin:'10:05'},
@@ -396,7 +408,16 @@ const GRUPOS = {
   '2B':{nombre:'2.º ESO B', nivel:2},
   'R4':{nombre:'Refuerzo 4.º ESO', nivel:4},
 };
+/* ── NOMBRES (solo en memoria) ──
+   El listado nombre ↔ número vive en el OneDrive de la GVA, no aquí. Se abre con el selector de
+   archivos, se lee y se queda en esta variable mientras la app está abierta: no va a localStorage,
+   ni al borrador, ni a las copias de seguridad, ni a los informes. Se olvida al cerrar la app, con
+   «Olvidar» o tras 20 minutos en segundo plano. El registro sigue guardando solo números. */
 let NOMBRES = null, NOMBRES_DE = '', tOculto = 0, avisoLetra = '';
+/* ── REVISIÓN DE DEBERES: cuatro estados ──
+   Cada revisión guarda tres listas de números: no (no los trae), medias (a medias) y falta
+   (no ha venido). Quien no está en ninguna los trae. Las revisiones antiguas solo tienen «no»
+   y siguen valiendo igual. Los ausentes no cuentan en el porcentaje de entrega. */
 const EST = {no:'✗ No los trae', medias:'½ A medias', falta:'Falta'};
 const DEF_MEDIAS = 'Empezados, pero falta al menos un ejercicio.';
 const estadoDe = (r,n) => (r.no||[]).includes(n) ? 'no' : (r.medias||[]).includes(n) ? 'medias' : (r.falta||[]).includes(n) ? 'falta' : 'si';
@@ -405,6 +426,10 @@ function ponEstado(r, n, st){
   for(const k of ['no','medias','falta']) r[k] = (r[k]||[]).filter(x=>x!==n);
   if(st!=='si' && st!==prev) r[st] = [...r[st], n].sort((x,y)=>x-y);
 }
+/* ── ALTAS Y BAJAS ── por número de lista y con fecha (no es un dato personal).
+   cfg.matricula[g][n] = {alta:'AAAA-MM-DD'} para quien se incorpora y/o {baja:'…'} para quien deja de venir.
+   El número no se reutiliza: el alumno que se va conserva el suyo y quien llega recibe el siguiente.
+   En cada revisión solo cuentan los que estaban de alta ese día; así las revisiones antiguas no cambian. */
 const matr = g => ((store.cfg.matricula||{})[g]) || {};
 const activo = (g, n, f) => { const m = matr(g)[n]; return !m || !((m.alta && f < m.alta) || (m.baja && f >= m.baja)); };
 function cuentaRev(r, g, f){
@@ -420,12 +445,16 @@ function ponAlumnos(g, n){
 }
 const bajasTxt = (g, f) => Object.entries(matr(g)).filter(([n])=>!activo(g, Number(n), f))
   .map(([n,m])=>`${n} (${m.baja && f>=m.baja ? 'baja desde el '+corta(m.baja) : 'llega el '+corta(m.alta)})`).join(', ');
+/* ── BILLETE DE SALIDA ── una pregunta corta en los últimos minutos; se corrige después y se
+   apunta el recuento (no quién): entregados, bien, a medias, mal y el error que más se repite. */
 const bilN = v => v===''||v===undefined||v===null ? null : Number(v);
 function bilTxt(s){
   const B = s.billete; if(!B) return '';
   const n = bilN(B.n), p = [['bien',B.bien],['a medias',B.medias],['mal',B.mal]].filter(([,v])=>bilN(v)!==null).map(([k,v])=>`${v} ${k}`);
   return `Billete de salida${B.pregunta?` («${B.pregunta}»)`:''}: ${p.length?p.join(' · '):'sin corregir'}${n!==null?` de ${n}`:''}${B.error?`. Error más repetido: ${B.error}`:''}`;
 }
+/* Billete previsto: cfg.billetes = ['2-6', …] (día de la semana-franja, fijo cada semana) y
+   cfg.billeteDia = {'AAAA-MM-DD_n': true|false} para un día suelto (sí aunque no toque, o no aunque toque). */
 const slotDe = (k, n) => `${deClave(k).getDay()}-${n}`;
 function tocaBillete(k, n){
   const o = (store.cfg.billeteDia||{})[`${k}_${n}`]; if(o!==undefined) return o;
@@ -437,6 +466,7 @@ const icoBillete = (hecho, t) => `<svg class="bil-ic${hecho?' hecho':''}" viewBo
   <path d="M19 3.5v11" stroke="currentColor" stroke-width="1.1" stroke-dasharray="1.6 1.6"/>
   ${hecho?'<path d="M8 9.3l2.4 2.4L15 6.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
     :'<path d="M7 11.5l3.2-1.2 3.6-4.3c.4-.5 1.2-.6 1.6-.1.4.4.3 1.1-.2 1.5l-4.2 3.6-.9 3.2-1-.4.2-2.4-2.3.3z" fill="currentColor"/>'}</svg>`;
+// diferencias entre el listado cargado y el cuaderno (número de alumnos y bajas marcadas en el CSV)
 let difListado = [];
 function revTxt(r, nom){
   const f = a => a.map(n=> nom && nomDe(nom,n) ? `${n} (${esc(nomCorto(nomDe(nom,n)))})` : n).join(', ');
@@ -446,8 +476,11 @@ function revTxt(r, nom){
   if((r.falta||[]).length) p.push('faltan '+f(r.falta));
   return p.length ? p.join(' · ') : 'los traen todos';
 }
+// estado de pantalla de la lista de deberes (no se guarda): plegadas, filtro y revisiones quitadas por error
 const revPlegadas = new Set(), revFiltro = {}, revQuitadas = {}, revPincel = {};
 let paDesde = '', paHasta = '';
+/* Deberes por alumno (número de lista) en un periodo: base para el instrumento «trabajo diario»
+   si la programación lo recoge. Cuenta solo revisiones en las que el alumno estaba. */
 function deberesPorAlumno(g, desde, hasta){
   const N = store.cfg.alumnos[g] || 25, A = {};
   for(let i=1;i<=N;i++) A[i] = {si:0, medias:0, no:0, falta:0};
@@ -472,11 +505,12 @@ function leerNombres(txt){
     const c = l.split(sep).map(x=>x.trim().replace(/^"(.*)"$/,'$1').trim());
     const g = grupoDeTexto(c[0]), num = parseInt(c[1]);
     const nom = c.slice(2).filter(Boolean).join(', ');
-    if(!g || !(num>0) || !nom){ malas++; continue; }
+    if(!g || !(num>0) || !nom){ malas++; continue; }   // cabecera o fila rara
     (out[g] = out[g] || {})[num] = nom; n++;
   }
   return n ? {out, n, malas} : null;
 }
+// «García López, Lucía» o «Lucía García López» → «Lucía G.»
 function nomCorto(s){
   if(!s) return ''; s = s.replace(/\(\s*baja\s*\)/i,'').trim();
   let nom, ape;
@@ -489,6 +523,8 @@ const nomDe = (g, n) => NOMBRES && NOMBRES[g] && NOMBRES[g][n] || '';
 const nombresListado = () => NOMBRES ? Object.values(NOMBRES).flatMap(g => Object.values(g || {})).filter(Boolean) : [];
 function olvidarNombres(aviso){ NOMBRES = null; NOMBRES_DE = ''; if(aviso) toast(aviso); }
 const OTRAS = {G:'Guardia', C:'Complementarias', RM:'Reunión de departamento', AF:'Atención a familias'};
+// HORARIO[día de la semana 1..5][franja] — del horario del centro.
+// pt: sesión con la PT en el aula (POR6 en el horario; solo en 1.º A y 1.º B).
 const HORARIO = {
   1:{1:{g:'1B',aula:'A114'}, 2:{g:'1A',aula:'A114',pt:true}, 3:{o:'C'}},
   2:{3:{g:'1D',aula:'A100'}, 4:{g:'1A',aula:'A114'}, 5:{g:'1B',aula:'A114',pt:true}, 6:{g:'2B',aula:'A114'}},
@@ -497,12 +533,14 @@ const HORARIO = {
   5:{1:{g:'2B',aula:'A100'}, 2:{o:'G'}, 3:{g:'1D',aula:'A100'}, 4:{g:'R4',aula:'A114'}, 5:{g:'1A',aula:'A114'}, 6:{g:'1B',aula:'A114'}},
 };
 const CLIMA = {bien:'Se ha podido trabajar', regular:'A ratos', mal:'No se ha podido'};
+// Minutos de clase perdidos: hasta que se puede empezar a trabajar, y antes del timbre (recoger, salir).
 const PERD_INI = [0,5,10,15,20,30], PERD_FIN = [0,5,10,15];
-const DUR = 55;
+const DUR = 55;   // minutos de una sesión
 const MOTIVOS = ['Festivo','Excursión o actividad','Ausencia del docente','Examen de otra materia','Otro'];
 const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
+/* ═══════════════════════════ FECHAS ═══════════════════════════ */
 const pad = n => String(n).padStart(2,'0');
 const clave = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const deClave = k => { const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); };
@@ -514,6 +552,14 @@ const ahoraMin = () => { const n=new Date(); return n.getHours()*60+n.getMinutes
 const hoyK = () => clave(new Date());
 const idSes = (fecha,n) => `${fecha}_${n}`;
 
+/* ═══════════════════════════ ALMACÉN ═══════════════════════════
+   Todo se guarda en el propio móvil (localStorage). No sale a ningún
+   servidor: la copia de seguridad se hace a mano, desde Exportar, y se
+   manda al OneDrive de la GVA, al correo o donde se quiera con el menú de compartir.  */
+/* Programación de aula: NO va en el código (el repositorio es público). Se
+   carga desde un archivo en Ajustes, se guarda en este móvil (store.programa)
+   y viaja en la copia de seguridad. Formato: {tipo:'programacion-cuaderno',
+   nombre, niveles:{1:[situaciones…], 2:[…]}}; ver «PROGRAMACIÓN DE AULA». */
 const PROGD = () => (store.programa && store.programa.niveles) || {};
 const unidadesProg = nv => (PROGD()[nv]||[]).map(sa=>({id:sa.id, nombre:sa.n, previstas:sa.it.reduce((a,x)=>a+x.s,0)}));
 const recorta = (t,n) => t.length>n ? t.slice(0,n-1).replace(/\s+\S*$/,'')+'…' : t;
@@ -522,21 +568,25 @@ const cfgInicial = () => ({
   inicio: hoyK(), docente:'', centro:'', curso:'2026-27', ultimaCopia:'',
   alumnos:{'1A':25,'1B':25,'1D':25,'2B':25,'R4':15},
   nolectivos:[], materiales:['Las piezas de Miut','Ficha 1','Ficha 2','Ficha 3','Ficha 4','Aules','Pizarra digital'],
-  ultimaCopiaT:'', copia:{dia:5, hora:'14:10'},
-  borrados:[],
+  ultimaCopiaT:'', copia:{dia:5, hora:'14:10'},   // aviso de copia: el viernes al acabar la última clase
+  borrados:[],                                     // rastro de los registros borrados
+  // unidades o situaciones de aprendizaje, por nivel, con las sesiones previstas
   unidades:{1:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:12}],
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
 const VERSION_APP = '1.15.4';
+// CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
+// Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
+// Después del fin del periodo lectivo no se cuentan sesiones pendientes.
 const CAL = {nombre:'calendario escolar 2026-27', fin:'2027-06-18', dias:[
-  '2026-10-09','2026-10-12',
-  '2026-12-08',
+  '2026-10-09','2026-10-12',                                   // 9 d'Octubre · Hispanitat
+  '2026-12-08',                                                // Immaculada
   '2026-12-22','2026-12-23','2026-12-24','2026-12-25','2026-12-28','2026-12-29','2026-12-30','2026-12-31',
-  '2027-01-01','2027-01-04','2027-01-05','2027-01-06',
-  '2027-03-01','2027-03-02','2027-03-03','2027-03-04','2027-03-05',
-  '2027-03-19',
-  '2027-03-25','2027-03-26','2027-03-29','2027-03-30','2027-03-31','2027-04-01','2027-04-02'
+  '2027-01-01','2027-01-04','2027-01-05','2027-01-06',         // Nadal (22 des – 6 gen, en rosa en el calendario)
+  '2027-03-01','2027-03-02','2027-03-03','2027-03-04','2027-03-05', // Magdalena
+  '2027-03-19',                                                // Sant Josep
+  '2027-03-25','2027-03-26','2027-03-29','2027-03-30','2027-03-31','2027-04-01','2027-04-02' // Pasqua
 ]};
 let store = {cfg:cfgInicial(), ses:{}, ev:{}, prog:{}, programa:null};
 const clon = o => JSON.parse(JSON.stringify(o));
@@ -547,18 +597,32 @@ function leerLocal(){
     if(!store.cfg.unidades[4]) store.cfg.unidades[4] = [];
     if(!store.ev) store.ev = {};
     if(!store.prog) store.prog = {};
+    // las unidades de antes (solo la de divisibilidad) pasan a ser las de la programación
     if(store.programa) ponerUnidadesProg(false);
   }catch(e){}
 }
 let avisado = false;
 function guardarLocal(){
-  if(typeof avProgramar==='function') avProgramar();
+  if(typeof avProgramar==='function') avProgramar();   // en la APK, los avisos se rehacen con cada cambio
   try{ localStorage.setItem(LS, JSON.stringify({store})); }
   catch(e){ if(!avisado){ avisado = true; alert('El móvil no ha dejado guardar. Haz una copia de seguridad desde Exportar.'); } }
 }
+// Cada registro guarda cuándo se creó y un historial de qué campos se
+// cambiaron y cuándo: es lo que pide una auditoría para fiarse de un
+// registro que se puede editar.
+/* ══ LA FRONTERA DE LA IA (1.3) ══════════════════════════════════════════
+   Lo que puede salir del móvil hacia una IA (Claude, la API o cualquier otra) y
+   lo que NUNCA sale. Se decide aquí, en el código, no a ojo cada vez:
+   · Sale (IA_SI): lo que se hizo con el grupo, a nivel de grupo.
+   · Nunca sale: la revisión de deberes por número de lista, los planos del
+     aula, las notas de la PT y «Otras notas» (ahí van alumnos concretos,
+     incidencias, convivencia), y la configuración (número de alumnos, bajas).
+   Aun así, en lo que sale se buscan resbalones (IA_RIESGO: ACIS, NEAE,
+   convivencia, «el n.º 12», «un alumno con…») y se avisan antes de copiar.
+   Cualquier función que mande algo a una IA tiene que pasar por paraIA(). */
 const IA_SI = ['fecha','franja','grupo','unidad','estado','contenido','material','deberes','clima','perdIni','perdFin','cambio','observacion'];
 const IA_PRIVADO = ['revisiones','pt','ptNotas','notas','motivo','aula','historial','creado','actualizado'];
-const IA_RIESGO = [/(?<![\p{L}\d])(ACIS|ACI|NEAE|NESE|NEE|TDAH|TEA)(?![\p{L}\d])/gu,
+const IA_RIESGO = [/(?<![\p{L}\d])(ACIS|ACI|NEAE|NESE|NEE|TDAH|TEA)(?![\p{L}\d])/gu,   // las siglas, en mayúsculas
   /(?<![\p{L}\d])(dislexia|orientaci[oó]n|convivencia|expulsi[oó]n|expulsad[oa]s?|parte de (?:incidencia|disciplina)|familia|madre|padre|n\.?\s?º\s?\d+|n[uú]mero\s+\d+|(?:un|una|el|la)\s+alumn[oa]|(?:un|una|el|la)\s+chic[oa])(?![\p{L}\d])/giu];
 function paraIA(s){
   const o = {};
@@ -573,8 +637,23 @@ function riesgosIA(o){
   for(const [k,v] of Object.entries(o)){ if(v && typeof v === 'object') for(const [k2,v2] of Object.entries(v)) mira(k+'.'+k2, v2); else mira(k, v); }
   return r;
 }
+/* el texto dictado también se mira antes de salir */
 const riesgosTexto = t => riesgosIA({dictado: t});
+/* 1.15.1 · LO QUE BLOQUEA. Las palabras de IA_RIESGO avisan (a veces son legítimas: «familia de
+   problemas») y se pueden enviar igualmente. Esto no: un número de lista («el n.º 12», «nº 7»,
+   «número de lista 3») o el nombre de un alumno del listado cargado (dos palabras suyas seguidas:
+   «Lucía Martínez», «Martínez, Lucía»). Hay que quitarlo del texto para poder enviarlo.
+   nombres: los del listado cargado (NOMBRES, solo en memoria), en una lista. */
 const ilano = s => String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+/* 1.15.4 · UN NÚMERO DE LISTA, escrito como sea. Devuelve {bloquea, avisa} (el trozo, o null).
+   BLOQUEA: «n.º 12», «nº12», «n° 12» (el signo de grados: el que sale en muchos teclados), «n. 12»,
+   «núm. 12», «nro 12», «número (de lista) 12», «#12», «alumno 12», «la 7 de la lista», y «el 12» /
+   «la 7» / «al 12» cuando lo que sigue es cosa de una persona: «el 12 va aquí o allá», «la 7 no la
+   traía», «al 12 le he cambiado de sitio», «el 12 se sienta delante», «el 3 y el 15 hablan».
+   AVISA (se puede enviar igualmente): «el 12» / «la 7» sin más, que puede ser un ejercicio
+   («hemos corregido la 12»); no avisa si cerca, antes, dice de qué es (ejercicio, ficha, página…),
+   si es una fecha u hora («el 12 de noviembre», «a las 12:30») o si es cuenta («el 12 es múltiplo
+   de 3»). Para que no haya duda: «el ejercicio 12». */
 const NL_PERSONA = '(?:de la lista|(?:le|les)(?! (?:sum|rest|multiplic|divid|quit|anad|aplic|pon|da |sale|falta para|corresponde))|me|nos|no (?:la|lo|las|los) (?:trae|traia|trajo|ha traido|tiene|tenia|lleva|llevaba|entrega|entrego|ha entregado)|traia|trae|trajo|ha traido|falta|faltaba|falto|ha faltado|viene|venia|vino|llega|llegaba|llego|ha llegado|se sienta|se sentaba|se sento|se ha sentado|sentad[oa]|se porta|se ha portado|se levanta|se levantaba|se queja|se ha ido|se fue|habla|hablaba|ha hablado|molesta|molestaba|interrumpe|contesta|contesto|copia|copiaba|copio|ha copiado|entrega|entrego|suspende|suspendio|aprueba|aprobo|saco|ha sacado|pide|pidio|dice|dijo|quiere|queria|necesita|juega|jugaba|grita|gritaba|llora|lloraba|lloro|pega|pego|insulta|insulto|duerme|dormia|se duerme|va (?:aqui|alli|alla|ahi|delante|detras|al lado|junto|con|sentad[oa]|al bano|a la (?:fila|mesa|pizarra|ventana|puerta))|esta (?:enferm|castigad|expulsad|ausente|malit|nervios|sentad)[a-z]*|y (?:el|la) \\d{1,2} (?:se|no|han|hablan|hablaban|van|iban|estan|estaban|juegan|jugaban|molestan|copian|copiaron))';
 const NL_ART = '(?:el|la|al|del|a la)';
 function numeroLista(t){
@@ -603,20 +682,33 @@ function bloqueosIA(t, nombres){
     if (visto){ r.push({que: 'el nombre de un alumno del listado', palabra: visto}); } }
   return r;
 }
+/* LA ÚLTIMA PUERTA: la petición entera, justo antes del fetch. Lanza un error si lleva un campo
+   privado (por si algún día una función se salta paraIA), un número de lista o un nombre. */
 function vigilaIA(body, nombres){
   const t = JSON.stringify(body.messages || []), f = [];
+  /* el contexto va como JSON escrito dentro del mensaje: sus comillas llegan escapadas (\\"pt\\":) */
   for (const k of IA_PRIVADO) if (new RegExp('\\\\?"' + k + '\\\\?"\\s*:').test(t)) f.push('el campo privado «' + k + '»');
   if (/\\"(?:no|medias|falta)\\"\s*:\s*\[|"(?:no|medias|falta)"\s*:\s*\[/.test(t)) f.push('la revisión por número de lista');
   for (const b of bloqueosIA(t.replace(/\\n/g, ' '), nombres)) f.push(b.que);
   if (f.length) throw new Error('No se envía: lleva ' + [...new Set(f)].join(', ') + '.');
   return true;
 }
+/* fin de la frontera */
 
+/* ══ LA IA (1.4): ordenar lo dictado en los campos de la sesión ════════════
+   La clave, el modelo y la intensidad viven en este móvil, FUERA del cuaderno
+   (su propia entrada de localStorage): no van en la copia de seguridad ni en
+   ningún archivo publicado. Lo único que sale es lo dictado (revisado antes
+   con riesgosTexto) y un contexto hecho SOLO con paraIA(). */
 const LSIA = 'cuaderno-de-aula.ia';
 const MODELOS_IA = [['claude-haiku-5-5','Haiku · rápido y barato'],['claude-sonnet-5-5','Sonnet · equilibrado'],['claude-opus-5-5','Opus · el más fino']];
 const INTENSIDAD_IA = [['low','Baja'],['medium','Media'],['high','Alta']];
 const iaCfg = () => { try{ return Object.assign({clave:'', modelo:'claude-sonnet-5-5', esfuerzo:'low'}, JSON.parse(localStorage.getItem(LSIA)||'{}')); }catch(e){ return {clave:'', modelo:'claude-sonnet-5-5', esfuerzo:'low'}; } };
 const iaGuarda = c => { try{ localStorage.setItem(LSIA, JSON.stringify(c)); }catch(e){} };
+/* 1.15.2: más fiel a lo dictado. Con «ordénalo» a secas juntaba acciones («hemos repasado la ficha 3
+   y la hemos empezado»: o se repasa o se empieza), metía relleno («Hemos repasado.») y lo echaba
+   casi todo en «contenido». Ahora: sus verbos y sus hechos tal cual, cada cosa en su campo, y si
+   algo no cuadra o no se sabe (¿de clase o de casa?), pregunta en vez de elegir. */
 const IA_INSTRUCCIONES = `Eres el ayudante del cuaderno de aula de un profesor de matemáticas de ESO. Te dicta, deprisa y al acabar la clase, lo que ha pasado en una sesión. Tu trabajo es repartir lo que dice en los campos del registro, en castellano, con frases claras y cortas, en primera persona («He…», «Hemos…») como escribe él.
 FIDELIDAD, lo primero: usa sus verbos y sus hechos tal cual. No inventes nada, no juntes dos acciones en una, no cambies una acción por otra (proyectar, repasar, corregir, empezar y terminar son cosas distintas) y no añadas frases de relleno ni resúmenes que no haya dicho. Si dice algo dos veces, una sola vez. Si se corrige al dictar («la 2, digo la 3»), vale lo último.
 SI ALGO NO CUADRA O NO SE SABE, PREGUNTA en vez de elegir: dos cosas contradictorias (repasar y empezar la misma ficha), una ficha o un número que no se entiende, o si unos ejercicios son de clase o para casa. Deja esa parte fuera de los campos y pregúntala en «preguntas».
@@ -631,6 +723,7 @@ Campos (cada cosa en el suyo; lo que no dice, vacío):
 Nunca escribas en esos campos nada de un alumno concreto (nombres, números de lista, necesidades educativas, incidencias de convivencia, familias): si lo ha dictado, ponlo SOLO en «aparte», que se queda en su móvil.
 «preguntas»: hasta tres, cortas y concretas, con las dudas de arriba y, si falta, lo importante para el registro (qué se ha hecho, deberes o clima).
 Responde SOLO con un objeto JSON: {"contenido":"","material":"","deberes":"","clima":"","cambio":"","observacion":"","unidad":"","aparte":"","preguntas":[]}`;
+/* la prueba de conexión (1.14.1): una llamada mínima, sin nada del cuaderno; guarda si fue bien */
 async function iaPrueba(){
   const c = iaCfg(); if(!c.clave){ c.ok = false; c.msg = 'Falta la clave'; iaGuarda(c); return c; }
   try{
@@ -650,12 +743,14 @@ async function iaOrdena(dictado, ses){
     unidades: ses.grupo ? unidadesDe(ses.grupo).map(u=>({id:u.id, nombre:u.nombre})) : [],
     materiales: store.cfg.materiales, sesion_anterior_del_grupo: anterior ? paraIA(anterior) : null,
     lo_que_ya_hay: paraIA(ses)};
+  /* «Mis criterios» (1.15.3): las reglas del profesor, detrás de las fijas; no pueden saltarse ni lo de
+     los alumnos ni la fidelidad, y se miran como el dictado (sin nombres ni números de lista) */
   const crit = (store.cfg.criteriosIA || '').trim();
   if(crit && bloqueosIA(crit, nombresListado()).length) throw new Error('Tus criterios para la IA llevan un nombre o un número de lista: quítalo en Ajustes → La IA.');
   const sistema = IA_INSTRUCCIONES + (crit ? '\n\nCRITERIOS DEL PROFESOR (síguelos; si chocan con lo de arriba, mandan ellos, salvo la fidelidad y lo de los alumnos, que no se tocan):\n' + crit : '');
   const cuerpo = {model:c.modelo, max_tokens:4000, output_config:{effort:c.esfuerzo}, system:sistema,
       messages:[{role:'user', content:'Contexto (JSON):\n'+JSON.stringify(contexto)+'\n\nLo que he dictado:\n'+dictado}]};
-  vigilaIA(cuerpo, nombresListado());
+  vigilaIA(cuerpo, nombresListado());   // la última puerta (1.15.1)
   const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
       'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
     body: JSON.stringify(cuerpo)});
@@ -688,6 +783,12 @@ function borrarSesion(id){
 }
 function guardarCfg(){ guardarLocal(); }
 
+/* ── BORRADORES ──
+   Lo que se escribe en una sesión se guarda solo, mientras se escribe, como
+   borrador aparte. El registro oficial solo cambia al pulsar Guardar: así el
+   historial de cambios (lo que mira una auditoría) no se llena de apuntes a
+   medias, y a la vez no se pierde nada si suena el timbre, se cierra la hoja o
+   el móvil mata la app. Los borradores no van en la copia de seguridad. */
 const LSB = LS + '.borradores';
 let borr = {ses:{}, abierto:null};
 try{ const j = JSON.parse(localStorage.getItem(LSB)||'null'); if(j && j.ses) borr = j; }catch(e){}
@@ -696,10 +797,18 @@ const mismos = (a,b) => CAMPOS.every(k => JSON.stringify(a[k]??'') === JSON.stri
 function quitarBorrador(id){ if(borr.ses[id]){ delete borr.ses[id]; guardarBorr(); } }
 let instalable = null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); instalable = e; if(vista==='ajustes') pintar(); });
+/* ── LA APP DE ANDROID (1.15) ──
+   El mismo index.html va dentro de una APK (Capacitor, carpeta apk/ del repositorio).
+   En la web, capacitor.js no hace nada y todo sigue igual. En la APK cambian tres cosas:
+   las copias y los informes salen por el menú de compartir del sistema (Filesystem +
+   Share: allí no hay navigator.share con archivos ni carpeta de descargas), el botón
+   «atrás» cierra la hoja abierta en vez de salir, y hay avisos (LocalNotifications).
+   Los datos de la APK y los de la web son independientes: se pasan con una copia. */
 const nativa = () => !!(window.Capacitor && typeof Capacitor.isNativePlatform==='function' && Capacitor.isNativePlatform());
 const capP = n => ((window._capP ||= {})[n] ||= Capacitor.registerPlugin(n));
 const instalada = () => nativa() || window.matchMedia('(display-mode: standalone)').matches;
 async function conectar(){
+  // que el navegador no borre los datos si se queda sin espacio
   try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){}
   if(nativa()){ atrasNativo(); avProgramar(); return; }
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js'); }catch(e){} }
@@ -709,14 +818,20 @@ function atrasNativo(){
     capP('App').addListener('backButton', ()=>{
       if($('#hoja').classList.contains('abierta')){ if(copiaPendiente) copiaPendiente = null; cerrar(); return; }
       if(vista!=='dia'){ vista = 'dia'; pintar(); window.scrollTo(0,0); return; }
-      capP('App').minimizeApp();
+      capP('App').minimizeApp();   // como el botón de inicio: el borrador ya se ha guardado
     });
   }catch(e){}
 }
 
+/* ── AVISOS (solo en la APK) ──
+   Al acabar cada clase, si aún no está registrada: «2.º ESO B ha acabado. ¿Dictas la sesión?».
+   Al final del día, las que queden. Y la copia de seguridad semanal, si no está hecha.
+   El texto del aviso solo lleva el grupo y la hora (sale en la pantalla de bloqueo): nada
+   de alumnos. Se programan los próximos 7 días lectivos y se rehacen cada vez que cambia
+   algo (al guardar una sesión, el aviso de esa clase desaparece). */
 const AV_DEF = {on:false, clase:true, retraso:5, dia:true, diaHora:'14:30', copia:true};
 const avCfg = () => Object.assign({}, AV_DEF, store.cfg.avisos||{});
-const avId = (k, n) => Number(k.replace(/-/g,'').slice(2))*10 + n;
+const avId = (k, n) => Number(k.replace(/-/g,'').slice(2))*10 + n;   // aammdd·10 + franja (8: día, 9: copia)
 let avT = null, avEsc = false;
 function avProgramar(){ if(!nativa()) return; clearTimeout(avT); avT = setTimeout(avHaz, 800); }
 async function avHaz(){
@@ -751,6 +866,7 @@ async function avHaz(){
         schedule:{at:td, allowWhileIdle:true}, extra:{k}});
     }
     if(c.copia && Object.keys(store.ses).length){
+      // la próxima vez que toque, o mañana a esa hora si ya tocaba y sigue sin hacerse
       let t = momentoCopia(); if(!tocaCopia()) t.setDate(t.getDate()+7);
       while(t <= ahora) t.setDate(t.getDate()+1);
       L.push({id:avId(clave(t),9), title:'Copia de seguridad', body:'Toca hacerla y subirla al OneDrive de la GVA.',
@@ -770,6 +886,7 @@ async function avActivar(on){
   store.cfg.avisos = Object.assign(avCfg(), {on:true}); guardarCfg(); return true;
 }
 
+/* ═══════════════════════════ LÓGICA ═══════════════════════════ */
 function esLectivo(k){
   const d = deClave(k), w = d.getDay();
   return w>=1 && w<=5 && k <= CAL.fin && !store.cfg.nolectivos.includes(k);
@@ -804,6 +921,7 @@ function sinRegistrar(){
 function sesionesDe(g){
   return Object.entries(store.ses).filter(([,s])=>s.grupo===g).sort((a,b)=>a[0]<b[0]?-1:1);
 }
+// deberes puestos antes de «actual» que no se han revisado en otra sesión
 function deberesPendientes(g, actual){
   const revisados = new Set();
   for(const [id,s] of Object.entries(store.ses)){
@@ -822,6 +940,7 @@ function igualQue(g, actual){
   return out;
 }
 
+// El «momento de copia» más reciente que ya ha pasado (p. ej. el último viernes a las 14:10)
 function momentoCopia(){
   const {dia:dc, hora} = store.cfg.copia, [hh,mm] = hora.split(':').map(Number), now = new Date();
   const d = new Date(now); d.setHours(hh, mm, 0, 0);
@@ -840,6 +959,7 @@ function ultimaUnidad(g){
   const s = sesionesDe(g).filter(([,s])=>s.unidad).pop();
   return s ? s[1].unidad : '';
 }
+// Indicadores de un grupo entre dos fechas
 function indicadores(g, desde, hasta){
   const hoy = hoyK(), ini = desde > store.cfg.inicio ? desde : store.cfg.inicio, fin = hasta < hoy ? hasta : hoy;
   let previstas = 0, conPT = 0;
@@ -868,6 +988,7 @@ function indicadores(g, desde, hasta){
     entrega: total ? Math.round(100*traen/total) : null, entregaMedias: total ? Math.round(100*medias/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
     pt: pt.length, ptSi, porUnidad, sinUnidad, perd};
 }
+// Clima por franja horaria, sumando todos los grupos
 function climaPorFranja(desde, hasta){
   const out = {};
   for(const n of [1,2,3,4,5,6]) out[n] = {bien:0, regular:0, mal:0};
@@ -884,9 +1005,13 @@ const minTxt = m => m < 60 ? `${m} min` : `${Math.floor(m/60)} h${m%60?' '+(m%60
 const pct = (a,b) => b ? Math.round(100*a/b) : 0;
 const fechaHora = iso => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
+/* Fechas previstas: pruebas escritas, entregas… Una misma prueba puede tener
+   una fecha distinta en cada grupo (los tres primeros no tienen clase el
+   mismo día). Se guardan en store.ev y van en la copia de seguridad. */
 const TIPOS = {examen:'Prueba escrita', entrega:'Entrega', otro:'Otra fecha'};
 const FUENTES = ['Aules','Fichas entregadas','Programación','Cuaderno en papel','Memoria'];
 const diasHasta = k => Math.round((deClave(k) - deClave(hoyK())) / 86400000);
+// clases de un grupo que quedan antes de una fecha (sin contar las de hoy ya terminadas)
 function clasesAntes(g, k){
   let n = 0;
   for(let d = deClave(hoyK()); clave(d) < k; d = masDias(d,1)){
@@ -921,6 +1046,12 @@ function cuenta(x){
 }
 
 
+/* ═══════════════════════ PROGRAMACIÓN DE AULA ═══════════════════════
+   Las situaciones de aprendizaje de la programación de aula entregada al
+   departamento (1.º y 2.º), cada una con sus actividades y sus sesiones.
+   «ini» es cuándo empieza según la programación; el plan de cada grupo sale
+   de repartir las sesiones en las clases de su horario, sin festivos. Lo que
+   se marca como hecho se guarda por grupo en store.prog y va en la copia. */
 function clasesEntre(g, k1, k2){
   const out = [];
   for(let d = deClave(k1); clave(d) < k2; d = masDias(d,1)){
@@ -929,6 +1060,7 @@ function clasesEntre(g, k1, k2){
   }
   return out;
 }
+// las próximas n clases de un grupo, contando las de hoy que aún no han acabado
 function proximasClases(g, n){
   const out = [];
   for(let d = deClave(hoyK()), i = 0; out.length < n && i < 400; d = masDias(d,1), i++){
@@ -950,7 +1082,7 @@ function plan(g){
   seq.forEach((sa, i)=>{
     const L = clasesEntre(g, sa.ini, i+1<seq.length ? seq[i+1].ini : finCurso);
     const N = sa.it.reduce((a,x)=>a+x.s, 0);
-    const f = N ? L.length / N : 1;
+    const f = N ? L.length / N : 1;   // se reparte en todas las clases hasta la siguiente; si no caben, se aprietan
     let pos = 0, acc = 0;
     sa.it.forEach(it=>{
       acc += it.s * f;
@@ -973,10 +1105,12 @@ function estadoProg(g){
     if(x.fechas.length) sesPrev += x.it.s * x.fechas.filter(k=>k<hoy).length / x.fechas.length;
     if(x.fin < hoy) prevN++;
   });
-  const sig = p.items.find(x=>!H[x.it.id]) || null;
-  const toca = p.items.filter(x=>x.ini<=hoy && x.fin>=hoy);
+  const sig = p.items.find(x=>!H[x.it.id]) || null;              // por dónde vas
+  const toca = p.items.filter(x=>x.ini<=hoy && x.fin>=hoy);        // lo que dice el plan para hoy
   return {p, H, n, hechosN, prevN, sesTot, sesHechas, sesPrev:Math.round(sesPrev), retraso:Math.round(sesPrev - sesHechas), sig, toca};
 }
+// Horquilla para la prueba de una actividad: lo que queda hasta ella, contado
+// en clases del grupo desde hoy, y un par de clases a cada lado.
 function horquilla(g, item){
   const E = estadoProg(g); if(!E) return null;
   let quedan = 0;
@@ -998,6 +1132,9 @@ function rangoCorto(a, b){
 }
 const semanaDe = k => { const d = deClave(k), w = d.getDay() || 7; const l = masDias(d, 1-w); return [clave(l), clave(masDias(l,4))]; };
 
+// Las unidades del registro pasan a ser las situaciones de la programación.
+// Con «todas», se ponen siempre (las que haya de más se conservan detrás);
+// sin él, solo si siguen las de fábrica (la de divisibilidad sola).
 function ponerUnidadesProg(todas){
   for(const nv of [1,2]){
     const U = store.cfg.unidades[nv] || [], P = unidadesProg(nv); if(!P.length) continue;
@@ -1014,6 +1151,7 @@ function cargarProgramacion(texto){
   toast(`Programación cargada: ${n} situaciones`); pintar();
 }
 
+/* ═══════════════════════════ PANTALLA ═══════════════════════════ */
 let vista = 'dia';
 let dia = hoyK();
 let grupoSel = '1A';
@@ -1033,6 +1171,9 @@ function toast(t, ms){
   const el = $('#toast'); el.textContent = t; el.classList.add('si');
   clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('si'), ms || 1800);
 }
+/* Desplegables: Ajustes entero y las secciones de consulta de Grupos (marcadas con data-plegar).
+   Se cierran por defecto y recuerdan lo abierto mientras la app está abierta (al guardar o
+   añadir algo se repinta y no se cierra el que estabas usando). */
 const abiertos = new Set();
 function resumenAj(t){
   const c = store.cfg, D = ['','lunes','martes','miércoles','jueves','viernes'];
@@ -1072,6 +1213,8 @@ function plegar(root){
     d.append(s, c); h.replaceWith(d);
   });
 }
+// Al tocar una casilla de número se selecciona lo que tiene: lo que escribas lo sustituye
+// (antes se añadía detrás: «22» + «22» = «2222», que se recortaba en silencio a 40).
 document.addEventListener('focusin', e=>{ const i = e.target; if(i.matches && i.matches('input[type=number]')) setTimeout(()=>{ try{ i.select(); }catch(err){} }, 0); });
 let errNum = false;
 const numAlumnos = (v, nombre) => { const n = parseInt(v);
@@ -1095,6 +1238,9 @@ function pintar(){
   pintarSync();
 }
 
+/* ── PENDIENTES ── lo que escribes en una sesión como «Pendiente: …» (en notas u observación)
+   y el paso siguiente de cada prueba ya hecha (corregir → devolver → pasar a ITACA).
+   Lo resuelto se guarda en cfg.pendHechos {clave: fecha}, que va en la copia de seguridad. */
 const PASOS = [['corregida','corregir'],['devuelta','devolver'],['itaca','pasar las notas a ITACA']];
 const PASO_N = {corregida:'Corregida', devuelta:'Devuelta', itaca:'En ITACA'};
 const hashTxt = s => { let h = 0; for(const c of s) h = (h*31 + c.charCodeAt(0)) | 0; return (h>>>0).toString(36); };
@@ -1138,10 +1284,12 @@ function bloquePendientes(){
     ${hechos.length ? `<button class="chip" data-a="pend-ver">${verResueltos?'Ocultar':'Ver'} los resueltos (${hechos.length})</button>${verResueltos?`<ul class="pend-l">${hechos.map(fila).join('')}</ul>`:''}` : ''}
     <p class="leyenda">Se recoge lo que escribes como «Pendiente: …» en una sesión, y el paso siguiente de cada prueba ya hecha.</p></details>`;
 }
+// abierto si hay algo por hacer, salvo que lo hayas cerrado tú; recuerda lo que eliges mientras la app está abierta
 const pendToc = { };
 function abiertosP(n){ return pendToc.k !== undefined ? pendToc.k : n > 0; }
 document.getElementById('app').addEventListener('toggle', e=>{ const d = e.target; if(d.dataset && d.dataset.k==='g:pend') pendToc.k = d.open; }, true);
 
+/* ── RESUMEN DE LA SEMANA ── */
 let semRes = '';
 function vResumen(){
   if(!semRes) semRes = dia || hoyK();
@@ -1182,6 +1330,9 @@ function vResumen(){
 }
 let resumenTexto = '';
 
+/* ── VISTA DEL MES ── de lunes a viernes. Cada clase es una marca del color de su grupo:
+   llena si está registrada, con borde rojo si ya ha pasado y falta registrarla, tachada si no se
+   impartió y tenue si todavía no ha llegado. Encima, las pruebas; el billete, si toca. */
 let mesSel = '';
 function vMes(){
   if(!mesSel) mesSel = (dia||hoyK()).slice(0,7);
@@ -1274,6 +1425,7 @@ function vDia(){
     if(x.g){
       const fx = fechasDe(x.g, dia).map(e=>`<span class="etq">${TIPOS[e.tipo]}</span>`).join('');
       let marca = '', sub = `Aula ${x.aula}${fx}`;
+      // la PT, junto al grupo: se ve también con la sesión registrada; translúcida si no ha venido
       const ptHoy = (x.pt || (s && s.pt)) && !(s && s.estado==='no') ? icoPT(s && s.pt==='no') : '';
       if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
       else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
@@ -1401,6 +1553,7 @@ function vGrupos(){
 }
 
 
+/* ── Programación: el bloque de Grupos y la semana del Día ── */
 function vProg(g){
   const E = estadoProg(g);
   if(!E) return GRUPOS[g].nivel===4
@@ -1481,6 +1634,10 @@ function vSemana(){
   return `<details class="semana" open><summary>La semana del ${rangoCorto(l, v)}, según la programación</summary><ul>${filas.join('')}</ul></details>`;
 }
 
+/* ── PLANO DEL AULA ── Para revisar deberes sin saberse aún los nombres: se
+   toca la mesa de quien no los trae y la app apunta su número de lista. El
+   plano solo guarda números por mesa (nada de nombres) y va en la copia. */
+// Un plano por grupo (clave «1A») y, si un aula es distinta, otro para esa aula («1A@A104»).
 const clavePlano = (g, aula) => aula ? `${g}@${aula}` : g;
 const planoLleno = k => { const p = (store.cfg.planos||{})[k]; return p && Object.keys(p.sitios||{}).length ? p : null; };
 const planoDe = (g, aula) => (aula && planoLleno(clavePlano(g, aula))) || planoLleno(g);
@@ -1760,6 +1917,7 @@ function vAjustes(){
   return h;
 }
 
+/* ═══════════════════════════ LA HOJA DE UNA SESIÓN ═══════════════════════════ */
 let borrador = null, abiertoId = null, base = null, recuperado = null, tBorr = null;
 function abrir(k, n){
   const x = (franjasDe(k))[n];
@@ -1771,6 +1929,7 @@ function abrir(k, n){
     estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', perdIni:'', perdFin:'', cambio:'', observacion:'', notas:'',
     ...(x.pt ? {pt:'si', ptNotas:''} : {}),
     unidad: x.g ? ultimaUnidad(x.g) : '',
+    // una sesión de hace dos días o más se está reconstruyendo después
     reconstruido: diasHasta(k) <= -2, fuente:''
   };
   if(x.pt && borrador.pt===undefined){ borrador.pt='si'; borrador.ptNotas=''; }
@@ -1786,6 +1945,8 @@ function abrir(k, n){
   document.body.style.overflow='hidden';
   setTimeout(()=>{ const t = $('#hoja textarea'); if(t && !s && !recuperado) t.focus(); }, 250);
 }
+// Guarda (o quita) el borrador de la sesión abierta. Si lo escrito coincide con
+// lo ya registrado —o con la hoja en blanco—, no hay borrador que guardar.
 function guardarBorrador(){
   if(!borrador || !abiertoId || !borrador.fecha || !base) return false;
   if($('#hoja [data-f]')) leerCampos();
@@ -1862,6 +2023,7 @@ function pintarHoja(){
         <input type="text" id="h-mat" data-f="material" value="${esc(b.material)}" placeholder="App, ficha, libro…">
         <div class="chips">${store.cfg.materiales.map(m=>`<button class="chip" data-h="mat" data-v="${esc(m)}">${esc(m)}</button>`).join('')}</div>
       </div>`;
+      // deberes por revisar
       const pd = deberesPendientes(b.grupo, abiertoId);
       const yaRev = (b.revisiones||[]).map(r=>r.de);
       const mostrar = pd.map(([id])=>id);
@@ -1877,6 +2039,7 @@ function pintarHoja(){
             if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
             const C = cuentaRev(r, b.grupo, b.fecha), crit = store.cfg.criterioMedias || DEF_MEDIAS;
             if(modo==='plano'){
+              // en el plano, un toque aplica el «pincel» elegido; otro toque en la misma mesa la devuelve a «los trae»
               const pin = revPincel[id] || 'no';
               h += `<div class="seg pincel" role="group" aria-label="Qué marca un toque">${Object.entries(EST).map(([k,v])=>`<button data-h="pincel" data-id="${id}" data-v="${k}" aria-pressed="${pin===k}">${v}</button>`).join('')}</div>`;
               const mesa = (n, cls) => { const e = estadoDe(r,n), nom = nomDe(b.grupo,n);
@@ -1886,6 +2049,7 @@ function pintarHoja(){
               const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i) && activo(b.grupo,i,b.fecha)) sin.push(i);
               if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>mesa(i,'')).join('')}</div>`;
             }else{
+              // Lista desplegable: una fila por alumno; todos empiezan en «los trae» y se toca solo la excepción.
               const fil = revFiltro[id] || 'todos';
               h += `<details class="revl" data-revl="${id}" ${revPlegadas.has(id)?'':'open'}>
                 <summary><span class="cuenta"><b>${C.si}</b> ✓ · <b style="color:#b7791f">${C.medias}</b> ½ · <b style="color:var(--rojo)">${C.no}</b> ✗ · <b>${C.falta}</b> faltan · de ${C.activos}</span></summary>
@@ -1969,8 +2133,12 @@ function leerCampos(){
   if(borrador.billete) document.querySelectorAll('#hoja [data-fb]').forEach(el=>{ borrador.billete[el.dataset.fb] = el.value.trim ? el.value.trim() : el.value; });
 }
 
+/* ═══════════════════════════ EXPORTAR ═══════════════════════════ */
+// Con el menú de compartir de Android se puede mandar al OneDrive de la GVA, al correo…;
+// si el navegador no lo permite, se descarga en la carpeta de Descargas.
 async function descargar(nombre, datos, tipo){
   if(nativa()){
+    // en la APK: el archivo se escribe en la caché de la app y sale por el menú de compartir
     try{
       const r = await capP('Filesystem').writeFile({path:nombre, data:datos, directory:'CACHE', encoding:'utf8'});
       await capP('Share').share({title:nombre, files:[r.uri], dialogTitle:'Guardar o enviar'});
@@ -1988,6 +2156,8 @@ async function descargar(nombre, datos, tipo){
   toast('Descargado en Descargas'); return true;
 }
 async function copiaSeguridad(){
+  // .txt porque Android no deja compartir archivos .json; dentro va el cuaderno entero
+  // con la hora en el nombre (1.3.1): OneDrive da error al subir un archivo que ya existe con el mismo nombre
   const t = new Date(), hm = String(t.getHours()).padStart(2,'0') + String(t.getMinutes()).padStart(2,'0');
   const ok = await descargar(`cuaderno-de-aula_copia_${hoyK()}_${hm}.txt`, JSON.stringify({version:1, store}, null, 1), 'text/plain');
   if(ok){ store.cfg.ultimaCopia = hoyK(); store.cfg.ultimaCopiaT = new Date().toISOString(); guardarLocal(); pintar(); }
@@ -2004,6 +2174,7 @@ const perdTxt = s => { const a = s.perdIni!==undefined && s.perdIni!=='', b = s.
 const textoRev = s => (s.revisiones||[]).map(r=>{
   const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])} (nº de lista): ${revTxt(r)}`;
 }).join('; ');
+/* el texto que se copia para una IA: solo lo que deja pasar paraIA() */
 function textoIA(f){
   return f.map(o=>[`${o.fecha} · ${o.grupo?GRUPOS[o.grupo].nombre:'Otras'}${o.grupo&&o.unidad?' · '+nombreUnidad(o.grupo,o.unidad):''}${o.estado==='no'?' · no impartida':''}`,
     o.contenido?'Qué se hizo: '+o.contenido:'', o.material?'Material: '+o.material:'', o.deberes?'Deberes: '+o.deberes:'',
@@ -2035,6 +2206,7 @@ function informe(){
   const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
   const sel = [...document.querySelectorAll('.ex-g:checked')].map(i=>i.value);
   const gs = Object.keys(GRUPOS).filter(g=>sel.includes(g));
+  // 1. resumen de indicadores
   let resumen = `<h2>Resumen</h2><table><thead><tr><th>Grupo</th><th>Previstas</th><th>Impartidas</th><th>No impartidas</th>
     <th>Sin registrar</th><th>Entrega de deberes</th><th>Clima: bien / a ratos / no</th><th>Min. perdidos por sesión (inicio + final)</th><th>Con PT</th></tr></thead><tbody>`;
   for(const g of gs){
@@ -2048,6 +2220,7 @@ function informe(){
   const nRec = f.filter(s=>s.reconstruido).length;
   resumen += `</tbody></table>${nRec?`<p class="meta">${nRec} ${nRec===1?'sesión se registró después, reconstruida':'sesiones se registraron después, reconstruidas'} a partir de lo indicado en cada una.</p>`:''}<p class="meta">«Previstas»: sesiones del horario en días lectivos del periodo que ya han pasado.
     «Entrega de deberes»: porcentaje del alumnado presente que los trae completos (y a medias), sobre las revisiones registradas; los ausentes no cuentan.</p>`;
+  // 2. clima por franja horaria
   const cf = climaPorFranja(desde, hasta);
   const hayClima = Object.values(cf).some(x=>x.bien+x.regular+x.mal);
   if(hayClima){
@@ -2063,6 +2236,7 @@ function informe(){
       resumen += `<tr><td>${FR[n].ini}–${FR[n].fin}</td><td>${x.n}</td><td>${a} min</td><td>${b} min</td><td>${Math.max(0,DUR-a-b)} min</td></tr>`; }
     resumen += `</tbody></table><p class="meta">Minutos hasta poder empezar a trabajar y antes del timbre, anotados al registrar cada sesión.</p>`;
   }
+  // 3. por grupo: programación y sesiones
   let cuerpo = '';
   for(const g of [...gs, 'otras']){
     if(g==='otras' && !sel.includes('otras')) continue;
@@ -2095,6 +2269,7 @@ function informe(){
     cuerpo += `</tbody></table>`;
   }
   if(!cuerpo) cuerpo = '<p>No hay sesiones registradas en esas fechas.</p>';
+  // 4. registros borrados en el periodo
   const bor = (c.borrados||[]).filter(x=>x.fecha>=desde && x.fecha<=hasta);
   let borr = '';
   if(bor.length){
@@ -2119,6 +2294,7 @@ Del ${larga(desde)} al ${larga(hasta)}</div>${resumen}${calendarioInforme(desde,
 Cada sesión indica cuándo se registró y cuántas veces se ha modificado; los registros borrados quedan listados.</p></body></html>`;
 }
 
+/* ═══════════════════════════ EVENTOS ═══════════════════════════ */
 document.getElementById('barra').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   planoB = null; vista = b.dataset.v; pintar(); window.scrollTo(0,0);
@@ -2192,7 +2368,7 @@ document.getElementById('app').addEventListener('click', async e=>{
   }
   else if(a==='quitar-mat'){
     const g = b.dataset.g, n = Number(b.dataset.n), m = matr(g)[n]; if(!m) return;
-    if(m.alta && n===(store.cfg.alumnos[g]||25)) ponAlumnos(g, n-1);
+    if(m.alta && n===(store.cfg.alumnos[g]||25)) ponAlumnos(g, n-1);   // deshacer una incorporación quita el último número
     delete store.cfg.matricula[g][n]; guardarCfg(); pintar();
   }
   else if(a==='aplicar-dif'){
@@ -2219,7 +2395,7 @@ document.getElementById('app').addEventListener('click', async e=>{
   else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
   else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
   else if(a==='ia-guardar'){
-    const clave = $('#ia-clave').value.replace(/\s+/g, '');
+    const clave = $('#ia-clave').value.replace(/\s+/g, '');   // una clave no lleva espacios ni saltos: fuera los que se cuelan al pegar
     iaGuarda({clave, modelo: $('#ia-modelo').value, esfuerzo: $('#ia-esfuerzo').value});
     if(clave && (!/^sk-ant-/.test(clave) || clave.length < 90)){ const c = iaCfg(); c.ok = false; c.probado = new Date().toISOString();
       c.msg = !/^sk-ant-/.test(clave) ? 'la clave tiene que empezar por sk-ant-' : `la clave parece incompleta: tiene ${clave.length} caracteres y una entera tiene más de cien`;
@@ -2289,6 +2465,8 @@ document.getElementById('app').addEventListener('change', e=>{
   if(e.target.id==='pa-desde'){ paDesde = e.target.value; pintar(); }
   else if(e.target.id==='pa-hasta'){ paHasta = e.target.value; pintar(); }
 });
+// ── NOMBRES: se leen y se quedan en memoria (ver NOMBRES arriba) ──
+// Excel en español guarda el CSV en Windows-1252 salvo que se elija «CSV UTF-8»: se prueban los dos.
 document.getElementById('archivo-nombres').addEventListener('change', e=>{
   const f = e.target.files && e.target.files[0]; if(!f) return;
   const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
@@ -2312,6 +2490,9 @@ document.getElementById('archivo-nombres').addEventListener('change', e=>{
   };
   r.readAsArrayBuffer(f);
 });
+// ── RESTAURAR UNA COPIA ──
+// Se lee el archivo, se enseña qué trae y se pide confirmación dentro de la app
+// (sin confirm(): en algunas apps instaladas el aviso del sistema no aparece).
 let copiaPendiente = null;
 document.getElementById('archivo-copia').addEventListener('change', e=>{
   const f = e.target.files && e.target.files[0]; if(!f) return;
@@ -2434,6 +2615,8 @@ document.getElementById('hoja').addEventListener('click', e=>{
     const b2 = borrador;
     if(b2.grupo && b2.estado==='no' && !b2.motivo){ toast('Elige el motivo'); return; }
     if(b2.grupo && b2.estado!=='no' && !b2.contenido.trim() && !b2.material.trim()){ toast('Escribe qué se ha hecho'); return; }
+    // Letra suelta al final de un texto (la «w» de la fila de arriba del teclado al ir a tocar
+    // otra cosa): se avisa una vez; si se vuelve a pulsar Guardar, se guarda tal cual.
     { const NOM = {contenido:'Qué se ha hecho', deberes:'Deberes', cambio:'Qué cambié', observacion:'Observación', notas:'Notas', ptNotas:'Trabajo con la PT'};
       const sosp = Object.keys(NOM).find(k=>{ const v = String(b2[k]||'').trim(); return /(^|[\s.,;:])[a-zñ]$/i.test(v) && !/(^|\s)[yoeuaYOEUA]$/.test(v) || /[a-záéíóúñ]w$/i.test(v); });
       if(sosp && avisoLetra !== abiertoId+sosp){ avisoLetra = abiertoId+sosp;
@@ -2455,6 +2638,7 @@ document.getElementById('hoja').addEventListener('click', e=>{
   }
   pintarHoja(); guardarBorrador();
 });
+// lo escrito se guarda como borrador medio segundo después de dejar de teclear
 document.getElementById('hoja').addEventListener('input', e=>{ if(e.target.closest('[data-f],[data-fb]') && abiertoId) borradorLuego(); });
 function hojaFaltan(){
   const lista = sinRegistrar();
@@ -2500,6 +2684,7 @@ document.getElementById('hoja').addEventListener('click', ev=>{
   pintarHojaFecha();
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
+// al volver a la app (cambio de pestaña o de hora) se repinta: la franja «ahora» se mueve sola
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){ clearTimeout(tBorr); guardarBorrador(); tOculto = Date.now(); return; }
   if(NOMBRES && tOculto && Date.now() - tOculto > 20*60000){
@@ -2511,11 +2696,13 @@ document.addEventListener('visibilitychange', ()=>{
 window.addEventListener('pagehide', ()=>{ clearTimeout(tBorr); guardarBorrador(); });
 setInterval(()=>{ if(!borrador && !copiaPendiente && vista==='dia') pintar(); }, 60000);
 
+/* ═══════════════════════════ ARRANQUE ═══════════════════════════ */
 leerLocal();
 if(!esLectivo(dia) && [0,6].includes(deClave(dia).getDay())){
   let d = deClave(dia); while(d.getDay()===0||d.getDay()===6) d = masDias(d,1); dia = clave(d);
 }
 pintar();
+// si el móvil cerró la app con una hoja abierta, se vuelve a ella tal como estaba
 if(borr.abierto && borr.ses[borr.abierto]){
   const d = borr.ses[borr.abierto].b;
   if(d && d.fecha && franjasDe(d.fecha)[d.franja]){ dia = d.fecha; vista = 'dia'; pintar(); abrir(d.fecha, d.franja); }
