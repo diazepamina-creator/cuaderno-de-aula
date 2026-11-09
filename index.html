@@ -520,6 +520,7 @@ function nomCorto(s){
   return ape ? `${pila} ${ape[0].toUpperCase()}.` : pila;
 }
 const nomDe = (g, n) => NOMBRES && NOMBRES[g] && NOMBRES[g][n] || '';
+const nombresListado = () => NOMBRES ? Object.values(NOMBRES).flatMap(g => Object.values(g || {})).filter(Boolean) : [];
 function olvidarNombres(aviso){ NOMBRES = null; NOMBRES_DE = ''; if(aviso) toast(aviso); }
 const OTRAS = {G:'Guardia', C:'Complementarias', RM:'Reunión de departamento', AF:'Atención a familias'};
 // HORARIO[día de la semana 1..5][franja] — del horario del centro.
@@ -574,7 +575,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.15';
+const VERSION_APP = '1.15.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -637,6 +638,33 @@ function riesgosIA(o){
 }
 /* el texto dictado también se mira antes de salir */
 const riesgosTexto = t => riesgosIA({dictado: t});
+/* 1.15.1 · LO QUE BLOQUEA. Las palabras de IA_RIESGO avisan (a veces son legítimas: «familia de
+   problemas») y se pueden enviar igualmente. Esto no: un número de lista («el n.º 12», «nº 7»,
+   «número de lista 3») o el nombre de un alumno del listado cargado (dos palabras suyas seguidas:
+   «Lucía Martínez», «Martínez, Lucía»). Hay que quitarlo del texto para poder enviarlo.
+   nombres: los del listado cargado (NOMBRES, solo en memoria), en una lista. */
+const ilano = s => String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function bloqueosIA(t, nombres){
+  const r = [], txt = String(t || '');
+  const num = /(?<![\p{L}\d])n\.?\s?º\s?\d+|\bnº\s*\d+|n[uú]mero\s+(?:de\s+lista\s*:?\s*)?\d+/iu.exec(txt);
+  if (num) r.push({que: 'un número de lista', palabra: num[0]});
+  const l = ' ' + ilano(txt).replace(/[^a-z0-9ñ]+/g, ' ') + ' ';
+  for (const nom of nombres || []){ const w = ilano(nom).replace(/[^a-z0-9ñ]+/g, ' ').trim().split(' ').filter(x => x.length >= 3);
+    let visto = null; for (let i = 0; i < w.length && !visto; i++) for (let j = 0; j < w.length && !visto; j++) if (i !== j && l.includes(' ' + w[i] + ' ' + w[j] + ' ')) visto = w[i] + ' ' + w[j];
+    if (visto){ r.push({que: 'el nombre de un alumno del listado', palabra: visto}); } }
+  return r;
+}
+/* LA ÚLTIMA PUERTA: la petición entera, justo antes del fetch. Lanza un error si lleva un campo
+   privado (por si algún día una función se salta paraIA), un número de lista o un nombre. */
+function vigilaIA(body, nombres){
+  const t = JSON.stringify(body.messages || []), f = [];
+  /* el contexto va como JSON escrito dentro del mensaje: sus comillas llegan escapadas (\\"pt\\":) */
+  for (const k of IA_PRIVADO) if (new RegExp('\\\\?"' + k + '\\\\?"\\s*:').test(t)) f.push('el campo privado «' + k + '»');
+  if (/\\"(?:no|medias|falta)\\"\s*:\s*\[|"(?:no|medias|falta)"\s*:\s*\[/.test(t)) f.push('la revisión por número de lista');
+  for (const b of bloqueosIA(t.replace(/\\n/g, ' '), nombres)) f.push(b.que);
+  if (f.length) throw new Error('No se envía: lleva ' + [...new Set(f)].join(', ') + '.');
+  return true;
+}
 /* fin de la frontera */
 
 /* ══ LA IA (1.4): ordenar lo dictado en los campos de la sesión ════════════
@@ -660,7 +688,7 @@ async function iaPrueba(){
   try{
     const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
         'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({model:c.modelo, max_tokens:300, output_config:{effort:'low'}, messages:[{role:'user', content:'Responde solo: ok'}]})});
+      body: JSON.stringify(((b)=>{ vigilaIA(b, nombresListado()); return b; })({model:c.modelo, max_tokens:300, output_config:{effort:'low'}, messages:[{role:'user', content:'Responde solo: ok'}]}))});
     const d = await r.json().catch(()=>({}));
     if(!r.ok) throw new Error((d.error && d.error.message) || ('Error '+r.status));
     c.ok = true; c.msg = '';
@@ -674,10 +702,12 @@ async function iaOrdena(dictado, ses){
     unidades: ses.grupo ? unidadesDe(ses.grupo).map(u=>({id:u.id, nombre:u.nombre})) : [],
     materiales: store.cfg.materiales, sesion_anterior_del_grupo: anterior ? paraIA(anterior) : null,
     lo_que_ya_hay: paraIA(ses)};
+  const cuerpo = {model:c.modelo, max_tokens:4000, output_config:{effort:c.esfuerzo}, system:IA_INSTRUCCIONES,
+      messages:[{role:'user', content:'Contexto (JSON):\n'+JSON.stringify(contexto)+'\n\nLo que he dictado:\n'+dictado}]};
+  vigilaIA(cuerpo, nombresListado());   // la última puerta (1.15.1)
   const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
       'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-    body: JSON.stringify({model:c.modelo, max_tokens:4000, output_config:{effort:c.esfuerzo}, system:IA_INSTRUCCIONES,
-      messages:[{role:'user', content:'Contexto (JSON):\n'+JSON.stringify(contexto)+'\n\nLo que he dictado:\n'+dictado}]})});
+    body: JSON.stringify(cuerpo)});
   const d = await r.json().catch(()=>({}));
   if(!r.ok) throw new Error((d.error && d.error.message) || ('Error '+r.status));
   const txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
@@ -2457,6 +2487,8 @@ document.getElementById('hoja').addEventListener('click', e=>{
   if(h==='ia-ordena'){
     const t = ($('#h-dicta') ? $('#h-dicta').value : '').trim(); iaDictado = t;
     if(!t){ iaAviso = 'Primero dicta o escribe lo que ha pasado.'; pintarHoja(); return; }
+    const bq = bloqueosIA(t, nombresListado());
+    if(bq.length){ iaAviso = `No se envía: lleva ${[...new Set(bq.map(x=>x.que+' («'+esc(x.palabra)+'»)'))].join(' y ')}. Quítalo del dictado (lo de un alumno va en «Otras notas», a mano) y vuelve a pulsar.`; pintarHoja(); return; }
     const r = riesgosTexto(t);
     if(r.length && iaRiesgoVisto !== t){ iaRiesgoVisto = t;
       iaAviso = `Puede señalar a un alumno: ${[...new Set(r.map(x=>'«'+esc(x.palabra)+'»'))].join(', ')}. Quítalo (va en «Otras notas», a mano) o vuelve a pulsar para enviarlo igualmente.`;
