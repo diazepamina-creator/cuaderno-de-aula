@@ -1,0 +1,2526 @@
+<!doctype html>
+<html lang="es">
+<head>
+<!--
+  Cuaderno de aula
+  © Andrés Asensio · CC BY-NC-ND 4.0 · https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es
+  Versión de aula generada el 2026-11-09 a partir del original 1fe47f9+cambios sin guardar.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuaderno de aula</title>
+<meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+<meta name="theme-color" content="#1D3A8A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#FBFCFD; --cuad:#DDE7F1; --tinta:#1D3A8A; --grafito:#262A31;
+  --gris:#687180; --linea:#C8D5E2; --rojo:#C8322B; --hoja:#FFFFFF;
+  --sombra:0 1px 0 rgba(29,58,138,.08), 0 6px 18px -10px rgba(29,58,138,.35);
+  --g1A:#D2CE5C; --g1B:#6BB3EE; --g1D:#F59C63; --g2B:#44C35A; --gR4:#3BBDB7; --gX:#C9CED6;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#11151B; --cuad:#1A212B; --tinta:#93B2FF; --grafito:#E7EAEF;
+    --gris:#9AA4B2; --linea:#2B3542; --rojo:#FF7064; --hoja:#171C24;
+    --sombra:0 1px 0 rgba(0,0,0,.4), 0 8px 20px -12px rgba(0,0,0,.8);
+    --g1A:#A9A640; --g1B:#3F86C2; --g1D:#C9763F; --g2B:#2E9A42; --gR4:#23928D; --gX:#4A5360;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#11151B; --cuad:#1A212B; --tinta:#93B2FF; --grafito:#E7EAEF;
+  --gris:#9AA4B2; --linea:#2B3542; --rojo:#FF7064; --hoja:#171C24;
+  --sombra:0 1px 0 rgba(0,0,0,.4), 0 8px 20px -12px rgba(0,0,0,.8);
+  --g1A:#A9A640; --g1B:#3F86C2; --g1D:#C9763F; --g2B:#2E9A42; --gR4:#23928D; --gX:#4A5360;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.45;color:var(--grafito);
+  background-color:var(--papel);
+  background-image:linear-gradient(var(--cuad) 1px,transparent 1px),linear-gradient(90deg,var(--cuad) 1px,transparent 1px);
+  background-size:22px 22px;
+  min-height:100vh;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--tinta);outline-offset:2px;border-radius:6px}
+.app{max-width:680px;margin:0 auto;padding:14px 16px 110px}
+
+.cab{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 0 4px}
+.fecha{color:var(--tinta);line-height:1.05}
+.fecha .dia{font-size:15px;font-weight:700;display:block;margin-bottom:2px}
+.fecha .num{font-size:44px;font-weight:700;letter-spacing:-.5px}
+.fecha .mes{font-size:22px;font-weight:400;margin-left:6px}
+.nav{display:flex;gap:6px}
+.btn-r{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--linea);background:var(--hoja);
+  display:grid;place-items:center;color:var(--tinta);font-size:22px;line-height:1}
+.hoy{height:44px;padding:0 14px;border-radius:22px;border:1.5px solid var(--tinta);background:var(--hoja);color:var(--tinta);font-weight:700}
+.estado-sync{font-size:13px;color:var(--gris);margin:0 0 12px}
+.estado-sync b{color:var(--grafito);font-weight:700}
+
+.aviso{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--hoja);border:1.5px solid var(--rojo);color:var(--rojo);
+  border-radius:12px;padding:10px 12px;margin:8px 0 14px;font-weight:700;width:100%;text-align:left}
+.aviso small{font-weight:400;color:var(--gris);display:block}
+.aviso.copia{background:var(--tinta);border-color:var(--tinta);color:var(--hoja)}
+.aviso.copia small{color:var(--hoja);opacity:.85}
+.barras{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--linea);margin:6px 0 2px}
+.barras span{display:block;height:100%}
+.leyenda{font-size:13px;color:var(--gris)}
+.unidad{margin-bottom:10px}
+.unidad .n{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.prog{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin-top:4px}
+.prog span{display:block;height:100%;background:var(--tinta)}
+.pbar{position:relative;height:12px;border-radius:6px;background:var(--linea);margin:4px 0 6px}
+.pbar>span{display:block;height:100%;border-radius:6px;background:var(--tinta)}
+.pbar>i{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1px;background:var(--rojo);border-radius:2px}
+.tarde{color:var(--rojo)}
+.perd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.perd>span{width:50px;font-size:14px;color:var(--gris)}
+.perd{gap:5px}.perd .chip{min-width:42px;padding:6px 8px;text-align:center}
+.perd .chip[aria-pressed="true"]{border-color:var(--rojo);color:var(--rojo);font-weight:700}
+details.sa{margin-bottom:8px;padding:6px 12px}
+details.sa summary{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline;list-style:none}
+details.sa summary::-webkit-details-marker{display:none}
+details.sa summary .prog{grid-column:1/-1;margin-top:2px}
+.sa-n{font-weight:700}.sa-c{font-size:13px;color:var(--gris);font-weight:400;font-variant-numeric:tabular-nums}
+details.sa.hecha .sa-n{color:var(--gris)}
+.pasos{list-style:none;padding:0;margin:4px 0 0}
+.paso-b{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;padding:9px 0;border-top:1px dashed var(--linea);font-size:15px}
+.paso-b .caja{flex:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--tinta);border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--hoja)}
+.paso-b[aria-pressed="true"] .caja{background:var(--tinta)}
+.paso-b[aria-pressed="true"] .txt{color:var(--gris)}
+.paso-b .txt{flex:1}.paso-b small{display:block;font-size:13px;color:var(--gris);margin-top:2px}
+.paso-b .etq{flex:none}
+.horq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px 34px;font-size:14px}
+.horq small{flex-basis:100%;font-size:13px;color:var(--gris)}
+.horq .chip{padding:4px 10px;font-size:14px}.horq .chip.sel{border-color:var(--tinta);color:var(--tinta);font-weight:700}
+details.semana{margin-top:16px}
+details.semana ul{list-style:none;padding:0;margin:6px 0 0}
+details.semana li button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;border-top:1px dashed var(--linea);background:none;padding:9px 0;font-size:15px}
+details.semana .grupo{flex:none}.sem-t small{display:block;font-size:13px;color:var(--gris);margin-top:2px}
+.prox{list-style:none;margin:0 0 14px;padding:0}
+.prox button{width:100%;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;
+  background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:9px 12px;margin-bottom:6px}
+.prox .cuando{font-weight:700;color:var(--tinta);font-size:15px;min-width:64px}
+.prox .cuando.cerca{color:var(--rojo)}
+.prox .que{font-size:15px}
+.prox .que small{display:block;color:var(--gris);font-size:13px}
+.etq{display:inline-block;font-size:12px;font-weight:700;color:var(--rojo);border:1.5px solid var(--rojo);
+  border-radius:10px;padding:0 6px;margin-left:6px;line-height:18px;vertical-align:1px}
+.ev{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px;width:100%;text-align:left}
+.ev h4{margin:0 0 4px;font-size:16px}
+.ev .t{font-size:13px;color:var(--gris)}
+.ev ul{list-style:none;margin:6px 0 0;padding:0}
+.ev li{font-size:14px;margin:3px 0}
+.g-fecha{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin-top:8px}
+.recons{border:1px dashed var(--gris);border-radius:12px;padding:10px 12px;background:var(--hoja)}
+.registro{font-size:13px;color:var(--gris);margin:18px 0 0;border-top:1px dashed var(--linea);padding-top:10px}
+.u-fila{display:grid;grid-template-columns:1fr 70px 40px;gap:6px;margin-bottom:6px;align-items:center}
+.u-fila button{height:40px;border:0;background:none;color:var(--rojo);font-size:20px}
+
+.franjas{list-style:none;margin:0;padding:0}
+.fr{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:10px;
+  background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px;
+  width:100%;text-align:left;box-shadow:var(--sombra)}
+.fr.otra{box-shadow:none;background:transparent;border-style:dashed}
+.fr.ahora{border:2px solid var(--tinta)}
+.hora{font-variant-numeric:tabular-nums;font-size:14px;color:var(--gris);line-height:1.2}
+.hora b{display:block;color:var(--grafito);font-size:16px}
+.grupo{font-weight:700;font-size:18px;display:inline;padding:0 3px;
+  background:linear-gradient(transparent 52%,var(--gc,var(--gX)) 52%,var(--gc,var(--gX)) 92%,transparent 92%)}
+.sub{font-size:14px;color:var(--gris);margin-top:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.marca{font-size:13px;font-weight:700;white-space:nowrap}
+.marca.ok{color:var(--tinta)}
+.marca.pend{color:var(--rojo)}
+.marca.no{color:var(--gris);text-decoration:line-through}
+.marca.borr{color:var(--tinta);font-style:italic}
+.recuperado{border:1.5px dashed var(--tinta);border-radius:12px;padding:10px 12px;margin:10px 0 4px;font-size:15px}
+.recuperado small{color:var(--gris);display:block;margin-top:2px}
+.recuperado button{margin-top:8px}
+.recreo{font-size:13px;color:var(--gris);text-align:center;margin:2px 0 10px;letter-spacing:.3px}
+.pt{display:inline-block;font-size:12px;font-weight:700;color:var(--tinta);border:1.5px solid var(--tinta);
+  border-radius:10px;padding:0 6px;margin-left:6px;line-height:18px;vertical-align:1px}
+.pt.no{opacity:.4;border-style:dashed}
+.vacio{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:18px;text-align:center;color:var(--gris)}
+.vacio b{color:var(--grafito)}
+
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);
+  padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.barra nav{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.barra button{background:none;border:0;padding:9px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:13px;color:var(--gris)}
+.barra button[aria-current="page"]{color:var(--tinta);font-weight:700}
+.barra svg{width:24px;height:24px}
+
+.velo{position:fixed;inset:0;background:rgba(10,14,20,.45);z-index:10;display:none}
+.velo.abierto{display:block}
+.hoja{position:fixed;left:0;right:0;bottom:0;top:0;z-index:11;background:var(--papel);
+  overflow:auto;transform:translateY(100%);transition:transform .22s ease-out;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.hoja.abierta{transform:none}
+@media (prefers-reduced-motion: reduce){.hoja{transition:none}}
+.hoja-in{max-width:680px;margin:0 auto;padding:12px 16px 120px}
+.hoja-cab{position:sticky;top:0;background:var(--papel);padding:10px 0 10px;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--linea)}
+.hoja-cab h2{margin:0;font-size:20px;color:var(--tinta)}
+.hoja-cab .quando{font-size:14px;color:var(--gris)}
+.cerrar{height:44px;padding:0 14px;border-radius:22px;border:1.5px solid var(--linea);background:var(--hoja)}
+.campo{margin:16px 0}
+.campo > label,.campo > .et{display:block;font-weight:700;margin-bottom:6px}
+.priv{display:inline-block;font-size:12px;font-weight:400;color:var(--gris);margin:2px 0 4px}
+.campo .ayuda{font-size:14px;color:var(--gris);font-weight:400}
+textarea,input[type=text],input[type=date],input[type=number]{
+  width:100%;border:1.5px solid var(--linea);background:var(--hoja);border-radius:10px;padding:10px 12px;font-size:17px}
+textarea{min-height:84px;resize:vertical}
+textarea:focus,input:focus{border-color:var(--tinta);outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{border:1.5px solid var(--linea);background:var(--hoja);border-radius:18px;padding:6px 12px;font-size:15px}
+.chip.igual{border-color:var(--tinta);color:var(--tinta)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{border:1.5px solid var(--linea);background:var(--hoja);border-radius:10px;padding:10px 6px;font-size:15px;line-height:1.2}
+.seg button[aria-pressed="true"]{border-color:var(--tinta);background:var(--tinta);color:var(--hoja);font-weight:700}
+.seg.dos{grid-template-columns:repeat(2,1fr)}
+.deber{border:1px solid var(--linea);background:var(--hoja);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.deber-cab{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.deber-cab p{margin:0}
+.deber-cab .de{font-size:13px;color:var(--gris)}
+.tog{border:1.5px solid var(--linea);background:var(--hoja);border-radius:18px;padding:6px 12px;font-size:14px;white-space:nowrap}
+.tog[aria-pressed="true"]{border-color:var(--tinta);color:var(--tinta);font-weight:700}
+.lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin-top:10px}
+.lista button{height:42px;border:1.5px solid var(--linea);background:var(--hoja);border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px}
+.lista button[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff;font-weight:700}
+.lista.connom{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.lista.connom button{display:flex;align-items:center;gap:8px;padding:0 10px;text-align:left;font-size:14px}
+.lista.connom button b{min-width:22px;font-size:16px}
+.lista.connom button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plano .mesa small{display:block;font-size:10px;font-weight:400;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.plano.connom .mesa{height:48px}
+.nombres{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--gris);margin-top:8px}
+.revl{margin-top:10px;border:1px solid var(--linea);border-radius:10px;background:var(--papel)}
+.revl>summary{list-style:none;cursor:pointer;padding:10px 12px;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.revl>summary::-webkit-details-marker{display:none}
+.revl>summary::after{content:'▾';color:var(--gris)} .revl[open]>summary::after{content:'▴'}
+.revl .cuenta b{font-variant-numeric:tabular-nums}
+.revl .filas{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 10px;padding:0 8px 8px}
+.revl .fila{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;height:40px;padding:0 10px;border:1.5px solid var(--linea);border-radius:8px;background:var(--hoja);text-align:left;font-size:15px}
+.revl .fila .n{min-width:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.revl .fila .nom{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.revl .fila .est{font-size:13px;white-space:nowrap;padding:3px 9px;border-radius:12px;border:1px solid var(--linea);color:var(--grafito)}
+.revl .fila[aria-pressed="true"]{border-color:var(--rojo)}
+.revl .fila[aria-pressed="true"] .est{background:var(--rojo);border-color:var(--rojo);color:#fff;font-weight:700}
+.revl .fila{cursor:default}
+.revl .fila .bt{display:flex;gap:4px;margin-left:auto}
+.revl .fila .bt button{height:30px;min-width:34px;padding:0 8px;border:1.5px solid var(--linea);border-radius:15px;background:var(--hoja);font-size:13px;color:var(--grafito)}
+.revl .fila .ok{font-size:13px;color:var(--gris);white-space:nowrap}
+.revl .fila.st-no{border-color:var(--rojo)} .revl .fila.st-medias{border-color:#b7791f} .revl .fila.st-falta{border-style:dashed;opacity:.75}
+.revl .fila .bt button[data-v="no"][aria-pressed="true"]{background:var(--rojo);border-color:var(--rojo);color:#fff;font-weight:700}
+.revl .fila .bt button[data-v="medias"][aria-pressed="true"]{background:#b7791f;border-color:#b7791f;color:#fff;font-weight:700}
+.revl .fila .bt button[data-v="falta"][aria-pressed="true"]{background:var(--gris);border-color:var(--gris);color:#fff;font-weight:700}
+.plano .mesa.st-medias,.sin-mesa button.st-medias{background:#b7791f!important;border-color:#b7791f!important;color:#fff}
+.plano .mesa.st-falta,.sin-mesa button.st-falta{background:var(--gris)!important;border-color:var(--gris)!important;color:#fff;border-style:dashed!important}
+.pincel{margin-top:10px}
+details.pends{border-top:0;margin:0 0 14px;padding:8px 12px;border:1px solid var(--linea);border-radius:12px;background:var(--hoja)}
+.pend-l{list-style:none;padding:0;margin:6px 0}
+.pend{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--linea)}
+.pend:first-child{border-top:0}
+.pend-ok{flex:none;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--linea);background:var(--hoja);font-weight:700;color:var(--tinta);padding:0}
+.pend-ok[aria-pressed="true"]{background:var(--tinta);color:#fff;border-color:var(--tinta)}
+.pend-t{flex:1;text-align:left;border:0;background:none;padding:0;font-size:15px;color:var(--tinta)}
+.pend-t small{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+.pend.hecho .pend-t{color:var(--gris);text-decoration:line-through}
+.ev-pasos{margin:-6px 0 12px;padding:8px 10px;border:1px solid var(--linea);border-top:0;border-radius:0 0 12px 12px;background:var(--papel)}
+.ev-paso{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
+.ev-paso .chip[aria-pressed="true"]{background:var(--tinta);color:#fff;border-color:var(--tinta)}
+.res-gs{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.res-g{border:1px solid var(--linea);border-radius:12px;background:var(--hoja);padding:10px 12px}
+.res-g ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.res-g li{margin:2px 0}
+.mes-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.mes-cab .nav{display:flex;gap:6px;align-items:center}
+.mes{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
+.mes-dsem{text-align:center;font-size:12px;font-weight:700;color:var(--gris);padding:2px 0}
+.mes-d{min-height:66px;border:1px solid var(--linea);border-radius:8px;background:var(--hoja);padding:3px 4px 5px;text-align:left;display:flex;flex-direction:column;gap:3px;color:var(--tinta)}
+.mes-d .n{font-size:13px;font-weight:700;line-height:1}
+.mes-d.fuera{opacity:.38}
+.mes-d.festivo{background:transparent;border-style:dashed}
+.mes-d.festivo .n{color:var(--gris);font-weight:400}
+.mes-d.hoy{border:2px solid var(--tinta)}
+.m-cs{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}
+.m-c{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--gc);border:1.5px solid var(--gc);box-sizing:border-box;vertical-align:-1px;position:relative}
+.m-c.st-pend{background:transparent;border:2px solid var(--rojo)}
+.m-c.st-no{background:repeating-linear-gradient(135deg,var(--gc) 0 2px,transparent 2px 4px);opacity:.6}
+.m-c.st-fut{background:transparent;opacity:.75}
+.m-c.bil::after{content:'';position:absolute;right:-3px;top:-3px;width:5px;height:5px;border-radius:50%;background:#b7791f;border:1px solid var(--hoja)}
+.m-evs{display:flex;flex-wrap:wrap;gap:2px}
+.m-ev{font-size:10px;line-height:1.2;padding:0 3px;border-radius:3px;color:#fff;background:var(--gc);font-weight:700}
+.mes-ley{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin-top:10px}
+.bil-ic{vertical-align:-3px;margin-left:6px;color:#b7791f;--bil-f:#fff6e3;flex:none}
+.bil-ic.hecho{color:var(--gris);--bil-f:transparent}
+.bil-sem{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
+.bil-sem .g{min-width:96px;font-size:14px}
+.bil-sem .chip[aria-pressed="true"]{background:#b7791f;border-color:#b7791f;color:#fff;font-weight:700}
+.bil-sem .chip[aria-pressed="true"] .bil-ic{color:#fff;--bil-f:transparent}
+.bil-sem .chip .bil-ic{margin:0 4px 0 0}
+.bil{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.bil label{font-size:12px;color:var(--gris);min-width:0}.bil input{width:100%;min-width:0;box-sizing:border-box;text-align:center}
+.plano .mesa.st-baja,.sin-mesa button.st-baja{opacity:.35;text-decoration:line-through}
+.matr li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--linea);font-size:14px}
+.matr{list-style:none;padding:0;margin:6px 0 10px}
+.mt{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.mt select{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px}
+.mt label{font-size:13px;color:var(--gris);min-width:0}.mt input{width:100%;min-width:0;box-sizing:border-box}
+.mt button{min-width:0;font-size:14px}
+.dif{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:8px 10px;margin:8px 0;font-size:14px}
+.porAl{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.porAl th,.porAl td{border-bottom:1px solid var(--linea);padding:5px 4px;text-align:center;font-variant-numeric:tabular-nums}
+.porAl th:nth-child(2),.porAl td:nth-child(2){text-align:left}
+.revl .filtro{display:flex;gap:6px;padding:0 8px 8px}
+.lista-nota{font-size:13px;color:var(--gris);margin-top:6px}
+.pizarra{text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gris);border-bottom:3px solid var(--grafito);margin:10px 18% 8px;padding-bottom:2px}
+.plano{display:grid;gap:5px;margin-bottom:8px}
+.plano .mesa{height:40px;border:1.5px dashed var(--linea);background:transparent;border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px;padding:0}
+.plano .mesa.llena{border-style:solid;background:var(--hoja);font-weight:700;color:var(--tinta)}
+.plano .mesa[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff}
+.plano .mesa:disabled{visibility:hidden}
+.plano-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.plano-ctl .btn-r{width:36px;height:36px;font-size:18px}
+.plano-ctl b{min-width:20px;text-align:center}
+.plano-sig{margin:4px 0 0;font-size:15px}
+.sin-mesa{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;align-items:center;font-size:13px;color:var(--gris)}
+.sin-mesa button{width:40px;height:36px;border:1.5px solid var(--linea);background:var(--hoja);border-radius:8px}
+.sin-mesa button[aria-pressed="true"]{border-color:var(--rojo);background:var(--rojo);color:#fff;font-weight:700}
+
+details{border:1px dashed var(--linea);border-radius:12px;padding:8px 12px;background:var(--hoja)}
+summary{font-weight:700;cursor:pointer;padding:4px 0}
+.acciones{position:fixed;left:0;right:0;bottom:0;background:var(--hoja);border-top:1px solid var(--linea);z-index:12;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.acciones div{max-width:680px;margin:0 auto;display:flex;gap:10px}
+.primario{flex:1;height:50px;border-radius:12px;border:0;background:var(--tinta);color:var(--hoja);font-weight:700;font-size:18px}
+.secundario{height:50px;border-radius:12px;border:1.5px solid var(--linea);background:var(--hoja);padding:0 16px}
+.peligro{color:var(--rojo);border-color:var(--rojo)}
+
+h1.titulo{font-size:28px;color:var(--tinta);margin:8px 0 12px;line-height:1.1}
+.sel-grupo{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sel-grupo button{border:1.5px solid var(--linea);background:var(--hoja);border-radius:20px;padding:8px 14px;font-weight:700}
+.sel-grupo button[aria-pressed="true"]{border-color:var(--grafito);box-shadow:inset 0 -6px 0 var(--gc)}
+.cifras{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.cifra{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px}
+.cifra b{display:block;font-size:26px;color:var(--tinta);font-variant-numeric:tabular-nums;line-height:1.1}
+.cifra span{font-size:13px;color:var(--gris)}
+h3{font-size:17px;margin:18px 0 8px}
+.hist{list-style:none;margin:0;padding:0}
+.hist button{width:100%;text-align:left;background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.hist .f{font-size:13px;color:var(--gris);font-variant-numeric:tabular-nums}
+.hist .c{margin:2px 0 0}
+.hist .d{font-size:14px;color:var(--tinta);margin-top:4px}
+.hist .r{font-size:14px;color:var(--rojo);margin-top:2px}
+
+.panel{background:var(--hoja);border:1px solid var(--linea);border-radius:12px;padding:14px;margin-bottom:14px}
+.panel p{margin:0 0 10px}
+details.aj{padding:0}
+details.aj>summary,details.pleg>summary{list-style:none;display:flex;align-items:baseline;gap:10px;cursor:pointer}
+details.aj>summary{padding:14px}
+details.aj>summary::-webkit-details-marker,details.pleg>summary::-webkit-details-marker{display:none}
+details.aj>summary>b,details.pleg>summary>b{flex:1 1 auto;min-width:0}
+details.aj>summary .res,details.pleg>summary .res{flex:0 0 auto;font-weight:400;font-size:13px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48%}
+details.aj>summary::after,details.pleg>summary::after{content:'▾';color:var(--gris);font-weight:400}
+details.aj[open]>summary::after,details.pleg[open]>summary::after{content:'▴'}
+details.aj>.aj-c{padding:0 14px 14px}
+details.pleg{margin-top:18px;border-top:1px solid var(--linea);padding-top:8px}
+details.pleg>summary{font-size:17px;padding:4px 0}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.checks{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.checks label{display:flex;align-items:center;gap:6px;border:1.5px solid var(--linea);border-radius:18px;padding:6px 12px}
+.bloque-btn{display:block;width:100%;margin-top:10px;height:50px;border-radius:12px;border:1.5px solid var(--tinta);
+  background:var(--hoja);color:var(--tinta);font-weight:700;font-size:16px}
+.bloque-btn.lleno{background:var(--tinta);color:var(--hoja)}
+.alumnos{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:center}
+.nolect{list-style:none;padding:0;margin:8px 0 0}
+.nolect li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--linea)}
+.nolect button{border:0;background:none;color:var(--rojo);font-weight:700}
+.nota{font-size:14px;color:var(--gris)}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  background:var(--grafito);color:var(--papel);padding:10px 16px;border-radius:22px;font-size:15px;z-index:20;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.si{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<div class="velo" id="velo"></div>
+<section class="hoja" id="hoja" aria-modal="true" role="dialog" aria-labelledby="hoja-titulo"></section>
+
+<div class="barra"><nav id="barra" aria-label="Secciones">
+  <button data-v="dia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>Día</button>
+  <button data-v="grupos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Grupos</button>
+  <button data-v="exportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>Exportar</button>
+  <button data-v="fechas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M12 11v4M12 17.6v.2"/></svg>Fechas</button>
+  <button data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2 1.2M17.8 15.3l2 1.2M4.2 16.5l2-1.2M17.8 8.7l2-1.2"/></svg>Ajustes</button>
+</nav></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="archivo-copia" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
+<input type="file" id="archivo-nombres" accept=".csv,.txt,text/csv,text/plain" class="sr" tabindex="-1" aria-hidden="true">
+<input type="file" id="archivo-prog" accept=".txt,.json,text/plain,application/json" class="sr" tabindex="-1" aria-hidden="true">
+
+<script src="capacitor.js"></script>
+<script>
+const FRANJAS = [
+  {n:1, ini:'8:15',  fin:'9:10'},
+  {n:2, ini:'9:10',  fin:'10:05'},
+  {n:3, ini:'10:05', fin:'11:00'},
+  {recreo:true},
+  {n:4, ini:'11:25', fin:'12:20'},
+  {n:5, ini:'12:20', fin:'13:15'},
+  {n:6, ini:'13:15', fin:'14:10'},
+];
+const FR = Object.fromEntries(FRANJAS.filter(f=>f.n).map(f=>[f.n,f]));
+const GRUPOS = {
+  '1A':{nombre:'1.º ESO A', nivel:1},
+  '1B':{nombre:'1.º ESO B', nivel:1},
+  '1D':{nombre:'1.º ESO D', nivel:1},
+  '2B':{nombre:'2.º ESO B', nivel:2},
+  'R4':{nombre:'Refuerzo 4.º ESO', nivel:4},
+};
+let NOMBRES = null, NOMBRES_DE = '', tOculto = 0, avisoLetra = '';
+const EST = {no:'✗ No los trae', medias:'½ A medias', falta:'Falta'};
+const DEF_MEDIAS = 'Empezados, pero falta al menos un ejercicio.';
+const estadoDe = (r,n) => (r.no||[]).includes(n) ? 'no' : (r.medias||[]).includes(n) ? 'medias' : (r.falta||[]).includes(n) ? 'falta' : 'si';
+function ponEstado(r, n, st){
+  const prev = estadoDe(r, n);
+  for(const k of ['no','medias','falta']) r[k] = (r[k]||[]).filter(x=>x!==n);
+  if(st!=='si' && st!==prev) r[st] = [...r[st], n].sort((x,y)=>x-y);
+}
+const matr = g => ((store.cfg.matricula||{})[g]) || {};
+const activo = (g, n, f) => { const m = matr(g)[n]; return !m || !((m.alta && f < m.alta) || (m.baja && f >= m.baja)); };
+function cuentaRev(r, g, f){
+  const N = store.cfg.alumnos[g] || 25, act = [];
+  for(let i=1;i<=N;i++) if(activo(g,i,f)) act.push(i);
+  const S = new Set(act), c = k => (r[k]||[]).filter(n=>S.has(n)).length;
+  const no = c('no'), medias = c('medias'), falta = c('falta');
+  return {no, medias, falta, si: act.length - no - medias - falta, presentes: act.length - falta, activos: act.length};
+}
+function ponAlumnos(g, n){
+  store.cfg.alumnos[g] = n;
+  const H = store.cfg.hor; if(H && Array.isArray(H.grupos)){ const x = H.grupos.find(y=>y.id===g); if(x) x.alumnos = n; }
+}
+const bajasTxt = (g, f) => Object.entries(matr(g)).filter(([n])=>!activo(g, Number(n), f))
+  .map(([n,m])=>`${n} (${m.baja && f>=m.baja ? 'baja desde el '+corta(m.baja) : 'llega el '+corta(m.alta)})`).join(', ');
+const bilN = v => v===''||v===undefined||v===null ? null : Number(v);
+function bilTxt(s){
+  const B = s.billete; if(!B) return '';
+  const n = bilN(B.n), p = [['bien',B.bien],['a medias',B.medias],['mal',B.mal]].filter(([,v])=>bilN(v)!==null).map(([k,v])=>`${v} ${k}`);
+  return `Billete de salida${B.pregunta?` («${B.pregunta}»)`:''}: ${p.length?p.join(' · '):'sin corregir'}${n!==null?` de ${n}`:''}${B.error?`. Error más repetido: ${B.error}`:''}`;
+}
+const slotDe = (k, n) => `${deClave(k).getDay()}-${n}`;
+function tocaBillete(k, n){
+  const o = (store.cfg.billeteDia||{})[`${k}_${n}`]; if(o!==undefined) return o;
+  return (store.cfg.billetes||[]).includes(slotDe(k, n));
+}
+const icoPT = no => `<span class="pt${no?' no':''}" title="${no?'La PT no ha venido':'Con PT'}" aria-label="${no?'La PT no ha venido':'Con PT'}">PT</span>`;
+const icoBillete = (hecho, t) => `<svg class="bil-ic${hecho?' hecho':''}" viewBox="0 0 28 18" width="26" height="17" role="img" aria-label="${t}"><title>${t}</title>
+  <path d="M2 3a1.5 1.5 0 0 1 1.5-1.5h21A1.5 1.5 0 0 1 26 3v3.2a2.8 2.8 0 0 0 0 5.6V15a1.5 1.5 0 0 1-1.5 1.5h-21A1.5 1.5 0 0 1 2 15v-3.2a2.8 2.8 0 0 0 0-5.6z" fill="var(--bil-f)" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M19 3.5v11" stroke="currentColor" stroke-width="1.1" stroke-dasharray="1.6 1.6"/>
+  ${hecho?'<path d="M8 9.3l2.4 2.4L15 6.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+    :'<path d="M7 11.5l3.2-1.2 3.6-4.3c.4-.5 1.2-.6 1.6-.1.4.4.3 1.1-.2 1.5l-4.2 3.6-.9 3.2-1-.4.2-2.4-2.3.3z" fill="currentColor"/>'}</svg>`;
+let difListado = [];
+function revTxt(r, nom){
+  const f = a => a.map(n=> nom && nomDe(nom,n) ? `${n} (${esc(nomCorto(nomDe(nom,n)))})` : n).join(', ');
+  const p = [];
+  if((r.no||[]).length) p.push('no los traen '+f(r.no));
+  if((r.medias||[]).length) p.push('a medias '+f(r.medias));
+  if((r.falta||[]).length) p.push('faltan '+f(r.falta));
+  return p.length ? p.join(' · ') : 'los traen todos';
+}
+const revPlegadas = new Set(), revFiltro = {}, revQuitadas = {}, revPincel = {};
+let paDesde = '', paHasta = '';
+function deberesPorAlumno(g, desde, hasta){
+  const N = store.cfg.alumnos[g] || 25, A = {};
+  for(let i=1;i<=N;i++) A[i] = {si:0, medias:0, no:0, falta:0};
+  let nRev = 0;
+  sesionesDe(g).forEach(([,s])=>{ if(s.estado==='no' || s.fecha<desde || s.fecha>hasta) return;
+    (s.revisiones||[]).forEach(r=>{ nRev++; for(let i=1;i<=N;i++) if(activo(g,i,s.fecha)) A[i][estadoDe(r,i)]++; }); });
+  return {N, nRev, A};
+}
+const normG = s => String(s||'').toUpperCase().replace(/ESO|[º°ª.\s-]/g,'');
+function grupoDeTexto(s){
+  const n = normG(s); if(!n) return null;
+  for(const k in GRUPOS){ if(normG(k)===n || normG(GRUPOS[k].nombre)===n) return k; }
+  if(/REF|TALLER|R4/.test(n)) return Object.keys(GRUPOS).find(k=>GRUPOS[k].nivel===4) || null;
+  return null;
+}
+function leerNombres(txt){
+  const lin = String(txt).replace(/^\uFEFF/,'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lin.length) return null;
+  const sep = [';','\t',','].find(c=>lin[0].includes(c)) || ';';
+  const out = {}; let n = 0, malas = 0;
+  for(const l of lin){
+    const c = l.split(sep).map(x=>x.trim().replace(/^"(.*)"$/,'$1').trim());
+    const g = grupoDeTexto(c[0]), num = parseInt(c[1]);
+    const nom = c.slice(2).filter(Boolean).join(', ');
+    if(!g || !(num>0) || !nom){ malas++; continue; }
+    (out[g] = out[g] || {})[num] = nom; n++;
+  }
+  return n ? {out, n, malas} : null;
+}
+function nomCorto(s){
+  if(!s) return ''; s = s.replace(/\(\s*baja\s*\)/i,'').trim();
+  let nom, ape;
+  if(s.includes(',')){ const [a, b] = s.split(','); nom = b.trim(); ape = a.trim(); }
+  else{ const w = s.trim().split(/\s+/); nom = w[0]; ape = w.slice(1).join(' '); }
+  const pila = nom.split(/\s+/).slice(0,2).join(' ');
+  return ape ? `${pila} ${ape[0].toUpperCase()}.` : pila;
+}
+const nomDe = (g, n) => NOMBRES && NOMBRES[g] && NOMBRES[g][n] || '';
+const nombresListado = () => NOMBRES ? Object.values(NOMBRES).flatMap(g => Object.values(g || {})).filter(Boolean) : [];
+function olvidarNombres(aviso){ NOMBRES = null; NOMBRES_DE = ''; if(aviso) toast(aviso); }
+const OTRAS = {G:'Guardia', C:'Complementarias', RM:'Reunión de departamento', AF:'Atención a familias'};
+const HORARIO = {
+  1:{1:{g:'1B',aula:'A114'}, 2:{g:'1A',aula:'A114',pt:true}, 3:{o:'C'}},
+  2:{3:{g:'1D',aula:'A100'}, 4:{g:'1A',aula:'A114'}, 5:{g:'1B',aula:'A114',pt:true}, 6:{g:'2B',aula:'A114'}},
+  3:{1:{o:'G'}, 2:{g:'1D',aula:'A104'}, 3:{o:'RM'}, 4:{g:'2B',aula:'A100'}, 5:{o:'AF'}, 6:{g:'R4',aula:'A200'}},
+  4:{1:{g:'2B',aula:'A100'}, 2:{g:'1B',aula:'A100',pt:true}, 3:{o:'G'}, 4:{g:'1A',aula:'A100',pt:true}, 5:{g:'1D',aula:'A100'}, 6:{o:'C'}},
+  5:{1:{g:'2B',aula:'A100'}, 2:{o:'G'}, 3:{g:'1D',aula:'A100'}, 4:{g:'R4',aula:'A114'}, 5:{g:'1A',aula:'A114'}, 6:{g:'1B',aula:'A114'}},
+};
+const CLIMA = {bien:'Se ha podido trabajar', regular:'A ratos', mal:'No se ha podido'};
+const PERD_INI = [0,5,10,15,20,30], PERD_FIN = [0,5,10,15];
+const DUR = 55;
+const MOTIVOS = ['Festivo','Excursión o actividad','Ausencia del docente','Examen de otra materia','Otro'];
+const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+const pad = n => String(n).padStart(2,'0');
+const clave = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const deClave = k => { const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); };
+const masDias = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const corta = k => { const d=deClave(k); return `${DIAS[d.getDay()].slice(0,3)} ${d.getDate()}/${d.getMonth()+1}`; };
+const larga = k => { const d=deClave(k); return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
+const minutos = h => { const [a,b]=h.split(':').map(Number); return a*60+b; };
+const ahoraMin = () => { const n=new Date(); return n.getHours()*60+n.getMinutes(); };
+const hoyK = () => clave(new Date());
+const idSes = (fecha,n) => `${fecha}_${n}`;
+
+const PROGD = () => (store.programa && store.programa.niveles) || {};
+const unidadesProg = nv => (PROGD()[nv]||[]).map(sa=>({id:sa.id, nombre:sa.n, previstas:sa.it.reduce((a,x)=>a+x.s,0)}));
+const recorta = (t,n) => t.length>n ? t.slice(0,n-1).replace(/\s+\S*$/,'')+'…' : t;
+const LS = 'cuaderno-de-aula.v1';
+const cfgInicial = () => ({
+  inicio: hoyK(), docente:'', centro:'', curso:'2026-27', ultimaCopia:'',
+  alumnos:{'1A':25,'1B':25,'1D':25,'2B':25,'R4':15},
+  nolectivos:[], materiales:['Las piezas de Miut','Ficha 1','Ficha 2','Ficha 3','Ficha 4','Aules','Pizarra digital'],
+  ultimaCopiaT:'', copia:{dia:5, hora:'14:10'},
+  borrados:[],
+  unidades:{1:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:12}],
+            2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
+            4:[]},
+});
+const VERSION_APP = '1.15.4';
+const CAL = {nombre:'calendario escolar 2026-27', fin:'2027-06-18', dias:[
+  '2026-10-09','2026-10-12',
+  '2026-12-08',
+  '2026-12-22','2026-12-23','2026-12-24','2026-12-25','2026-12-28','2026-12-29','2026-12-30','2026-12-31',
+  '2027-01-01','2027-01-04','2027-01-05','2027-01-06',
+  '2027-03-01','2027-03-02','2027-03-03','2027-03-04','2027-03-05',
+  '2027-03-19',
+  '2027-03-25','2027-03-26','2027-03-29','2027-03-30','2027-03-31','2027-04-01','2027-04-02'
+]};
+let store = {cfg:cfgInicial(), ses:{}, ev:{}, prog:{}, programa:null};
+const clon = o => JSON.parse(JSON.stringify(o));
+function leerLocal(){
+  try{
+    const j = JSON.parse(localStorage.getItem(LS) || 'null');
+    if(j && j.store){ store = j.store; const c0 = cfgInicial(); store.cfg = Object.assign(c0, store.cfg||{}); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, store.cfg.alumnos||{}); }
+    if(!store.cfg.unidades[4]) store.cfg.unidades[4] = [];
+    if(!store.ev) store.ev = {};
+    if(!store.prog) store.prog = {};
+    if(store.programa) ponerUnidadesProg(false);
+  }catch(e){}
+}
+let avisado = false;
+function guardarLocal(){
+  if(typeof avProgramar==='function') avProgramar();
+  try{ localStorage.setItem(LS, JSON.stringify({store})); }
+  catch(e){ if(!avisado){ avisado = true; alert('El móvil no ha dejado guardar. Haz una copia de seguridad desde Exportar.'); } }
+}
+const IA_SI = ['fecha','franja','grupo','unidad','estado','contenido','material','deberes','clima','perdIni','perdFin','cambio','observacion'];
+const IA_PRIVADO = ['revisiones','pt','ptNotas','notas','motivo','aula','historial','creado','actualizado'];
+const IA_RIESGO = [/(?<![\p{L}\d])(ACIS|ACI|NEAE|NESE|NEE|TDAH|TEA)(?![\p{L}\d])/gu,
+  /(?<![\p{L}\d])(dislexia|orientaci[oó]n|convivencia|expulsi[oó]n|expulsad[oa]s?|parte de (?:incidencia|disciplina)|familia|madre|padre|n\.?\s?º\s?\d+|n[uú]mero\s+\d+|(?:un|una|el|la)\s+alumn[oa]|(?:un|una|el|la)\s+chic[oa])(?![\p{L}\d])/giu];
+function paraIA(s){
+  const o = {};
+  IA_SI.forEach(k=>{ const v = s[k]; if(v!==undefined && v!==null && v!=='') o[k] = v; });
+  if(s.billete) o.billete = {pregunta: s.billete.pregunta||'', entregados: s.billete.n||'', bien: s.billete.bien||'', medias: s.billete.medias||'', mal: s.billete.mal||'', error: s.billete.error||''};
+  return o;
+}
+function riesgosIA(o){
+  const r = [];
+  const mira = (campo, t) => { if(typeof t !== 'string') return; for(const re of IA_RIESGO) for(const m of t.matchAll(re)) r.push({campo, palabra: m[0]});
+    const nl = numeroLista(t); if (nl.avisa) r.push({campo, palabra: nl.avisa + ' (¿un alumno? si es un ejercicio, «el ejercicio …»)'}); };
+  for(const [k,v] of Object.entries(o)){ if(v && typeof v === 'object') for(const [k2,v2] of Object.entries(v)) mira(k+'.'+k2, v2); else mira(k, v); }
+  return r;
+}
+const riesgosTexto = t => riesgosIA({dictado: t});
+const ilano = s => String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const NL_PERSONA = '(?:de la lista|(?:le|les)(?! (?:sum|rest|multiplic|divid|quit|anad|aplic|pon|da |sale|falta para|corresponde))|me|nos|no (?:la|lo|las|los) (?:trae|traia|trajo|ha traido|tiene|tenia|lleva|llevaba|entrega|entrego|ha entregado)|traia|trae|trajo|ha traido|falta|faltaba|falto|ha faltado|viene|venia|vino|llega|llegaba|llego|ha llegado|se sienta|se sentaba|se sento|se ha sentado|sentad[oa]|se porta|se ha portado|se levanta|se levantaba|se queja|se ha ido|se fue|habla|hablaba|ha hablado|molesta|molestaba|interrumpe|contesta|contesto|copia|copiaba|copio|ha copiado|entrega|entrego|suspende|suspendio|aprueba|aprobo|saco|ha sacado|pide|pidio|dice|dijo|quiere|queria|necesita|juega|jugaba|grita|gritaba|llora|lloraba|lloro|pega|pego|insulta|insulto|duerme|dormia|se duerme|va (?:aqui|alli|alla|ahi|delante|detras|al lado|junto|con|sentad[oa]|al bano|a la (?:fila|mesa|pizarra|ventana|puerta))|esta (?:enferm|castigad|expulsad|ausente|malit|nervios|sentad)[a-z]*|y (?:el|la) \\d{1,2} (?:se|no|han|hablan|hablaban|van|iban|estan|estaban|juegan|jugaban|molestan|copian|copiaron))';
+const NL_ART = '(?:el|la|al|del|a la)';
+function numeroLista(t){
+  const p = String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[ \t\r\n]+/g, ' ');
+  const b = [/(?<![a-z\d])n ?(?:\. ?[º°o]?|[º°]) ?\d{1,2}(?!\d)/, /(?<![a-z\d])(?:num|nro|numero)\.? ?(?:de lista ?:? ?)?\d{1,2}(?!\d)/,
+    /#\s?\d{1,2}(?!\d)/, /(?<![a-z\d])(?:alumn[oa]|chic[oa]|nin[oa]) (?:numero |n ?[.º°]+ ?)?\d{1,2}(?!\d)/,
+    new RegExp('(?<![a-z\\d])' + NL_ART + ' \\d{1,2}(?!\\d) ' + NL_PERSONA + '(?![a-z])')];
+  for (const re of b){ const m = re.exec(p); if (m) return {bloquea: m[0], avisa: null}; }
+  const re = new RegExp('(?<![a-z\\d])' + NL_ART + ' (\\d{1,2})(?![\\d:./,%º°ª])', 'g');
+  for (let m; (m = re.exec(p)); ){
+    const antes = p.slice(Math.max(0, m.index - 60), m.index), despues = p.slice(m.index + m[0].length, m.index + m[0].length + 40);
+    if (/(?:ejercicio|pregunta|ficha|pagina|actividad|problema|apartado|hoja|tema|unidad|sesion|carril|parte|caso|cromo|nivel|mision|reto)s?\b[^.;]*$/.test(antes)) continue;
+    if (/^ ?(?:de (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|la pagina|cada)|(?:h|horas?|minutos?|anos?|euros?|veces|por ciento|y media|y cuarto|menos cuarto)\b|(?:es|son|no es|era) (?:primo|par|impar|multiplo|divisor|mayor|menor|igual|positivo|negativo|el doble|la mitad)|(?:entre|por|mas|menos|elevado|al cuadrado|al cubo)\b|(?:le|les) (?:sum|rest|multiplic|divid|quit|anad|aplic|pon|falta para|corresponde)|[=+*x·×÷<>-])/.test(despues)) continue;
+    if (/(?:a las|las|desde las|hasta las|del dia|el dia|dia)\s*$/.test(antes + ' ' + m[0].split(' ')[0])) continue;
+    return {bloquea: null, avisa: m[0]};
+  }
+  return {bloquea: null, avisa: null};
+}
+function bloqueosIA(t, nombres){
+  const r = [], txt = String(t || '');
+  const num = numeroLista(txt).bloquea;
+  if (num) r.push({que: 'un número de lista', palabra: num});
+  const l = ' ' + ilano(txt).replace(/[^a-z0-9ñ]+/g, ' ') + ' ';
+  for (const nom of nombres || []){ const w = ilano(nom).replace(/[^a-z0-9ñ]+/g, ' ').trim().split(' ').filter(x => x.length >= 3);
+    let visto = null; for (let i = 0; i < w.length && !visto; i++) for (let j = 0; j < w.length && !visto; j++) if (i !== j && l.includes(' ' + w[i] + ' ' + w[j] + ' ')) visto = w[i] + ' ' + w[j];
+    if (visto){ r.push({que: 'el nombre de un alumno del listado', palabra: visto}); } }
+  return r;
+}
+function vigilaIA(body, nombres){
+  const t = JSON.stringify(body.messages || []), f = [];
+  for (const k of IA_PRIVADO) if (new RegExp('\\\\?"' + k + '\\\\?"\\s*:').test(t)) f.push('el campo privado «' + k + '»');
+  if (/\\"(?:no|medias|falta)\\"\s*:\s*\[|"(?:no|medias|falta)"\s*:\s*\[/.test(t)) f.push('la revisión por número de lista');
+  for (const b of bloqueosIA(t.replace(/\\n/g, ' '), nombres)) f.push(b.que);
+  if (f.length) throw new Error('No se envía: lleva ' + [...new Set(f)].join(', ') + '.');
+  return true;
+}
+
+const LSIA = 'cuaderno-de-aula.ia';
+const MODELOS_IA = [['claude-haiku-5-5','Haiku · rápido y barato'],['claude-sonnet-5-5','Sonnet · equilibrado'],['claude-opus-5-5','Opus · el más fino']];
+const INTENSIDAD_IA = [['low','Baja'],['medium','Media'],['high','Alta']];
+const iaCfg = () => { try{ return Object.assign({clave:'', modelo:'claude-sonnet-5-5', esfuerzo:'low'}, JSON.parse(localStorage.getItem(LSIA)||'{}')); }catch(e){ return {clave:'', modelo:'claude-sonnet-5-5', esfuerzo:'low'}; } };
+const iaGuarda = c => { try{ localStorage.setItem(LSIA, JSON.stringify(c)); }catch(e){} };
+const IA_INSTRUCCIONES = `Eres el ayudante del cuaderno de aula de un profesor de matemáticas de ESO. Te dicta, deprisa y al acabar la clase, lo que ha pasado en una sesión. Tu trabajo es repartir lo que dice en los campos del registro, en castellano, con frases claras y cortas, en primera persona («He…», «Hemos…») como escribe él.
+FIDELIDAD, lo primero: usa sus verbos y sus hechos tal cual. No inventes nada, no juntes dos acciones en una, no cambies una acción por otra (proyectar, repasar, corregir, empezar y terminar son cosas distintas) y no añadas frases de relleno ni resúmenes que no haya dicho. Si dice algo dos veces, una sola vez. Si se corrige al dictar («la 2, digo la 3»), vale lo último.
+SI ALGO NO CUADRA O NO SE SABE, PREGUNTA en vez de elegir: dos cosas contradictorias (repasar y empezar la misma ficha), una ficha o un número que no se entiende, o si unos ejercicios son de clase o para casa. Deja esa parte fuera de los campos y pregúntala en «preguntas».
+Campos (cada cosa en el suyo; lo que no dice, vacío):
+- contenido: lo que se ha HECHO en clase, en el orden en que lo cuenta. Sin material repetido, sin deberes, sin lo previsto que no se hizo.
+- material: lo que se ha usado (apps, fichas, carril, libro…), separado por comas; con los nombres de la lista de materiales cuando coincidan.
+- deberes: solo lo que ha mandado para CASA, dicho así («para casa», «de deberes»…). Si no lo dice, vacío; si no está claro, pregunta.
+- clima: «bien» si se ha podido trabajar, «regular» si a ratos, «mal» si no se ha podido; vacío si no lo dice.
+- cambio: qué ha cambiado respecto a lo previsto o a otro grupo («Había previsto las dos caras; solo ha dado tiempo a una»).
+- observacion: lo que ha observado del grupo: el ritmo (cuánto han tardado), errores típicos, qué ha funcionado.
+- unidad: el id de la unidad de la lista, si se deduce; si no, vacío.
+Nunca escribas en esos campos nada de un alumno concreto (nombres, números de lista, necesidades educativas, incidencias de convivencia, familias): si lo ha dictado, ponlo SOLO en «aparte», que se queda en su móvil.
+«preguntas»: hasta tres, cortas y concretas, con las dudas de arriba y, si falta, lo importante para el registro (qué se ha hecho, deberes o clima).
+Responde SOLO con un objeto JSON: {"contenido":"","material":"","deberes":"","clima":"","cambio":"","observacion":"","unidad":"","aparte":"","preguntas":[]}`;
+async function iaPrueba(){
+  const c = iaCfg(); if(!c.clave){ c.ok = false; c.msg = 'Falta la clave'; iaGuarda(c); return c; }
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
+        'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify(((b)=>{ vigilaIA(b, nombresListado()); return b; })({model:c.modelo, max_tokens:300, output_config:{effort:'low'}, messages:[{role:'user', content:'Responde solo: ok'}]}))});
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error((d.error && d.error.message) || ('Error '+r.status));
+    c.ok = true; c.msg = '';
+  }catch(e){ c.ok = false; c.msg = e.message || 'No se ha podido conectar'; }
+  c.probado = new Date().toISOString(); iaGuarda(c); return c;
+}
+async function iaOrdena(dictado, ses){
+  const c = iaCfg(); if(!c.clave) throw new Error('Falta la clave de la API (Ajustes → La IA).');
+  const anterior = Object.values(store.ses).filter(x=>x.grupo===ses.grupo && x.fecha<ses.fecha && x.estado!=='no').sort((a,b)=>a.fecha<b.fecha?1:-1)[0];
+  const contexto = {grupo: ses.grupo ? GRUPOS[ses.grupo].nombre : '', fecha: ses.fecha,
+    unidades: ses.grupo ? unidadesDe(ses.grupo).map(u=>({id:u.id, nombre:u.nombre})) : [],
+    materiales: store.cfg.materiales, sesion_anterior_del_grupo: anterior ? paraIA(anterior) : null,
+    lo_que_ya_hay: paraIA(ses)};
+  const crit = (store.cfg.criteriosIA || '').trim();
+  if(crit && bloqueosIA(crit, nombresListado()).length) throw new Error('Tus criterios para la IA llevan un nombre o un número de lista: quítalo en Ajustes → La IA.');
+  const sistema = IA_INSTRUCCIONES + (crit ? '\n\nCRITERIOS DEL PROFESOR (síguelos; si chocan con lo de arriba, mandan ellos, salvo la fidelidad y lo de los alumnos, que no se tocan):\n' + crit : '');
+  const cuerpo = {model:c.modelo, max_tokens:4000, output_config:{effort:c.esfuerzo}, system:sistema,
+      messages:[{role:'user', content:'Contexto (JSON):\n'+JSON.stringify(contexto)+'\n\nLo que he dictado:\n'+dictado}]};
+  vigilaIA(cuerpo, nombresListado());
+  const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
+      'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+    body: JSON.stringify(cuerpo)});
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((d.error && d.error.message) || ('Error '+r.status));
+  const txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  const m = txt.match(/\{[\s\S]*\}/); if(!m) throw new Error('La respuesta no se ha podido leer.');
+  const o = JSON.parse(m[0]);
+  return {o, uso: d.usage||{}};
+}
+const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','billete','reconstruido','fuente'];
+function guardarSesion(id, datos){
+  const ahora = new Date().toISOString(), prev = store.ses[id];
+  const hist = prev ? clon(prev.historial||[]) : [];
+  if(prev){
+    const c = CAMPOS.filter(k => JSON.stringify(prev[k]??'') !== JSON.stringify(datos[k]??''));
+    if(!c.length) return false;
+    hist.push({t:ahora, c});
+  }
+  datos.creado = prev ? (prev.creado || prev.actualizado || ahora) : ahora;
+  datos.historial = hist.slice(-30);
+  datos.actualizado = ahora;
+  store.ses[id] = datos; guardarLocal(); return true;
+}
+function borrarSesion(id){
+  const s = store.ses[id];
+  if(s) store.cfg.borrados.push({id, grupo:s.grupo||s.otra, fecha:s.fecha, franja:s.franja, t:new Date().toISOString(),
+    resumen:(s.contenido||s.motivo||s.notas||'').slice(0,80)});
+  delete store.ses[id]; guardarLocal();
+}
+function guardarCfg(){ guardarLocal(); }
+
+const LSB = LS + '.borradores';
+let borr = {ses:{}, abierto:null};
+try{ const j = JSON.parse(localStorage.getItem(LSB)||'null'); if(j && j.ses) borr = j; }catch(e){}
+function guardarBorr(){ try{ localStorage.setItem(LSB, JSON.stringify(borr)); }catch(e){} }
+const mismos = (a,b) => CAMPOS.every(k => JSON.stringify(a[k]??'') === JSON.stringify(b[k]??''));
+function quitarBorrador(id){ if(borr.ses[id]){ delete borr.ses[id]; guardarBorr(); } }
+let instalable = null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); instalable = e; if(vista==='ajustes') pintar(); });
+const nativa = () => !!(window.Capacitor && typeof Capacitor.isNativePlatform==='function' && Capacitor.isNativePlatform());
+const capP = n => ((window._capP ||= {})[n] ||= Capacitor.registerPlugin(n));
+const instalada = () => nativa() || window.matchMedia('(display-mode: standalone)').matches;
+async function conectar(){
+  try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){}
+  if(nativa()){ atrasNativo(); avProgramar(); return; }
+  if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js'); }catch(e){} }
+}
+function atrasNativo(){
+  try{
+    capP('App').addListener('backButton', ()=>{
+      if($('#hoja').classList.contains('abierta')){ if(copiaPendiente) copiaPendiente = null; cerrar(); return; }
+      if(vista!=='dia'){ vista = 'dia'; pintar(); window.scrollTo(0,0); return; }
+      capP('App').minimizeApp();
+    });
+  }catch(e){}
+}
+
+const AV_DEF = {on:false, clase:true, retraso:5, dia:true, diaHora:'14:30', copia:true};
+const avCfg = () => Object.assign({}, AV_DEF, store.cfg.avisos||{});
+const avId = (k, n) => Number(k.replace(/-/g,'').slice(2))*10 + n;
+let avT = null, avEsc = false;
+function avProgramar(){ if(!nativa()) return; clearTimeout(avT); avT = setTimeout(avHaz, 800); }
+async function avHaz(){
+  let ln; try{ ln = capP('LocalNotifications'); }catch(e){ return; }
+  try{
+    if(!avEsc){ avEsc = true;
+      ln.addListener('localNotificationActionPerformed', ev=>{
+        const x = (ev && ev.notification && ev.notification.extra) || {};
+        if(x.vista==='exportar'){ vista = 'exportar'; pintar(); return; }
+        if(x.k){ dia = x.k; vista = 'dia'; pintar(); if(x.n && franjasDe(x.k)[x.n] && !store.ses[idSes(x.k, x.n)]) abrir(x.k, x.n); }
+      }); }
+    const pend = await ln.getPending();
+    if(pend && pend.notifications && pend.notifications.length) await ln.cancel({notifications: pend.notifications.map(n=>({id:Number(n.id)}))});
+    const c = avCfg(); if(!c.on) return;
+    const p = await ln.checkPermissions(); if(p.display!=='granted') return;
+    const ahora = Date.now(), L = [];
+    const cuando = (k, hm, mas) => { const d = deClave(k); const [h,m] = hm.split(':').map(Number); d.setHours(h, m + (mas||0), 0, 0); return d; };
+    let d = deClave(hoyK());
+    for(let i=0, dias=0; i<21 && dias<7; i++, d = masDias(d,1)){
+      const k = clave(d); if(!esLectivo(k)) continue; dias++;
+      const h = franjasDe(k), faltan = [];
+      for(const n in h){
+        if(!h[n].g || store.ses[idSes(k,n)]) continue;
+        faltan.push(Number(n));
+        const t = cuando(k, FR[n].fin, Number(c.retraso)||0);
+        if(c.clase && t > ahora) L.push({id:avId(k,Number(n)), title:`${GRUPOS[h[n].g].nombre} ha acabado`,
+          body:'¿Dictas la sesión? Toca para abrirla.', schedule:{at:t, allowWhileIdle:true}, extra:{k, n:Number(n)}});
+      }
+      const td = cuando(k, c.diaHora);
+      if(c.dia && faltan.length && td > ahora) L.push({id:avId(k,8), title:'Sesiones de hoy',
+        body: faltan.length===1 ? 'Te queda 1 clase por registrar.' : `Te quedan ${faltan.length} clases por registrar.`,
+        schedule:{at:td, allowWhileIdle:true}, extra:{k}});
+    }
+    if(c.copia && Object.keys(store.ses).length){
+      let t = momentoCopia(); if(!tocaCopia()) t.setDate(t.getDate()+7);
+      while(t <= ahora) t.setDate(t.getDate()+1);
+      L.push({id:avId(clave(t),9), title:'Copia de seguridad', body:'Toca hacerla y subirla al OneDrive de la GVA.',
+        schedule:{at:t, allowWhileIdle:true}, extra:{vista:'exportar'}});
+    }
+    if(L.length) await ln.schedule({notifications:L});
+  }catch(e){ console.warn('avisos', e); }
+}
+async function avActivar(on){
+  if(!on){ store.cfg.avisos = Object.assign(avCfg(), {on:false}); guardarCfg(); return true; }
+  try{
+    const ln = capP('LocalNotifications');
+    let p = await ln.checkPermissions(); if(p.display!=='granted') p = await ln.requestPermissions();
+    if(p.display!=='granted'){ toast('Android no da permiso para avisar: actívalo en Ajustes del móvil → Apps → Cuaderno', 5000); return false; }
+    try{ const e = await ln.checkExactNotificationSetting(); if(e && e.exact_alarm && e.exact_alarm!=='granted') toast('Los avisos pueden llegar con unos minutos de retraso', 4000); }catch(err){}
+  }catch(e){ toast('No se han podido activar los avisos'); return false; }
+  store.cfg.avisos = Object.assign(avCfg(), {on:true}); guardarCfg(); return true;
+}
+
+function esLectivo(k){
+  const d = deClave(k), w = d.getDay();
+  return w>=1 && w<=5 && k <= CAL.fin && !store.cfg.nolectivos.includes(k);
+}
+function franjasDe(k){
+  const w = deClave(k).getDay();
+  return HORARIO[w] || {};
+}
+function haTerminado(k,n){
+  const h = hoyK();
+  if(k < h) return true;
+  if(k > h) return false;
+  return ahoraMin() >= minutos(FR[n].fin);
+}
+function sinRegistrar(){
+  const out = [];
+  const hoy = hoyK();
+  let d = deClave(store.cfg.inicio || hoy);
+  const fin = deClave(hoy);
+  while(d <= fin){
+    const k = clave(d);
+    if(esLectivo(k)){
+      const h = franjasDe(k);
+      for(const n in h){
+        if(h[n].g && haTerminado(k, Number(n)) && !store.ses[idSes(k,n)]) out.push({k, n:Number(n), g:h[n].g});
+      }
+    }
+    d = masDias(d,1);
+  }
+  return out;
+}
+function sesionesDe(g){
+  return Object.entries(store.ses).filter(([,s])=>s.grupo===g).sort((a,b)=>a[0]<b[0]?-1:1);
+}
+function deberesPendientes(g, actual){
+  const revisados = new Set();
+  for(const [id,s] of Object.entries(store.ses)){
+    if(id===actual) continue;
+    (s.revisiones||[]).forEach(r=>revisados.add(r.de));
+  }
+  return sesionesDe(g).filter(([id,s])=> id<actual && s.deberes && s.deberes.trim() && !revisados.has(id));
+}
+function igualQue(g, actual){
+  const nivel = GRUPOS[g].nivel, out = [];
+  for(const og of Object.keys(GRUPOS)){
+    if(og===g || GRUPOS[og].nivel!==nivel) continue;
+    const ult = sesionesDe(og).filter(([id,s])=>s.estado!=='no' && (s.contenido||'').trim()).pop();
+    if(ult) out.push({g:og, id:ult[0], s:ult[1]});
+  }
+  return out;
+}
+
+function momentoCopia(){
+  const {dia:dc, hora} = store.cfg.copia, [hh,mm] = hora.split(':').map(Number), now = new Date();
+  const d = new Date(now); d.setHours(hh, mm, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() - dc + 7) % 7));
+  if(d > now) d.setDate(d.getDate() - 7);
+  return d;
+}
+function tocaCopia(){
+  if(!Object.keys(store.ses).length) return false;
+  const u = store.cfg.ultimaCopiaT ? new Date(store.cfg.ultimaCopiaT) : null;
+  return !u || u < momentoCopia();
+}
+const unidadesDe = g => store.cfg.unidades[GRUPOS[g].nivel] || [];
+const nombreUnidad = (g, id) => (unidadesDe(g).find(u=>u.id===id)||{}).nombre || '';
+function ultimaUnidad(g){
+  const s = sesionesDe(g).filter(([,s])=>s.unidad).pop();
+  return s ? s[1].unidad : '';
+}
+function indicadores(g, desde, hasta){
+  const hoy = hoyK(), ini = desde > store.cfg.inicio ? desde : store.cfg.inicio, fin = hasta < hoy ? hasta : hoy;
+  let previstas = 0, conPT = 0;
+  for(let d = deClave(ini); clave(d) <= fin; d = masDias(d,1)){
+    const k = clave(d); if(!esLectivo(k)) continue;
+    const h = franjasDe(k);
+    for(const n in h) if(h[n].g===g && haTerminado(k, Number(n))) previstas++;
+  }
+  const ses = sesionesDe(g).map(([,s])=>s).filter(s=>s.fecha>=desde && s.fecha<=hasta);
+  const dadas = ses.filter(s=>s.estado!=='no');
+  const N = store.cfg.alumnos[g] || 25;
+  let revisadas = 0, traen = 0, total = 0, medias = 0;
+  dadas.forEach(s=>(s.revisiones||[]).forEach(r=>{ const c = cuentaRev(r, g, s.fecha); revisadas++; total += c.presentes; traen += c.si; medias += c.medias; }));
+  const clima = {bien:0, regular:0, mal:0};
+  dadas.forEach(s=>{ if(clima[s.clima]!==undefined) clima[s.clima]++; });
+  const pt = dadas.filter(s=>s.pt); const ptSi = pt.filter(s=>s.pt!=='no').length;
+  const conP = dadas.filter(s=>s.perdIni!==undefined && s.perdIni!=='' || s.perdFin!==undefined && s.perdFin!=='');
+  const pIni = conP.reduce((a,s)=>a+(Number(s.perdIni)||0),0), pFin = conP.reduce((a,s)=>a+(Number(s.perdFin)||0),0);
+  const perd = {n:conP.length, ini:pIni, fin:pFin, total:pIni+pFin,
+    mIni: conP.length ? Math.round(pIni/conP.length) : 0, mFin: conP.length ? Math.round(pFin/conP.length) : 0};
+  const porUnidad = unidadesDe(g).map(u=>({...u, dadas: dadas.filter(s=>s.unidad===u.id).length}));
+  const sinUnidad = dadas.filter(s=>!s.unidad).length;
+  return {previstas, registradas: ses.filter(s=>s.fecha<=fin).length, dadas: dadas.length, noDadas: ses.length - dadas.length,
+    sinRegistrar: sinRegistrar().filter(x=>x.g===g && x.k>=desde && x.k<=hasta).length,
+    puestos: dadas.filter(s=>s.deberes && s.deberes.trim()).length, revisadas,
+    entrega: total ? Math.round(100*traen/total) : null, entregaMedias: total ? Math.round(100*medias/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
+    pt: pt.length, ptSi, porUnidad, sinUnidad, perd};
+}
+function climaPorFranja(desde, hasta){
+  const out = {};
+  for(const n of [1,2,3,4,5,6]) out[n] = {bien:0, regular:0, mal:0};
+  Object.values(store.ses).forEach(s=>{ if(s.grupo && s.estado!=='no' && s.clima && s.fecha>=desde && s.fecha<=hasta) out[s.franja][s.clima]++; });
+  return out;
+}
+function perdidoPorFranja(desde, hasta){
+  const out = {}; for(const n of [1,2,3,4,5,6]) out[n] = {n:0, ini:0, fin:0};
+  Object.values(store.ses).forEach(s=>{ if(s.grupo && s.estado!=='no' && s.fecha>=desde && s.fecha<=hasta && ((s.perdIni!==undefined && s.perdIni!=='') || (s.perdFin!==undefined && s.perdFin!==''))){
+    const o = out[s.franja]; o.n++; o.ini += Number(s.perdIni)||0; o.fin += Number(s.perdFin)||0; } });
+  return out;
+}
+const minTxt = m => m < 60 ? `${m} min` : `${Math.floor(m/60)} h${m%60?' '+(m%60)+' min':''}`;
+const pct = (a,b) => b ? Math.round(100*a/b) : 0;
+const fechaHora = iso => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+const TIPOS = {examen:'Prueba escrita', entrega:'Entrega', otro:'Otra fecha'};
+const FUENTES = ['Aules','Fichas entregadas','Programación','Cuaderno en papel','Memoria'];
+const diasHasta = k => Math.round((deClave(k) - deClave(hoyK())) / 86400000);
+function clasesAntes(g, k){
+  let n = 0;
+  for(let d = deClave(hoyK()); clave(d) < k; d = masDias(d,1)){
+    const c = clave(d); if(!esLectivo(c)) continue;
+    const h = franjasDe(c);
+    for(const f in h) if(h[f].g===g && !haTerminado(c, Number(f))) n++;
+  }
+  return n;
+}
+function siguienteClase(g, desde){
+  let d = deClave(desde);
+  for(let i=0; i<90; i++, d = masDias(d,1)){
+    const k = clave(d); if(!esLectivo(k)) continue;
+    const h = franjasDe(k); for(const f in h) if(h[f].g===g) return k;
+  }
+  return desde;
+}
+function proximas(dias){
+  const out = [];
+  for(const [id,e] of Object.entries(store.ev||{})) for(const [g,k] of Object.entries(e.fechas||{})){
+    const falta = diasHasta(k);
+    if(falta>=0 && (dias===undefined || falta<=dias)) out.push({id, g, k, falta, tipo:e.tipo, titulo:e.titulo});
+  }
+  return out.sort((a,b)=> a.k<b.k ? -1 : a.k>b.k ? 1 : a.g<b.g ? -1 : 1);
+}
+const fechasDe = (g, k) => Object.values(store.ev||{}).filter(e=>e.fechas && e.fechas[g]===k);
+function cuenta(x){
+  if(x.falta===0) return 'hoy';
+  if(x.falta===1) return 'mañana';
+  const c = clasesAntes(x.g, x.k);
+  return `faltan ${x.falta} días · ${c===0?'no te quedan clases antes':c===1?'te queda 1 clase antes':'te quedan '+c+' clases antes'}`;
+}
+
+
+function clasesEntre(g, k1, k2){
+  const out = [];
+  for(let d = deClave(k1); clave(d) < k2; d = masDias(d,1)){
+    const k = clave(d); if(!esLectivo(k)) continue;
+    const h = franjasDe(k); for(const f in h) if(h[f].g===g) out.push(k);
+  }
+  return out;
+}
+function proximasClases(g, n){
+  const out = [];
+  for(let d = deClave(hoyK()), i = 0; out.length < n && i < 400; d = masDias(d,1), i++){
+    const k = clave(d); if(k > CAL.fin) break; if(!esLectivo(k)) continue;
+    const h = franjasDe(k);
+    for(const f of Object.keys(h).sort((a,b)=>a-b)) if(h[f].g===g && !haTerminado(k, Number(f))) out.push(k);
+  }
+  return out.slice(0, n);
+}
+const progDe = g => { const P = PROGD()[GRUPOS[g].nivel]; return P && P.length ? P : null; };
+const hechos = g => (store.prog && store.prog[g]) || {};
+let cachePlan = {};
+function plan(g){
+  const P = progDe(g); if(!P) return null;
+  const firma = store.cfg.nolectivos.join(',') + hoyK();
+  if(cachePlan[g] && cachePlan[g].firma===firma) return cachePlan[g];
+  const seq = P.filter(s=>!s.trans), items = [];
+  const finCurso = clave(masDias(deClave(CAL.fin),1));
+  seq.forEach((sa, i)=>{
+    const L = clasesEntre(g, sa.ini, i+1<seq.length ? seq[i+1].ini : finCurso);
+    const N = sa.it.reduce((a,x)=>a+x.s, 0);
+    const f = N ? L.length / N : 1;
+    let pos = 0, acc = 0;
+    sa.it.forEach(it=>{
+      acc += it.s * f;
+      const hasta = Math.max(Math.round(acc), it.s ? pos+1 : pos);
+      const fechas = L.slice(pos, hasta); pos = hasta;
+      const ini = fechas[0] || L[L.length-1] || sa.ini, fin = fechas[fechas.length-1] || ini;
+      items.push({sa, it, fechas, ini, fin});
+    });
+  });
+  return (cachePlan[g] = {firma, items, apretadas: seq.filter((sa,i)=>
+    sa.it.reduce((a,x)=>a+x.s,0) > clasesEntre(g, sa.ini, i+1<seq.length ? seq[i+1].ini : finCurso).length).map(s=>s.id)});
+}
+function estadoProg(g){
+  const p = plan(g); if(!p) return null;
+  const H = hechos(g), hoy = hoyK();
+  let n = 0, hechosN = 0, sesHechas = 0, sesPrev = 0, sesTot = 0, prevN = 0;
+  p.items.forEach(x=>{
+    n++; sesTot += x.it.s;
+    if(H[x.it.id]){ hechosN++; sesHechas += x.it.s; }
+    if(x.fechas.length) sesPrev += x.it.s * x.fechas.filter(k=>k<hoy).length / x.fechas.length;
+    if(x.fin < hoy) prevN++;
+  });
+  const sig = p.items.find(x=>!H[x.it.id]) || null;
+  const toca = p.items.filter(x=>x.ini<=hoy && x.fin>=hoy);
+  return {p, H, n, hechosN, prevN, sesTot, sesHechas, sesPrev:Math.round(sesPrev), retraso:Math.round(sesPrev - sesHechas), sig, toca};
+}
+function horquilla(g, item){
+  const E = estadoProg(g); if(!E) return null;
+  let quedan = 0;
+  for(const x of E.p.items){ if(!E.H[x.it.id]) quedan += x.it.s; if(x.it.id===item.it.id) break; }
+  if(!quedan) return null;
+  const L = proximasClases(g, quedan + 2);
+  if(!L.length) return null;
+  const idx = Math.min(quedan, L.length) - 1;
+  const opc = L.slice(Math.max(0, idx-1), idx+3);
+  const corte = opc.some((k,i)=> i && (deClave(k)-deClave(opc[i-1]))/86400000 > 4);
+  return {opc, prevista: L[idx], plan: item.fin, corte};
+}
+const pruebaFijada = (g, saId) => Object.entries(store.ev||{}).find(([,e])=>e.sa===saId && e.fechas && e.fechas[g]);
+function rangoCorto(a, b){
+  const A = deClave(a), B = deClave(b);
+  if(a===b) return `${A.getDate()} ${MESES[A.getMonth()].slice(0,3)}`;
+  return A.getMonth()===B.getMonth() ? `${A.getDate()}–${B.getDate()} ${MESES[B.getMonth()].slice(0,3)}`
+    : `${A.getDate()} ${MESES[A.getMonth()].slice(0,3)} – ${B.getDate()} ${MESES[B.getMonth()].slice(0,3)}`;
+}
+const semanaDe = k => { const d = deClave(k), w = d.getDay() || 7; const l = masDias(d, 1-w); return [clave(l), clave(masDias(l,4))]; };
+
+function ponerUnidadesProg(todas){
+  for(const nv of [1,2]){
+    const U = store.cfg.unidades[nv] || [], P = unidadesProg(nv); if(!P.length) continue;
+    if(!todas && !(U.length<=1 && (!U.length || U[0].id==='u1'))) continue;
+    const ids = new Set(P.map(u=>u.id)); store.cfg.unidades[nv] = [...P, ...U.filter(u=>!ids.has(u.id))];
+  }
+}
+function cargarProgramacion(texto){
+  let j = null; try{ j = JSON.parse(String(texto).replace(/^\ufeff/, '')); }catch(e){}
+  if(!j || j.tipo!=='programacion-cuaderno' || !j.niveles){ toast('Ese archivo no es una programación del cuaderno'); return; }
+  store.programa = {nombre: j.nombre||'Programación de aula', curso: j.curso||'', niveles: j.niveles, cargada: new Date().toISOString()};
+  cachePlan = {}; ponerUnidadesProg(true); guardarLocal();
+  const n = Object.values(j.niveles).reduce((a,L)=>a+L.length, 0);
+  toast(`Programación cargada: ${n} situaciones`); pintar();
+}
+
+let vista = 'dia';
+let dia = hoyK();
+let grupoSel = '1A';
+const $ = s => document.querySelector(s);
+const esc = t => String(t??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const gc = g => `var(--g${g})`;
+
+const diasDesde = k => k ? Math.round((deClave(hoyK()) - deClave(k)) / 86400000) : null;
+function pintarSync(){
+  const el = document.getElementById('sync');
+  if(!el) return;
+  const d = diasDesde(store.cfg.ultimaCopia);
+  el.innerHTML = 'Guardado en este móvil · ' + (d===null ? '<b>sin copia de seguridad todavía</b>'
+    : d===0 ? 'copia de seguridad de hoy' : `última copia hace ${d} ${d===1?'día':'días'}`);
+}
+function toast(t, ms){
+  const el = $('#toast'); el.textContent = t; el.classList.add('si');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('si'), ms || 1800);
+}
+const abiertos = new Set();
+function resumenAj(t){
+  const c = store.cfg, D = ['','lunes','martes','miércoles','jueves','viernes'];
+  switch(t){
+    case 'Mi horario': return typeof hayHorario==='function' && hayHorario() ? Object.keys(GRUPOS).length+' grupos' : 'sin configurar';
+    case 'Docente y centro': return [c.docente, c.centro].filter(Boolean).join(' · ') || 'sin rellenar';
+    case 'Aviso de copia de seguridad': return `${D[c.copia.dia]||''} ${c.copia.hora}`;
+    case 'Programación de aula': return store.programa ? '✓ cargada' : 'sin cargar';
+    case 'Unidades y situaciones de aprendizaje': return Object.values(c.unidades||{}).reduce((a,L)=>a+(L||[]).length,0)+' unidades';
+    case 'Alumnos por grupo': return Object.keys(GRUPOS).map(k=>c.alumnos[k]||25).reduce((a,b)=>a+b,0)+' en total';
+    case 'Altas y bajas': { const n = Object.values(c.matricula||{}).reduce((a,m)=>a+Object.keys(m).length,0); return (difListado.length?'⚠ revisar listado · ':'') + (n ? n+(n===1?' cambio':' cambios') : 'ninguna'); }
+    case 'Billete de salida': { const n = (c.billetes||[]).length; return n ? n+(n===1?' clase por semana':' clases por semana') : 'ninguna fija'; }
+    case 'Deberes «a medias»': return c.criterioMedias || DEF_MEDIAS;
+    case 'Días no lectivos': return c.nolectivos.length+' días';
+    case 'Dibujos del bosque': return c.deco===false ? 'sin dibujos' : (c.anim===false ? 'sin animación' : 'con animación');
+    case 'En el móvil': return nativa() ? 'app de Android' : instalada() ? 'instalada' : 'sin instalar';
+    case 'Avisos': { const v = avCfg(); return !v.on ? 'desactivados' : [v.clase&&'al acabar cada clase', v.dia&&'al final del día', v.copia&&'copia'].filter(Boolean).join(' · ') || 'ninguno marcado'; }
+    case 'Protección de datos': return NOMBRES ? 'nombres cargados' : 'solo números';
+    case 'La IA (opcional)': { const ia = iaCfg(); return !ia.clave ? 'sin configurar' : ia.ok ? '✓ conectada · ' + (MODELOS_IA.find(m=>m[0]===ia.modelo)||['',''])[1].split(' ·')[0] + ', ' + (INTENSIDAD_IA.find(x=>x[0]===ia.esfuerzo)||['',''])[1].toLowerCase() : ia.probado ? '✗ no conecta' : 'sin probar'; }
+  }
+  return '';
+}
+function plegar(root){
+  if(vista==='ajustes') root.querySelectorAll(':scope > .panel').forEach(p=>{
+    const b = p.querySelector(':scope > p:first-child > b'), tit = b ? b.textContent : 'Docente y centro';
+    const d = document.createElement('details'); d.className = 'panel aj'; d.dataset.k = 'aj:'+tit; d.open = abiertos.has(d.dataset.k);
+    const s = document.createElement('summary'); s.innerHTML = `<b>${esc(tit)}</b><span class="res">${esc(resumenAj(tit))}</span>`;
+    if(b){ const p0 = b.parentNode; b.remove(); const br = p0.querySelector(':scope > br'); if(br) br.remove(); if(!p0.textContent.trim()) p0.remove(); }
+    const c = document.createElement('div'); c.className = 'aj-c'; while(p.firstChild) c.append(p.firstChild);
+    d.append(s, c); p.replaceWith(d);
+  });
+  root.querySelectorAll('h3[data-plegar]').forEach(h=>{
+    const d = document.createElement('details'); d.className = 'pleg'; d.dataset.k = 'g:'+h.dataset.plegar; d.open = abiertos.has(d.dataset.k);
+    const s = document.createElement('summary'); s.innerHTML = `<b>${h.innerHTML}</b><span class="res">${esc(h.dataset.res||'')}</span>`;
+    const c = document.createElement('div'); let n = h.nextSibling;
+    while(n && !(n.nodeType===1 && (n.tagName==='H3' || n.classList.contains('pie-bosque')))){ const x = n.nextSibling; c.append(n); n = x; }
+    d.append(s, c); h.replaceWith(d);
+  });
+}
+document.addEventListener('focusin', e=>{ const i = e.target; if(i.matches && i.matches('input[type=number]')) setTimeout(()=>{ try{ i.select(); }catch(err){} }, 0); });
+let errNum = false;
+const numAlumnos = (v, nombre) => { const n = parseInt(v);
+  if(n>=1 && n<=40) return n; errNum = true; toast(`${nombre}: «${v}» no vale (de 1 a 40); se queda como estaba`); return null; };
+document.getElementById('app').addEventListener('toggle', e=>{
+  const d = e.target; if(!d.dataset || !d.dataset.k) return;
+  if(d.open) abiertos.add(d.dataset.k); else abiertos.delete(d.dataset.k);
+}, true);
+function pintar(){
+  document.querySelectorAll('#barra button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===(vista==='mes'||vista==='resumen'?'dia':vista)?'page':'false'));
+  const app = $('#app');
+  if(vista==='dia') app.innerHTML = vDia();
+  else if(vista==='mes') app.innerHTML = vMes();
+  else if(vista==='resumen') app.innerHTML = vResumen();
+  else if(vista==='grupos') app.innerHTML = vGrupos();
+  else if(vista==='fechas') app.innerHTML = vFechas();
+  else if(vista==='exportar') app.innerHTML = vExportar();
+  else if(vista==='plano' && planoB) app.innerHTML = vPlanoEd();
+  else app.innerHTML = vAjustes();
+  plegar(app);
+  pintarSync();
+}
+
+const PASOS = [['corregida','corregir'],['devuelta','devolver'],['itaca','pasar las notas a ITACA']];
+const PASO_N = {corregida:'Corregida', devuelta:'Devuelta', itaca:'En ITACA'};
+const hashTxt = s => { let h = 0; for(const c of s) h = (h*31 + c.charCodeAt(0)) | 0; return (h>>>0).toString(36); };
+function pendientes(){
+  const H = store.cfg.pendHechos || {}, L = [];
+  for(const [id,s] of Object.entries(store.ses)){
+    for(const campo of ['notas','observacion']){
+      const txt = String(s[campo]||''); const re = /Pendiente:\s*([\s\S]+?)(?=\s*Pendiente:|$)/gi; let m;
+      while((m = re.exec(txt))){ const q = m[1].trim().replace(/[.;,]+$/,''); if(!q) continue;
+        const k = `n|${id}|${hashTxt(q)}`;
+        L.push({k, tipo:'nota', txt:q, fecha:s.fecha, g:s.grupo, o:s.otra, id, hecho:H[k]||''}); }
+    }
+  }
+  const hoy = hoyK();
+  for(const [eid,e] of Object.entries(store.ev||{})){
+    if(e.tipo==='otro') continue;
+    for(const [g,k] of Object.entries(e.fechas||{})){
+      if(k > hoy || !GRUPOS[g]) continue;
+      const E = (e.estado||{})[g] || {}, sig = PASOS.find(([c])=>!E[c]);
+      if(sig) L.push({k:`e|${eid}|${g}|${sig[0]}`, tipo:'prueba', eid, paso:sig[0], txt:`${e.titulo}: ${sig[1]}`, fecha:k, g, hecho:''});
+    }
+  }
+  return L.sort((a,b)=>a.fecha<b.fecha?-1:1);
+}
+function marcaPaso(eid, g, paso, valor){
+  const e = store.ev[eid]; if(!e) return;
+  e.estado = e.estado || {}; e.estado[g] = e.estado[g] || {};
+  if(valor) e.estado[g][paso] = valor; else delete e.estado[g][paso];
+  e.actualizado = new Date().toISOString(); guardarLocal();
+}
+let verResueltos = false;
+function bloquePendientes(){
+  const L = pendientes(), abiertos = L.filter(x=>!x.hecho), hechos = L.filter(x=>x.hecho);
+  if(!L.length) return '';
+  const et = x => x.g ? `<span class="grupo" style="--gc:${gc(x.g)}">${esc(GRUPOS[x.g].nombre.replace(' ESO',''))}</span>` : x.o ? `<span class="grupo" style="--gc:var(--gX)">${esc(OTRAS[x.o]||'')}</span>` : '';
+  const fila = x => `<li class="pend${x.hecho?' hecho':''}"><button class="pend-ok" data-a="pend" data-k="${esc(x.k)}" aria-pressed="${!!x.hecho}" aria-label="${x.hecho?'Volver a abrir':'Hecho'}">${x.hecho?'✓':''}</button>
+    <button class="pend-t" data-a="${x.tipo==='nota'?'ir':'ir-fecha'}" data-id="${x.tipo==='nota'?x.id:x.eid}">${et(x)} ${esc(x.txt)}
+      <small>${x.tipo==='nota'?'apuntado el '+corta(x.fecha):'prueba del '+corta(x.fecha)}${x.hecho?' · hecho el '+corta(x.hecho):''}</small></button></li>`;
+  return `<details class="pleg pends" data-k="g:pend" ${abiertosP(abiertos.length) ? 'open' : ''}><summary><b>Pendientes</b><span class="res">${abiertos.length ? abiertos.length+' por hacer' : 'nada pendiente'}</span></summary>
+    <ul class="pend-l">${abiertos.map(fila).join('') || '<li class="nota">Todo hecho.</li>'}</ul>
+    ${hechos.length ? `<button class="chip" data-a="pend-ver">${verResueltos?'Ocultar':'Ver'} los resueltos (${hechos.length})</button>${verResueltos?`<ul class="pend-l">${hechos.map(fila).join('')}</ul>`:''}` : ''}
+    <p class="leyenda">Se recoge lo que escribes como «Pendiente: …» en una sesión, y el paso siguiente de cada prueba ya hecha.</p></details>`;
+}
+const pendToc = { };
+function abiertosP(n){ return pendToc.k !== undefined ? pendToc.k : n > 0; }
+document.getElementById('app').addEventListener('toggle', e=>{ const d = e.target; if(d.dataset && d.dataset.k==='g:pend') pendToc.k = d.open; }, true);
+
+let semRes = '';
+function vResumen(){
+  if(!semRes) semRes = dia || hoyK();
+  const d = deClave(semRes), lun = masDias(d, -((d.getDay()+6)%7)), vie = masDias(lun, 4);
+  const l = clave(lun), v = clave(vie), hoy = hoyK();
+  const fin = v < hoy ? v : hoy;
+  let txt = [`Semana del ${corta(l)} al ${corta(v)}`], h = `<header class="mes-cab"><h1 class="titulo" style="margin:0">La semana</h1>
+    <div class="nav"><button class="hoy" data-a="res-vuelve">Día</button>
+    <button class="btn-r" data-a="res-mov" data-v="-7" aria-label="Semana anterior">‹</button><button class="btn-r" data-a="res-mov" data-v="7" aria-label="Semana siguiente">›</button></div></header>
+    <p class="leyenda" style="margin-top:2px">Del ${larga(l)} al ${larga(v)}</p><p class="estado-sync" id="sync"></p>`;
+  h += `<div class="res-gs">`;
+  for(const g of Object.keys(GRUPOS)){
+    const I = indicadores(g, l, fin);
+    const ses = sesionesDe(g).map(([,s])=>s).filter(s=>s.fecha>=l && s.fecha<=v);
+    const bil = ses.filter(s=>s.billete), bn = bil.reduce((a,s)=>a+(bilN(s.billete.n)||0),0), bb = bil.reduce((a,s)=>a+(bilN(s.billete.bien)||0),0);
+    const prs = Object.values(store.ev||{}).filter(e=>e.fechas && e.fechas[g] && e.fechas[g]>=l && e.fechas[g]<=v);
+    if(!I.previstas && !ses.length && !prs.length) continue;
+    const linea = [
+      `${I.dadas} de ${I.previstas} clases impartidas${I.noDadas?` (${I.noDadas} sin impartir)`:''}${I.sinRegistrar?` · <b style="color:var(--rojo)">${I.sinRegistrar} sin registrar</b>`:''}`,
+      I.perd.n ? `${I.perd.mIni} + ${I.perd.mFin} min perdidos por clase (${minTxt(I.perd.total)} en total)` : '',
+      I.climaN ? `clima: ${I.clima.bien} bien, ${I.clima.regular} a ratos, ${I.clima.mal} mal` : '',
+      I.entrega!==null ? `deberes completos: ${I.entrega} %${I.entregaMedias?` (+${I.entregaMedias} % a medias)`:''}` : '',
+      bil.length ? `billete${bil.length>1?'s':''}: ${bn ? Math.round(100*bb/bn)+' % bien' : 'sin corregir'}` : '',
+      prs.length ? prs.map(e=>`${TIPOS[e.tipo].toLowerCase()} el ${corta(e.fechas[g])}`).join(', ') : ''
+    ].filter(Boolean);
+    h += `<div class="res-g"><span class="grupo" style="--gc:${gc(g)}">${esc(GRUPOS[g].nombre)}</span><ul>${linea.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+    txt.push(`${GRUPOS[g].nombre}: ${linea.map(x=>x.replace(/<[^>]+>/g,'')).join('; ')}.`);
+  }
+  h += `</div>`;
+  const P = pendientes(), ab = P.filter(x=>!x.hecho), res = P.filter(x=>x.hecho && x.hecho>=l && x.hecho<=v);
+  h += `<div class="res-g"><b>Pendientes</b><ul>${ab.length ? ab.map(x=>`<li>${x.g?esc(GRUPOS[x.g].nombre.replace(' ESO',''))+': ':''}${esc(x.txt)}</li>`).join('') : '<li>Nada pendiente.</li>'}</ul>
+    ${res.length?`<p class="leyenda">Resueltos esta semana: ${res.length}.</p>`:''}</div>`;
+  txt.push(`Pendientes: ${ab.length ? ab.map(x=>(x.g?GRUPOS[x.g].nombre.replace(' ESO','')+': ':'')+x.txt).join('; ') : 'ninguno'}.`);
+  resumenTexto = txt.join('\n');
+  h += `<button class="bloque-btn" data-a="res-copiar">Copiar como texto</button>
+    <p class="leyenda">Para el diario de mejora o una reunión. Solo números de grupo y recuentos: no lleva datos de alumnos.</p>`;
+  return h;
+}
+let resumenTexto = '';
+
+let mesSel = '';
+function vMes(){
+  if(!mesSel) mesSel = (dia||hoyK()).slice(0,7);
+  const [y,m] = mesSel.split('-').map(Number), d1 = new Date(y, m-1, 1), dN = new Date(y, m, 0), hoy = hoyK();
+  let d = masDias(d1, -((d1.getDay()+6)%7));
+  const evDia = {}; for(const e of Object.values(store.ev||{})) for(const [g,k] of Object.entries(e.fechas||{})) (evDia[k] = evDia[k] || []).push({g, e});
+  let reg = 0, pend = 0, prev = 0, h = `<header class="mes-cab"><h1 class="titulo" style="margin:0">${MESES[m-1][0].toUpperCase()+MESES[m-1].slice(1)} ${y}</h1>
+    <div class="nav"><button class="hoy" data-a="mes-vuelve">Día</button>${mesSel!==hoy.slice(0,7)?'<button class="hoy" data-a="mes-hoy">Hoy</button>':''}
+    <button class="btn-r" data-a="mes-mov" data-v="-1" aria-label="Mes anterior">‹</button><button class="btn-r" data-a="mes-mov" data-v="1" aria-label="Mes siguiente">›</button></div></header>
+    <p class="estado-sync" id="sync"></p>
+    <div class="mes" role="grid">${['L','M','X','J','V'].map(x=>`<span class="mes-dsem">${x}</span>`).join('')}`;
+  while(d <= dN || d.getDay()!==1){
+    if(d.getDay()===0 || d.getDay()===6){ d = masDias(d,1); continue; }
+    if(d > dN && d.getDay()===1) break;
+    const k = clave(d), fuera = d.getMonth()!==m-1, lect = esLectivo(k) && k >= store.cfg.inicio;
+    let marcas = '';
+    if(lect){
+      const fr = franjasDe(k);
+      for(const n of Object.keys(fr).map(Number).sort((a,b)=>a-b)){ const x = fr[n]; if(!x || !x.g) continue;
+        const s = store.ses[idSes(k,n)], st = s ? (s.estado==='no' ? 'no' : 'ok') : haTerminado(k,n) ? 'pend' : 'fut';
+        if(!fuera){ if(st==='ok') reg++; else if(st==='pend') pend++; else if(st==='fut') prev++; }
+        const bil = (s && s.billete) || (st!=='no' && tocaBillete(k,n));
+        marcas += `<i class="m-c st-${st}${bil?' bil':''}" style="--gc:${gc(x.g)}" title="${esc(GRUPOS[x.g].nombre)}"></i>`; }
+    }
+    const pr = (evDia[k]||[]).map(({g,e})=>`<b class="m-ev" style="--gc:${gc(g)}" title="${esc(TIPOS[e.tipo]+': '+e.titulo+' · '+GRUPOS[g].nombre)}">${esc(GRUPOS[g].nombre.replace(/ ?ESO ?/,'').replace('Refuerzo 4.º','R4'))}</b>`).join('');
+    h += `<button class="mes-d${fuera?' fuera':''}${k===hoy?' hoy':''}${!esLectivo(k)?' festivo':''}" data-a="mes-dia" data-k="${k}" aria-label="${larga(k)}">
+      <span class="n">${d.getDate()}</span>${pr?`<span class="m-evs">${pr}</span>`:''}<span class="m-cs">${marcas}</span></button>`;
+    d = masDias(d,1);
+  }
+  h += `</div>
+    <p class="leyenda mes-ley"><i class="m-c st-ok" style="--gc:var(--tinta)"></i> registrada · <i class="m-c st-pend" style="--gc:var(--tinta)"></i> por registrar ·
+      <i class="m-c st-no" style="--gc:var(--tinta)"></i> no impartida · <i class="m-c st-fut" style="--gc:var(--tinta)"></i> por venir · <i class="m-c st-fut bil" style="--gc:var(--tinta)"></i> billete ·
+      <b class="m-ev" style="--gc:var(--gris)">1A</b> prueba o entrega</p>
+    <button class="chip" data-a="resumen" style="margin-top:8px">Resumen de la semana</button>
+    <p class="leyenda">Este mes: <b>${reg}</b> clases registradas${pend?` · <b style="color:var(--rojo)">${pend}</b> por registrar`:''}${prev?` · ${prev} por venir`:''}. Toca un día para abrirlo.</p>`;
+  return h;
+}
+function vDia(){
+  const d = deClave(dia), w = d.getDay();
+  const faltan = sinRegistrar();
+  let h = `<header class="cab">
+    <div class="fecha"><span class="dia">${DIAS[w]}${dia===hoyK()?' · hoy':''}</span>
+      <span class="num">${d.getDate()}</span><span class="mes">${MESES[d.getMonth()]}</span></div>
+    <div class="nav">
+      <button class="hoy" data-a="mes" aria-label="Ver el mes">Mes</button>
+      <button class="btn-r" data-a="prev" aria-label="Día anterior">‹</button>
+      ${dia!==hoyK()?'<button class="hoy" data-a="hoy">Hoy</button>':''}
+      <button class="btn-r" data-a="next" aria-label="Día siguiente">›</button>
+    </div></header>
+  <p class="estado-sync" id="sync"></p>`;
+  if(faltan.length){
+    h += `<button class="aviso" data-a="faltan"><span>${faltan.length} ${faltan.length===1?'sesión':'sesiones'} sin registrar
+      <small>Toca para verlas</small></span><span aria-hidden="true">›</span></button>`;
+  }
+  if(tocaCopia()){
+    h += `<button class="aviso copia" data-a="copia"><span>Toca la copia de seguridad de la semana
+      <small>Un toque: elige OneDrive y la carpeta de copias</small></span><span aria-hidden="true">›</span></button>
+      <button class="aviso" data-a="resumen"><span>Antes, mira el resumen de la semana
+      <small>Clases, minutos, deberes, billetes y pendientes</small></span><span aria-hidden="true">›</span></button>`;
+  }
+  h += bloquePendientes();
+  const px = proximas(14);
+  if(px.length){
+    h += `<ul class="prox" aria-label="Próximas fechas">${px.slice(0,5).map(x=>`<li><button data-a="ir-fecha" data-id="${x.id}">
+      <span class="cuando${x.falta<=2?' cerca':''}">${x.falta===0?'Hoy':x.falta===1?'Mañana':corta(x.k)}</span>
+      <span class="que"><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre.replace(' ESO','')}</span> ${TIPOS[x.tipo]}: ${esc(x.titulo)}
+      <small>${cuenta(x)}</small></span></button></li>`).join('')}
+      ${px.length>5?`<li class="leyenda">y ${px.length-5} más en Fechas</li>`:''}</ul>`;
+  }
+  if(!Object.keys(store.ses).length){
+    h += `<div class="panel" style="margin-bottom:14px"><p><b>¿Tienes una copia de seguridad?</b><br>
+      <span class="nota">Si vienes de otro móvil o se han borrado los datos de Chrome, recupéralo todo desde tu última copia.</span></p>
+      <button class="bloque-btn" data-a="restaurar" style="margin-top:0">Restaurar una copia</button></div>`;
+  }
+  if(w===0 || w===6){
+    return h + `<div class="vacio"><b>Fin de semana.</b><br>No hay clases en el horario.</div>`;
+  }
+  if(store.cfg.nolectivos.includes(dia)){
+    return h + `<div class="vacio"><b>Día no lectivo.</b><br>Las sesiones de hoy no cuentan como pendientes.<br><br>
+      <button class="chip" data-a="lectivo">Marcar como lectivo</button></div>`;
+  }
+  const hor = franjasDe(dia);
+  h += '<ul class="franjas">';
+  for(const f of FRANJAS){
+    if(f.recreo){ h += `<li class="recreo">recreo</li>`; continue; }
+    const x = hor[f.n];
+    if(!x) continue;
+    const id = idSes(dia,f.n), s = store.ses[id];
+    const ahora = dia===hoyK() && ahoraMin()>=minutos(f.ini) && ahoraMin()<minutos(f.fin);
+    if(x.g){
+      const fx = fechasDe(x.g, dia).map(e=>`<span class="etq">${TIPOS[e.tipo]}</span>`).join('');
+      let marca = '', sub = `Aula ${x.aula}${fx}`;
+      const ptHoy = (x.pt || (s && s.pt)) && !(s && s.estado==='no') ? icoPT(s && s.pt==='no') : '';
+      if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
+      else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
+      if(borr.ses[id]){ marca = `<span class="marca borr">✎ borrador</span>`; }
+      else if(!s && haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
+      h += `<li><button class="fr${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
+        <span class="hora"><b>${f.ini}</b>${f.fin}</span>
+        <span><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span>${ptHoy}${s&&s.billete ? icoBillete(true,'Billete de salida hecho') : tocaBillete(dia,f.n) && !(s&&s.estado==='no') ? icoBillete(false,'Toca billete de salida') : ''}<div class="sub">${sub}</div></span>
+        ${marca}</button></li>`;
+    }else{
+      const marca = borr.ses[id] ? `<span class="marca borr">✎ borrador</span>` : s ? `<span class="marca ok">✓ anotada</span>` : '';
+      const sub = s && s.notas ? esc(s.notas) : 'Toca para anotar';
+      h += `<li><button class="fr otra${ahora?' ahora':''}" data-a="abrir" data-n="${f.n}">
+        <span class="hora"><b>${f.ini}</b>${f.fin}</span>
+        <span><span class="grupo" style="--gc:var(--gX)">${OTRAS[x.o]}</span><div class="sub">${sub}</div></span>
+        ${marca}</button></li>`;
+    }
+  }
+  h += '</ul>';
+  if(!Object.keys(hor).length) h += `<div class="vacio">Hoy no tienes nada en el horario.</div>`;
+  h += vSemana();
+  h += `<p class="nota" style="margin-top:14px"><button class="chip" data-a="nolectivo">Marcar el día como no lectivo</button></p>`;
+  return h;
+}
+
+function vGrupos(){
+  const g = grupoSel;
+  const ses = sesionesDe(g);
+  const dadas = ses.filter(([,s])=>s.estado!=='no').length;
+  const noDadas = ses.filter(([,s])=>s.estado==='no').length;
+  const pendDeb = deberesPendientes(g, '9999');
+  let h = `<h1 class="titulo">Grupos</h1><div class="sel-grupo">`;
+  for(const k in GRUPOS) h += `<button data-a="grupo" data-g="${k}" aria-pressed="${k===g}" style="--gc:${gc(k)}">${GRUPOS[k].nombre}</button>`;
+  const I = indicadores(g, store.cfg.inicio, hoyK());
+  h += `</div><p class="estado-sync" id="sync"></p>
+  <div class="cifras">
+    <div class="cifra"><b>${I.dadas}</b><span>impartidas de ${I.previstas} previstas</span></div>
+    <div class="cifra"><b>${I.entrega===null?'—':I.entrega+' %'}</b><span>deberes completos${I.entregaMedias?` · ${I.entregaMedias} % a medias`:''}</span></div>
+    <div class="cifra"><b>${pendDeb.length}</b><span>deberes por revisar</span></div>
+  </div>`;
+  if(I.climaN){
+    h += `<h3>Clima del aula</h3><div class="barras" role="img" aria-label="Se ha podido trabajar ${pct(I.clima.bien,I.climaN)} %, a ratos ${pct(I.clima.regular,I.climaN)} %, no se ha podido ${pct(I.clima.mal,I.climaN)} %">
+      <span style="width:${pct(I.clima.bien,I.climaN)}%;background:var(--tinta)"></span>
+      <span style="width:${pct(I.clima.regular,I.climaN)}%;background:var(--gris)"></span>
+      <span style="width:${pct(I.clima.mal,I.climaN)}%;background:var(--rojo)"></span></div>
+      <div class="leyenda">Se ha podido trabajar ${pct(I.clima.bien,I.climaN)} % · a ratos ${pct(I.clima.regular,I.climaN)} % · no se ha podido ${pct(I.clima.mal,I.climaN)} %</div>`;
+  }
+  if(I.perd.n){
+    const P = I.perd, m = P.mIni + P.mFin;
+    h += `<h3>Tiempo perdido</h3>
+      <div class="barras" role="img" aria-label="De media se pierden ${P.mIni} minutos al empezar y ${P.mFin} al acabar, de ${DUR}">
+        <span style="width:${pct(P.mIni,DUR)}%;background:var(--rojo)"></span><span style="width:${pct(DUR-m,DUR)}%;background:var(--tinta)"></span><span style="width:${pct(P.mFin,DUR)}%;background:var(--rojo)"></span></div>
+      <div class="leyenda">De media, <b>${P.mIni} min al empezar</b> y <b>${P.mFin} min al acabar</b>: quedan ${Math.max(0,DUR-m)} de ${DUR} para trabajar
+        (${P.n} ${P.n===1?'sesión anotada':'sesiones anotadas'}). En total, ${minTxt(P.total)} perdidos${P.total>=DUR?` ≈ ${String(Math.round(P.total/DUR*10)/10).replace('.',',')} sesiones`:''}.</div>`;
+  }
+  if(progDe(g)){ h += vProg(g); if(I.sinUnidad) h += `<p class="leyenda">${I.sinUnidad} ${I.sinUnidad===1?'sesión':'sesiones'} sin unidad asignada.</p>`; }
+  else{ h += vProg(g);
+  if(I.porUnidad.length){
+    h += `<h3>Seguimiento de la programación</h3>`;
+    I.porUnidad.forEach(u=>{ h += `<div class="unidad"><div class="n"><span>${esc(u.nombre)}</span><span>${u.dadas}${u.previstas?' / '+u.previstas:''}</span></div>
+      ${u.previstas?`<div class="prog"><span style="width:${Math.min(100,pct(u.dadas,u.previstas))}%"></span></div>`:''}</div>`; });
+    if(I.sinUnidad) h += `<p class="leyenda">${I.sinUnidad} ${I.sinUnidad===1?'sesión':'sesiones'} sin unidad asignada.</p>`;
+  }
+  }
+  if(I.pt) h += `<p class="leyenda" style="margin-top:10px">Sesiones con PT: ${I.ptSi} de ${I.pt} con la PT en el aula.</p>`;
+  if(pendDeb.length){
+    h += `<h3>Deberes por revisar</h3><ul class="hist">`;
+    for(const [id,s] of pendDeb) h += `<li><button data-a="ir" data-id="${id}"><div class="f">Puestos el ${corta(s.fecha)}</div><div class="d">${esc(s.deberes)}</div></button></li>`;
+    h += `</ul>`;
+  }
+  { const d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
+    h += `<h3 data-plegar="deb" data-res="${D.nRev} ${D.nRev===1?'revisión':'revisiones'}">Deberes por alumno</h3>
+      <div class="fila2"><input type="date" id="pa-desde" value="${d}" aria-label="Desde"><input type="date" id="pa-hasta" value="${hs}" aria-label="Hasta"></div>`;
+    if(!D.nRev) h += `<p class="leyenda">No hay revisiones de deberes en estas fechas.</p>`;
+    else{
+      h += `<table class="porAl"><thead><tr><th>Nº</th><th>${NOMBRES&&NOMBRES[g]?'Nombre':''}</th><th>✓</th><th>½</th><th>✗</th><th>Falta</th><th>% ✓</th></tr></thead><tbody>`;
+      for(let i=1;i<=D.N;i++){ const a = D.A[i], pres = a.si + a.medias + a.no;
+        h += `<tr><td>${i}</td><td>${esc(nomCorto(nomDe(g,i)))}</td><td>${a.si}</td><td>${a.medias}</td><td>${a.no}</td><td>${a.falta}</td><td>${pres?Math.round(100*a.si/pres):'—'}</td></tr>`; }
+      h += `</tbody></table>
+        <p class="leyenda">% ✓ = completos sobre las revisiones en las que estaba. El CSV va solo con números, para pegarlo junto a tu listado de notas.</p>
+        <div class="chips"><button class="chip" data-a="csv-deberes" data-g="${g}">Descargar CSV (por número)</button></div>`;
+    }
+  }
+  { const P = planoLleno(g), N = store.cfg.alumnos[g]||25, AU = aulasDe(g);
+    h += `<h3 data-plegar="plano" data-res="${P?'hecho':'sin hacer'}">Plano del aula</h3>${P ? `<p class="leyenda">${Object.keys(P.sitios).length} de ${N} en su mesa. En «Deberes para revisar» se toca la mesa de quien no los trae.</p>`
+      : `<p class="leyenda">Coloca los números de lista en sus mesas y, al revisar deberes, toca la mesa en vez de buscar el número. Solo se guardan números.</p>`}
+      <div class="chips"><button class="chip" data-a="plano" data-g="${g}">${P?'Cambiar el plano':'Hacer el plano'}</button>
+      ${P?`<button class="chip" data-a="imprimir-plano" data-g="${g}">Imprimir para poner los nombres</button>`:''}</div>`;
+    if(P && AU.length > 1){
+      h += `<p class="leyenda" style="margin-top:8px">Este grupo cambia de aula (${AU.map(esc).join(', ')}). Si alguna tiene otra disposición de mesas, hazle su propio plano:</p><div class="chips">`;
+      AU.forEach(a=>{ const pa = planoLleno(clavePlano(g, a));
+        h += `<button class="chip" data-a="plano" data-g="${g}" data-aula="${esc(a)}">${esc(a)}${pa?' · propio':''}</button>${pa?`<button class="chip" data-a="imprimir-plano" data-g="${g}" data-aula="${esc(a)}">Imprimir ${esc(a)}</button>`:''}`; });
+      h += `</div>`;
+    } }
+  { const bs = ses.filter(([,s])=>s.billete).reverse();
+    if(bs.length){
+      const tot = bs.reduce((a,[,s])=>{ const B = s.billete; ['n','bien','medias','mal'].forEach(k=>a[k]+= bilN(B[k])||0); return a; }, {n:0,bien:0,medias:0,mal:0});
+      h += `<h3 data-plegar="bil" data-res="${bs.length} · ${tot.n?Math.round(100*tot.bien/tot.n)+' % bien':'sin corregir'}">Billetes de salida</h3><ul class="hist">`;
+      for(const [id,s] of bs) h += `<li><button data-a="ir" data-id="${id}"><div class="f">${corta(s.fecha)}</div><div class="d">${esc(bilTxt(s))}</div></button></li>`;
+      h += `</ul>`;
+    } }
+  h += `<h3 data-plegar="hist" data-res="${ses.length} ${ses.length===1?'sesión':'sesiones'}">Historial</h3>`;
+  if(!ses.length) h += `<div class="vacio">Todavía no hay sesiones de este grupo.<br>Se registran desde <b>Día</b>.</div>`;
+  else{
+    h += `<ul class="hist">`;
+    for(const [id,s] of [...ses].reverse()){
+      const rev = (s.revisiones||[]).map(r=>{
+        const o = store.ses[r.de]; const f = o ? corta(o.fecha) : corta(r.de.split('_')[0]);
+        return `Deberes del ${f}: ${revTxt(r)}`;
+      }).join(' · ');
+      h += `<li><button data-a="ir" data-id="${id}">
+        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${perdTxt(s)?' · '+perdTxt(s):''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
+        <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
+        ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
+        ${s.cambio?`<div class="f">Cambio: ${esc(s.cambio)}</div>`:''}
+        ${s.observacion?`<div class="f">Observación: ${esc(s.observacion)}</div>`:''}
+        ${s.pt?`<div class="f">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}
+        ${s.deberes?`<div class="d">Deberes: ${esc(s.deberes)}</div>`:''}
+        ${rev?`<div class="r">${esc(rev)}</div>`:''}
+      </button></li>`;
+    }
+    h += `</ul>`;
+  }
+  return h;
+}
+
+
+function vProg(g){
+  const E = estadoProg(g);
+  if(!E) return GRUPOS[g].nivel===4
+    ? `<h3>Programación</h3><p class="leyenda">El taller no sigue una secuencia de temas: cada alumno trabaja lo de su clase y su itinerario de fichas.</p>`
+    : `<h3>Programación</h3><p class="leyenda">Carga el archivo de tu programación en <b>Ajustes</b> para ver aquí el seguimiento, las fechas de las pruebas y lo que toca cada semana.</p>`;
+  const P = progDe(g), I = indicadores(g, store.cfg.inicio, hoyK());
+  const dadasU = Object.fromEntries(I.porUnidad.map(u=>[u.id, u.dadas]));
+  const r = E.retraso, sem = Math.round(Math.abs(r)/4*2)/2;
+  const ritmo = Math.abs(r) <= 1 ? 'vas al día'
+    : r > 0 ? `vas ${r} ${r===1?'clase':'clases'} por detrás${sem>=1?' (≈ '+String(sem).replace('.',',')+' '+(sem===1?'semana':'semanas')+')':''}`
+    : `vas ${-r} ${r===-1?'clase':'clases'} por delante`;
+  let h = `<h3>Programación</h3>
+    <div class="pbar" role="img" aria-label="Hechas ${E.hechosN} de ${E.n} actividades; según el plan, ${E.prevN}">
+      <span style="width:${pct(E.sesHechas,E.sesTot)}%"></span><i style="left:${pct(E.sesPrev,E.sesTot)}%"></i></div>
+    <p class="leyenda">${E.hechosN} de ${E.n} actividades hechas · según el plan deberías ir por ${E.prevN} · <b class="${r>3?'tarde':''}">${ritmo}</b>.
+      La raya roja es donde dice el plan que deberías estar hoy.</p>
+    ${E.prevN > E.hechosN ? `<p class="nota"><button class="chip" data-a="pi-hasta" data-g="${g}">Marcar como hecho todo lo que el plan daba hasta hoy</button><br>
+      Útil al empezar a usarlo; lo que no se haya dado se desmarca uno a uno.</p>` : ''}`;
+  const blq = (sa, abierto) => {
+    const its = E.p.items.filter(x=>x.sa===sa);
+    const hn = its.filter(x=>E.H[x.it.id]).length, todo = hn===its.length;
+    const ses = its.reduce((a,x)=>a+x.it.s,0), d = dadasU[sa.id];
+    let b = `<details class="sa${todo?' hecha':''}" ${abierto?'open':''}><summary><span class="sa-n">${todo?'✓ ':''}${esc(sa.n)}</span>
+      <span class="sa-c">${hn}/${its.length} · ${rangoCorto(its[0].ini, its[its.length-1].fin)}</span>
+      <span class="prog"><span style="width:${pct(hn,its.length)}%"></span></span></summary>
+      <p class="leyenda" style="margin:6px 0 2px">${esc(sa.u)}${d!==undefined?` · ${d} ${d===1?'sesión registrada':'sesiones registradas'} de ${ses} previstas`:''}</p>
+      ${E.p.apretadas.includes(sa.id)?'<p class="leyenda tarde">Con el calendario, las sesiones previstas no caben antes de la siguiente: el plan las aprieta.</p>':''}
+      <ul class="pasos">`;
+    its.forEach(x=>{
+      const ok = !!E.H[x.it.id];
+      b += `<li><button class="paso-b" data-a="pi" data-g="${g}" data-i="${x.it.id}" aria-pressed="${ok}">
+        <span class="caja" aria-hidden="true">${ok?'✓':''}</span>
+        <span class="txt">${esc(x.it.a)}<small>${x.it.s} ${x.it.s===1?'sesión':'sesiones'} · ${rangoCorto(x.ini, x.fin)}${ok?' · hecho el '+corta(E.H[x.it.id]):''}</small></span>
+        ${x.it.ex?'<span class="etq">Prueba</span>':''}</button>`;
+      if(x.it.ex && !ok){
+        const fj = pruebaFijada(g, sa.id);
+        if(fj) b += `<div class="horq">Prueba fijada: <button class="chip" data-a="ir-fecha" data-id="${fj[0]}">${larga(fj[1].fechas[g])}</button></div>`;
+        else{
+          const hq = horquilla(g, x);
+          if(hq) b += `<div class="horq"><span>Para la prueba, a tu ritmo:</span>
+            ${hq.opc.map(k=>`<button class="chip${k===hq.prevista?' sel':''}" data-a="px" data-g="${g}" data-sa="${sa.id}" data-k="${k}">${corta(k)}</button>`).join('')}
+            <small>El plan la ponía hacia el ${corta(hq.plan)}.${hq.corte?' Ojo: hay vacaciones o festivos en medio.':''} Toca una fecha para apuntarla en Fechas.</small></div>`;
+        }
+      }
+      b += `</li>`;
+    });
+    return b + `</ul></details>`;
+  };
+  const actual = E.sig ? E.sig.sa : null;
+  P.filter(s=>!s.trans).forEach(sa=>{ h += blq(sa, sa===actual); });
+  const tr = P.find(s=>s.trans);
+  if(tr){
+    h += `<details class="sa"><summary><span class="sa-n">${esc(tr.n)}</span><span class="sa-c">a lo largo del curso</span></summary>
+      <p class="leyenda" style="margin:6px 0 2px">${esc(tr.u)}</p><ul class="pasos">${tr.it.map(it=>{ const ok = !!E.H[it.id];
+      return `<li><button class="paso-b" data-a="pi" data-g="${g}" data-i="${it.id}" aria-pressed="${ok}"><span class="caja" aria-hidden="true">${ok?'✓':''}</span>
+        <span class="txt">${esc(it.a)}${ok?'<small>hecho el '+corta(E.H[it.id])+'</small>':''}</span></button></li>`; }).join('')}</ul></details>`;
+  }
+  return h;
+}
+function vSemana(){
+  const [l, v] = semanaDe(dia), hoy = hoyK();
+  const filas = [];
+  for(const g of Object.keys(GRUPOS)){
+    const E = estadoProg(g); if(!E) continue;
+    const L = clasesEntre(g, l, clave(masDias(deClave(v),1)));
+    if(!L.length) continue;
+    const toca = E.p.items.filter(x=>x.fechas.some(k=>k>=l && k<=v));
+    const sas = [...new Set(toca.map(x=>x.sa))];
+    let t = toca.length ? `<b>${sas.map(s=>esc(s.n)).join(' · ')}</b> — ${toca.map(x=>esc(recorta(x.it.a,110))).join(' · ')}` : 'Sin actividad prevista en el plan';
+    let extra = '';
+    if(E.sig && l<=hoy && hoy<=v && !toca.some(x=>x===E.sig)) extra = `<small class="${E.retraso>3?'tarde':''}">Vas por: ${esc(E.sig.sa.n)} — ${esc(recorta(E.sig.it.a,90))}</small>`;
+    const px = toca.find(x=>x.it.ex);
+    if(px) extra += `<small>Según el plan, esta semana cae la prueba.</small>`;
+    filas.push(`<li><button data-a="ir-grupo" data-g="${g}"><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span>
+      <span class="sem-t">${t}${extra}</span></button></li>`);
+  }
+  if(!filas.length) return '';
+  return `<details class="semana" open><summary>La semana del ${rangoCorto(l, v)}, según la programación</summary><ul>${filas.join('')}</ul></details>`;
+}
+
+const clavePlano = (g, aula) => aula ? `${g}@${aula}` : g;
+const planoLleno = k => { const p = (store.cfg.planos||{})[k]; return p && Object.keys(p.sitios||{}).length ? p : null; };
+const planoDe = (g, aula) => (aula && planoLleno(clavePlano(g, aula))) || planoLleno(g);
+const aulasDe = g => [...new Set(Object.values(HORARIO).flatMap(d=>Object.values(d)).filter(x=>x.g===g && x.aula).map(x=>x.aula))].sort();
+let planoB = null, planoG = null, planoA = '';
+function abrirPlano(g, aula){ planoG = g; planoA = aula || '';
+  planoB = clon((store.cfg.planos||{})[clavePlano(g, planoA)] || (planoA && planoLleno(g) ? {...planoLleno(g)} : null) || {filas:5, cols:6, sitios:{}});
+  vista = 'plano'; pintar(); window.scrollTo(0,0); }
+function rejillaPlano(p, celda, cls){
+  let h = `<div class="pizarra">pizarra</div><div class="plano${cls?' '+cls:''}" style="grid-template-columns:repeat(${p.cols},1fr)">`;
+  for(let f=1; f<=p.filas; f++) for(let c=1; c<=p.cols; c++) h += celda(`${f}-${c}`, p.sitios[`${f}-${c}`]);
+  return h + `</div>`;
+}
+function vPlanoEd(){
+  const p = planoB, N = store.cfg.alumnos[planoG] || 25, usados = new Set(Object.values(p.sitios));
+  let sig = 1; while(usados.has(sig) && sig <= N) sig++;
+  const faltan = []; for(let i=1;i<=N;i++) if(!usados.has(i)) faltan.push(i);
+  let h = `<h1 class="titulo">Plano del aula</h1>
+    <p><span class="grupo" style="--gc:${gc(planoG)}">${GRUPOS[planoG].nombre}</span> · ${planoA ? 'aula '+esc(planoA) : 'todas las aulas'}</p>
+    ${planoA ? `<p class="nota">Este plano solo se usa en el aula ${esc(planoA)}; en las demás, el general. Empieza como copia del general.</p>` : ''}
+    <p class="nota">Con el plano de clase delante, toca la mesa del <b>1</b>, luego la del <b>2</b>, y así. Si te equivocas, toca esa mesa otra vez y se vacía: el número vuelve a ser el siguiente.</p>
+    <div class="plano-ctl"><span>Filas</span><button class="btn-r" data-pz="filas" data-d="-1">−</button><b>${p.filas}</b><button class="btn-r" data-pz="filas" data-d="1">+</button>
+      <span>Columnas</span><button class="btn-r" data-pz="cols" data-d="-1">−</button><b>${p.cols}</b><button class="btn-r" data-pz="cols" data-d="1">+</button></div>
+    <p class="plano-sig">${sig<=N?`Siguiente: <b>${sig}</b>`:'Están todos colocados.'}</p>`;
+  h += rejillaPlano(p, (k,n)=>`<button class="mesa${n?' llena':''}" data-pz="mesa" data-k="${k}">${n||''}</button>`);
+  if(faltan.length && faltan.length < N) h += `<p class="nota">Sin mesa: ${faltan.join(', ')}.</p>`;
+  h += `<button class="bloque-btn lleno" data-pz="guardar">Guardar el plano</button>
+    <button class="bloque-btn" data-pz="vaciar">Vaciar todas las mesas</button>
+    ${planoA && (store.cfg.planos||{})[clavePlano(planoG, planoA)] ? '<button class="bloque-btn" data-pz="borrar">Borrar este plano (usar el general)</button>' : ''}
+    <button class="bloque-btn" data-pz="cancelar">Cancelar</button>
+    <p class="nota" style="margin-top:10px">Si cambias a alguien de sitio, vuelve aquí: vacía su mesa antigua y toca la nueva.</p>`;
+  return h;
+}
+function hojaPlano(g, aula){
+  const P = aula ? planoLleno(clavePlano(g, aula)) : planoLleno(g); if(!P) return '';
+  let filas = '';
+  for(let f=1; f<=P.filas; f++){
+    filas += '<tr>';
+    for(let c=1; c<=P.cols; c++){ const n = P.sitios[`${f}-${c}`];
+      filas += n ? `<td class="m"><b>${n}</b><span>${esc(nomDe(g,n))}</span></td>` : '<td class="v"></td>'; }
+    filas += '</tr>';
+  }
+  const N = store.cfg.alumnos[g]||25, en = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!en.has(i)) sin.push(i);
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Plano · ${esc(GRUPOS[g].nombre)}</title><style>
+  @page{size:A4 landscape;margin:12mm} body{font-family:system-ui,sans-serif;color:#222;margin:0}
+  h1{font-size:18pt;margin:0 0 1mm} .meta{font-size:9pt;color:#555;margin:0 0 4mm}
+  .piz{text-align:center;font-size:9pt;letter-spacing:3px;text-transform:uppercase;border-bottom:3px solid #222;margin:0 30% 4mm;padding-bottom:1mm}
+  table{width:100%;border-collapse:separate;border-spacing:3mm;table-layout:fixed}
+  td{height:20mm;vertical-align:top;border-radius:2mm} td.m{border:1.2px solid #333;padding:1.5mm 2mm;position:relative}
+  td.m b{font-size:13pt} td.m span{position:absolute;left:2mm;right:2mm;bottom:3mm;border-bottom:1px solid #999;font-size:10pt;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  td.v{border:1px dashed #ccc} .pie{font-size:8.5pt;color:#555;margin-top:2mm}
+  </style></head><body>
+  <h1>Plano del aula · ${esc(GRUPOS[g].nombre)}${aula?' · aula '+esc(aula):''}</h1>
+  <p class="meta">${[store.cfg.docente, store.cfg.centro, store.cfg.curso].filter(Boolean).map(esc).join(' · ')} · ${larga(hoyK())}</p>
+  <div class="piz">pizarra</div><table>${filas}</table>
+  ${sin.length?`<p class="pie">Sin mesa: ${sin.join(', ')}.</p>`:''}
+  <p class="pie">${NOMBRES&&NOMBRES[g]?'Nombres del listado cargado; corrige a mano lo que haya cambiado.':'Escribe el nombre a mano en cada mesa.'} Documento del profesor: no se entrega, no se publica y no se sube a Aules.</p>
+  <script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`;
+}
+function accionPlano(a, b){
+  const p = planoB, N = store.cfg.alumnos[planoG] || 25;
+  if(a==='filas' || a==='cols'){
+    p[a] = Math.max(1, Math.min(10, p[a] + Number(b.dataset.d)));
+    for(const k of Object.keys(p.sitios)){ const [f,c] = k.split('-').map(Number); if(f>p.filas || c>p.cols) delete p.sitios[k]; }
+  }
+  else if(a==='mesa'){
+    const k = b.dataset.k;
+    if(p.sitios[k]) delete p.sitios[k];
+    else{ const u = new Set(Object.values(p.sitios)); let sig = 1; while(u.has(sig)) sig++; if(sig > N){ toast('Ya están todos colocados'); return; } p.sitios[k] = sig; }
+  }
+  else if(a==='vaciar'){ if(!confirm('¿Vaciar todas las mesas?')) return; p.sitios = {}; }
+  else if(a==='borrar'){ if(!confirm(`¿Borrar el plano del aula ${planoA}? Se usará el general.`)) return;
+    delete store.cfg.planos[clavePlano(planoG, planoA)]; guardarCfg(); planoB = null; vista = 'grupos'; pintar(); return; }
+  else if(a==='cancelar'){ planoB = null; vista = 'grupos'; pintar(); return; }
+  else if(a==='guardar'){
+    store.cfg.planos = store.cfg.planos || {}; store.cfg.planos[clavePlano(planoG, planoA)] = p; guardarCfg();
+    planoB = null; vista = 'grupos'; toast('Plano guardado'); pintar(); window.scrollTo(0,0); return;
+  }
+  const y = window.scrollY; pintar(); window.scrollTo(0,y);
+}
+
+function pasosEv(id, e){
+  if(e.tipo==='otro') return '';
+  const hoy = hoyK(), gs = Object.entries(e.fechas||{}).filter(([g,k])=>k<=hoy && GRUPOS[g]).sort((a,b)=>a[1]<b[1]?-1:1);
+  if(!gs.length) return '';
+  return `<div class="ev-pasos">${gs.map(([g])=>{ const E = (e.estado||{})[g] || {};
+    return `<div class="ev-paso"><span class="grupo" style="--gc:${gc(g)}">${esc(GRUPOS[g].nombre.replace(' ESO',''))}</span>
+      ${PASOS.map(([c])=>`<button class="chip" data-a="ev-paso" data-id="${id}" data-g="${g}" data-p="${c}" aria-pressed="${!!E[c]}">${E[c]?'✓ ':''}${PASO_N[c]}${E[c]?' '+corta(E[c]):''}</button>`).join('')}</div>`; }).join('')}</div>`;
+}
+function vFechas(){
+  const hoy = hoyK();
+  const evs = Object.entries(store.ev||{}).map(([id,e])=>{
+    const ks = Object.values(e.fechas||{}).sort(); return {id, e, primera: ks[0]||'', ultima: ks[ks.length-1]||''};
+  });
+  const futuras = evs.filter(x=>x.ultima>=hoy).sort((a,b)=>a.primera<b.primera?-1:1);
+  const pasadas = evs.filter(x=>x.ultima<hoy).sort((a,b)=>a.ultima>b.ultima?-1:1);
+  const tarjeta = ({id,e}) => `<button class="ev" data-a="ir-fecha" data-id="${id}"><h4>${TIPOS[e.tipo]}: ${esc(e.titulo)}</h4>
+    <ul>${Object.entries(e.fechas).sort((a,b)=>a[1]<b[1]?-1:1).map(([g,k])=>{ const f = diasHasta(k);
+      return `<li><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span> ${larga(k)}${f>=0?` <span class="t">· ${cuenta({g,k,falta:f})}</span>`:''}</li>`; }).join('')}</ul>
+    ${e.notas?`<div class="t" style="margin-top:4px">${esc(e.notas)}</div>`:''}</button>${pasosEv(id, e)}`;
+  let h = `<h1 class="titulo">Fechas</h1><p class="estado-sync" id="sync"></p>
+    <button class="bloque-btn lleno" data-a="nueva-fecha" style="margin:0 0 16px">Añadir prueba o entrega</button>`;
+  h += futuras.length ? futuras.map(tarjeta).join('') : `<div class="vacio">No hay fechas próximas.<br>Apunta pruebas y entregas en cuanto las fijes: la app te dirá cuántas clases te quedan.</div>`;
+  if(pasadas.length) h += `<details style="margin-top:14px"><summary>Pasadas (${pasadas.length})</summary><div style="margin-top:8px">${pasadas.map(tarjeta).join('')}</div></details>`;
+  return h;
+}
+let evBorr = null, evId = null;
+function abrirFecha(id, pre){
+  evId = id || ('e' + Date.now().toString(36));
+  evBorr = id && store.ev[id] ? clon(store.ev[id]) : (pre || {tipo:'examen', titulo:'', notas:'', fechas:{}});
+  pintarHojaFecha();
+  $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
+}
+function pintarHojaFecha(){
+  const e = evBorr;
+  let h = `<div class="hoja-in"><div class="hoja-cab"><div><h2 id="hoja-titulo">${store.ev[evId]?'Editar fecha':'Nueva fecha'}</h2>
+    <div class="quando">Prueba escrita, entrega o lo que quieras recordar</div></div>
+    <button class="cerrar" data-e="cerrar">Cerrar</button></div>
+    <div class="campo"><span class="et">Tipo</span><div class="seg">
+      ${Object.entries(TIPOS).map(([k,v])=>`<button data-e="tipo" data-v="${k}" aria-pressed="${e.tipo===k}">${v}</button>`).join('')}</div></div>
+    <div class="campo"><label for="e-tit">Qué</label><input type="text" id="e-tit" data-ef="titulo" value="${esc(e.titulo)}" placeholder="Por ejemplo: prueba de divisibilidad"></div>
+    <div class="campo"><span class="et">Grupos y fecha de cada uno</span>
+      <div class="chips">${Object.keys(GRUPOS).map(g=>`<button class="chip" data-e="grupo" data-g="${g}" aria-pressed="${!!e.fechas[g]}" style="${e.fechas[g]?'border-color:var(--grafito);box-shadow:inset 0 -5px 0 '+gc(g)+';font-weight:700':''}">${GRUPOS[g].nombre}</button>`).join('')}</div>
+      ${Object.keys(e.fechas).map(g=>`<div class="g-fecha"><label for="e-f-${g}"><span class="grupo" style="--gc:${gc(g)}">${GRUPOS[g].nombre.replace(' ESO','')}</span></label>
+        <input type="date" id="e-f-${g}" data-eg="${g}" value="${e.fechas[g]}"></div>`).join('')}
+      ${Object.keys(e.fechas).length?'<p class="leyenda" style="margin-top:6px">Te propone la primera clase de cada grupo dentro de una semana; cámbiala si hace falta.</p>':''}
+    </div>
+    <div class="campo"><label for="e-not">Notas <span class="ayuda">— temario, material permitido…</span></label>
+      <textarea id="e-not" data-ef="notas" style="min-height:64px">${esc(e.notas)}</textarea></div>
+  </div><div class="acciones"><div>
+    ${store.ev[evId]?'<button class="secundario peligro" data-e="borrar">Borrar</button>':''}
+    <button class="primario" data-e="guardar">Guardar</button></div></div>`;
+  const hoja = $('#hoja'), y = hoja.scrollTop; hoja.innerHTML = h; hoja.scrollTop = y;
+}
+function leerFecha(){
+  document.querySelectorAll('#hoja [data-ef]').forEach(el=>{ evBorr[el.dataset.ef] = el.value; });
+  document.querySelectorAll('#hoja [data-eg]').forEach(el=>{ if(el.value) evBorr.fechas[el.dataset.eg] = el.value; });
+}
+
+function vExportar(){
+  const hoy = hoyK();
+  let h = `<h1 class="titulo">Exportar</h1><p class="estado-sync" id="sync"></p>
+  <button class="bloque-btn" data-a="resumen" style="margin:0 0 14px">Resumen de la semana</button>
+  <div class="panel">
+    <p>El registro de aula de las fechas y grupos que elijas, listo para imprimir o enseñar en una auditoría.</p>
+    <div class="fila2">
+      <label>Desde<input type="date" id="ex-desde" value="${store.cfg.inicio||hoy}"></label>
+      <label>Hasta<input type="date" id="ex-hasta" value="${hoy}"></label>
+    </div>
+    <div class="checks">`;
+  for(const k in GRUPOS) h += `<label><input type="checkbox" class="ex-g" value="${k}" checked> ${GRUPOS[k].nombre}</label>`;
+  h += `<label><input type="checkbox" class="ex-g" value="otras" checked> Guardias y otras</label></div>
+    <button class="bloque-btn lleno" data-a="ex-html">Descargar el registro (para imprimir)</button>
+    <button class="bloque-btn" data-a="ex-csv">Descargar la tabla (CSV)</button>
+    <button class="bloque-btn" data-a="ex-ia">Copiar para la IA (sin lo privado)</button>
+    <p class="nota" style="margin-top:6px">Solo lo que se hizo con cada grupo. Nunca la revisión por número, los planos, la PT ni «Otras notas».</p>
+    <div id="ex-ia-aviso"></div>
+  </div>
+  <div class="panel">
+    <p>Una copia de todo el cuaderno. Los datos solo están en este móvil: guárdala cada semana en el OneDrive corporativo de la GVA (Microsoft).
+      Sirve para recuperarlo si cambias de móvil o se borra el navegador.</p>
+    <button class="bloque-btn lleno" data-a="ex-json">Guardar copia de seguridad</button>
+    <button class="bloque-btn" data-a="restaurar">Restaurar una copia</button>
+    <p class="nota" style="margin-top:10px">También restaura las copias del cuaderno de Claude.</p>
+  </div>`;
+  return h;
+}
+
+function leerUnidades(){
+  document.querySelectorAll('.aj-u').forEach(i=>{
+    const u = (store.cfg.unidades[i.dataset.nv]||[])[Number(i.dataset.i)]; if(!u) return;
+    if(i.dataset.k==='nombre') u.nombre = i.value.trim(); else u.previstas = Math.max(0, parseInt(i.value)||0);
+  });
+}
+function vAjustes(){
+  const c = store.cfg;
+  let h = `<h1 class="titulo">Ajustes</h1><p class="estado-sync" id="sync"></p>
+  <div class="panel">
+    <div class="campo" style="margin-top:0"><label for="aj-doc">Docente</label><input type="text" id="aj-doc" value="${esc(c.docente)}" placeholder="Aparece en el registro que se descarga"></div>
+    <div class="fila2">
+      <div class="campo" style="margin:0"><label for="aj-centro">Centro</label><input type="text" id="aj-centro" value="${esc(c.centro)}"></div>
+      <div class="campo" style="margin:0"><label for="aj-curso">Curso</label><input type="text" id="aj-curso" value="${esc(c.curso)}"></div>
+    </div>
+    <div class="campo"><label for="aj-inicio">Primer día de clase</label><input type="date" id="aj-inicio" value="${c.inicio}">
+      <div class="nota">Desde aquí se cuentan las sesiones sin registrar.</div></div>
+  </div>
+  ${(()=>{ const ia = iaCfg(); return `<div class="panel"><p><b>La IA (opcional)</b> <span style="display:block;margin-bottom:6px">${!ia.clave ? '<span class="nota">· sin configurar</span>' : ia.ok ? `<span style="color:var(--verde,#1F7A3A);font-weight:700">✓ conectada</span> <span class="nota">· ${(MODELOS_IA.find(m=>m[0]===ia.modelo)||['',''])[1].split(' ·')[0]}, intensidad ${(INTENSIDAD_IA.find(x=>x[0]===ia.esfuerzo)||['',''])[1].toLowerCase()} · probada el ${fechaHora(ia.probado)}</span>` : ia.probado ? `<span style="color:var(--rojo);font-weight:700">✗ no conecta</span> <span class="nota">· ${esc(ia.msg||'')}</span>` : '<span class="nota">· sin probar</span>'}</span><span class="nota">Para dictar una sesión y que se ordene sola en sus campos. La clave de la API de Claude se queda solo en este móvil: no va en la copia de seguridad ni en la app publicada. Nunca salen la revisión por número, los planos, la PT ni «Otras notas».</span></p>
+    <div class="campo"><label for="ia-clave">Clave de la API</label><input type="password" id="ia-clave" autocomplete="off" value="${esc(ia.clave)}" placeholder="sk-ant-…"></div>
+    <div class="fila2"><label>Modelo<select id="ia-modelo" style="width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px">
+      ${MODELOS_IA.map(([v,t])=>`<option value="${v}" ${ia.modelo===v?'selected':''}>${t}</option>`).join('')}</select></label>
+      <label>Intensidad<select id="ia-esfuerzo" style="width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px">
+      ${INTENSIDAD_IA.map(([v,t])=>`<option value="${v}" ${ia.esfuerzo===v?'selected':''}>${t}</option>`).join('')}</select></label></div>
+    <p class="nota">Para ordenar una sesión basta Sonnet con intensidad baja: rápido y barato. Más intensidad piensa más, tarda más y gasta más.</p>
+    <button class="bloque-btn" data-a="ia-guardar">Guardar y probar la conexión</button>
+    <div class="campo" style="margin-top:14px"><label for="ia-criterios">Mis criterios para la IA</label>
+      <textarea id="ia-criterios" rows="4" placeholder="Con tus palabras, una regla por línea. Por ejemplo: «Proyectar una ficha es corregirla en la pizarra.» «El carril siempre tiene partes A y B.» «Los ejercicios del libro son de clase, salvo que diga para casa.»">${esc(store.cfg.criteriosIA||'')}</textarea></div>
+    <p class="nota">Se añaden a las instrucciones de «Ordenar con IA» cada vez. Van en la copia de seguridad. Nada de alumnos: con un nombre del listado o un número de lista no se guardan.</p>
+    <button class="chip" data-a="ia-criterios">Guardar mis criterios</button>
+    ${ia.clave?'<button class="chip" data-a="ia-borrar" style="margin-top:8px">Borrar la clave de este móvil</button>':''}
+  </div>`; })()}
+  <div class="panel"><p><b>Aviso de copia de seguridad</b><br><span class="nota">Cada semana, a partir de ese momento, el cuaderno te pide la copia hasta que la hagas.</span></p>
+    <div class="fila2"><label>Día<select id="aj-cdia" style="width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px">
+      ${[1,2,3,4,5].map(d=>`<option value="${d}" ${store.cfg.copia.dia===d?'selected':''}>${DIAS[d]}</option>`).join('')}</select></label>
+      <label>Hora<input type="time" id="aj-chora" value="${store.cfg.copia.hora}"></label></div>
+  </div>
+  <div class="panel"><p><b>Programación de aula</b><br><span class="nota">Se carga desde un archivo y se queda solo en este móvil (y en la copia de seguridad): no está en la app publicada.</span></p>
+    ${store.programa?`<p style="margin:8px 0">✓ <b>${esc(store.programa.nombre)}</b>${store.programa.curso?' · '+esc(store.programa.curso):''}<br>
+      <span class="nota">Cargada el ${fechaHora(store.programa.cargada)} · ${Object.values(store.programa.niveles).reduce((a,L)=>a+L.length,0)} situaciones</span></p>`
+      :'<p class="nota" style="margin:8px 0">Todavía no hay ninguna cargada.</p>'}
+    <button class="bloque-btn${store.programa?'':' lleno'}" data-a="archivo-prog">${store.programa?'Cargar otra versión':'Cargar el archivo de la programación'}</button>
+    ${store.programa?'<button class="chip" data-a="quitar-prog" style="margin-top:8px">Quitar la programación</button>':''}
+  </div>
+  <div class="panel"><p><b>Unidades y situaciones de aprendizaje</b><br><span class="nota">Con las sesiones previstas de cada una sale el seguimiento de la programación.</span></p>
+    ${[[1,'1.º ESO'],[2,'2.º ESO'],[4,'Refuerzo 4.º ESO']].map(([nv,tit])=>`
+      <p style="margin:12px 0 6px"><b>${tit}</b></p>
+      ${(c.unidades[nv]||[]).map((u,i)=>`<div class="u-fila"><input type="text" class="aj-u" data-nv="${nv}" data-i="${i}" data-k="nombre" value="${esc(u.nombre)}" aria-label="Nombre">
+        <input type="number" min="0" max="99" class="aj-u" data-nv="${nv}" data-i="${i}" data-k="previstas" value="${u.previstas||''}" aria-label="Sesiones previstas" placeholder="ses.">
+        <button data-a="del-u" data-nv="${nv}" data-i="${i}" aria-label="Quitar">×</button></div>`).join('')}
+      <button class="chip" data-a="add-u" data-nv="${nv}">Añadir unidad</button>`).join('')}
+    ${store.programa?`<p class="nota" style="margin-top:12px"><button class="chip" data-a="cargar-prog">Poner las situaciones de la programación</button><br>
+      Las sesiones ya registradas no se tocan.</p>`:''}
+  </div>
+  <div class="panel"><p><b>Alumnos por grupo</b><br><span class="nota">Para la cuadrícula de números de lista.</span></p><div class="alumnos">`;
+  for(const k in GRUPOS) h += `<label for="aj-n-${k}">${GRUPOS[k].nombre}</label><input type="number" min="1" max="40" id="aj-n-${k}" data-g="${k}" class="aj-n" value="${c.alumnos[k]||25}">`;
+  h += `</div></div>
+  <div class="panel"><p><b>Altas y bajas</b><br><span class="nota">Por número de lista y con fecha. Quien se va conserva su número;
+    quien llega recibe el siguiente. Las revisiones anteriores no cambian.</span></p>
+    ${difListado.length?`<div class="dif"><b>El listado cargado no coincide con el cuaderno:</b>${difListado.map((d,i)=>`<div style="margin-top:6px">${esc(d.txt)}
+      <button class="chip" data-a="aplicar-dif" data-i="${i}">${d.tipo==='n'?'Actualizar':'Dar de baja desde hoy'}</button></div>`).join('')}</div>`:''}
+    <ul class="matr">${Object.keys(GRUPOS).flatMap(g=>Object.entries(matr(g)).map(([n,m])=>`<li><span><b>${esc(GRUPOS[g].nombre)}</b> · nº ${n} · ${[m.alta?'llega el '+corta(m.alta):'', m.baja?'baja desde el '+corta(m.baja):''].filter(Boolean).join(' · ')}</span>
+      <button class="chip" data-a="quitar-mat" data-g="${g}" data-n="${n}">Deshacer</button></li>`)).join('') || '<li class="nota">Ninguna todavía.</li>'}</ul>
+    <div class="mt"><select id="mt-g" aria-label="Grupo">${Object.keys(GRUPOS).map(g=>`<option value="${g}">${esc(GRUPOS[g].nombre)}</option>`).join('')}</select>
+      <label>Desde<input type="date" id="mt-f" value="${hoyK()}"></label>
+      <label>Nº de lista<input type="number" id="mt-n" min="1" max="40" inputmode="numeric"></label>
+      <button class="secundario" data-a="baja">Dar de baja ese número</button>
+      <button class="secundario" data-a="alta">Incorporación (nº siguiente)</button></div></div>
+  <div class="panel"><p><b>Billete de salida</b><br><span class="nota">Las clases en que toca cada semana. En la vista del día salen con
+    un billete al lado; cuando lo apuntas en la sesión, el billete queda marcado.</span></p>
+    ${Object.keys(GRUPOS).map(g=>{ const cl = []; for(const d in HORARIO) for(const n in HORARIO[d]) if(HORARIO[d][n] && HORARIO[d][n].g===g) cl.push([Number(d), Number(n)]);
+      if(!cl.length) return '';
+      return `<div class="bil-sem"><span class="g"><b>${esc(GRUPOS[g].nombre)}</b></span>${cl.sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(([d,n])=>{ const sl = `${d}-${n}`;
+        return `<button class="chip" data-a="bil-slot" data-v="${sl}" aria-pressed="${(c.billetes||[]).includes(sl)}">${DIAS[d].slice(0,3)} ${FR[n]?FR[n].ini:n+'.ª'}</button>`; }).join('')}</div>`; }).join('')}</div>
+  <div class="panel"><p><b>Deberes «a medias»</b><br><span class="nota">El criterio que aplicas siempre. Sale debajo de la lista al revisar.</span></p>
+    <input type="text" id="aj-medias" value="${esc(c.criterioMedias || DEF_MEDIAS)}"></div>
+  <div class="panel"><p><b>Días no lectivos</b><br><span class="nota">Festivos y días sin clase: no cuentan como sesiones sin registrar.</span></p>
+    ${CAL.dias.some(k=>!c.nolectivos.includes(k)) ? `<button class="bloque-btn" data-a="cal" style="margin-top:0">Cargar los festivos del ${CAL.nombre}</button>` : `<p class="nota">Cargados los festivos del ${CAL.nombre}. Fin de las clases: ${larga(CAL.fin)}.</p>`}
+    <div class="fila2"><input type="date" id="aj-nl"><button class="secundario" data-a="add-nl">Añadir</button></div>
+    <ul class="nolect">${[...c.nolectivos].sort().map(k=>`<li>${larga(k)}<button data-a="del-nl" data-k="${k}">Quitar</button></li>`).join('') || '<li class="nota">Ninguno todavía.</li>'}</ul>
+  </div>
+  ${nativa() ? (()=>{ const v = avCfg(), sel = 'style="display:block;box-sizing:border-box;width:100%;height:46px;border:1.5px solid var(--linea);border-radius:10px;background:var(--hoja);padding:0 10px;margin-top:4px"';
+    return `<div class="panel"><p><b>Avisos</b><br><span class="nota">Solo en la app de Android. El aviso dice el grupo y la hora, nada más: sale en la pantalla de bloqueo.</span></p>
+    <button class="bloque-btn${v.on?'':' lleno'}" data-a="av-on" style="margin-top:0">${v.on?'Desactivar los avisos':'Activar los avisos'}</button>
+    ${v.on?`<label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="av-clase" ${v.clase?'checked':''}> Al acabar cada clase sin registrar</label>
+      <label style="display:block;margin-top:6px">Cuánto después<select id="av-retraso" ${sel}>${[[0,'Al tocar el timbre'],[5,'5 minutos después'],[10,'10 minutos después'],[20,'20 minutos después']].map(([m,t])=>`<option value="${m}" ${Number(v.retraso)===m?'selected':''}>${t}</option>`).join('')}</select></label>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="av-dia" ${v.dia?'checked':''}> Al final del día, las que queden</label>
+      <label style="display:block;margin-top:6px">A las<input type="time" id="av-diahora" value="${v.diaHora}" ${sel}></label>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="av-copia" ${v.copia?'checked':''}> La copia de seguridad (el día y la hora de «Aviso de copia»)</label>
+      <button class="secundario" data-a="av-guardar" style="margin-top:12px">Guardar los avisos</button>`:''}
+  </div>`; })() : ''}
+  <div class="panel"><p><b>En el móvil</b></p>
+    ${nativa() ? '<p class="nota" style="margin:0">App de Android. Sus datos son solo suyos: para pasarlos a otro sitio, copia de seguridad.</p>'
+      : instalada() ? '<p class="nota" style="margin:0">Instalada como app.</p>'
+      : instalable ? '<button class="bloque-btn lleno" data-a="instalar" style="margin-top:0">Instalar en este móvil</button>'
+      : '<p class="nota" style="margin:0">Para instalarla: menú ⋮ de Chrome → «Instalar aplicación» o «Añadir a pantalla de inicio».</p>'}
+  </div>
+  <div class="panel"><p><b>Protección de datos</b></p>
+    <p class="nota">Apunta al alumnado solo por número de lista, nunca por nombre. Las notas de sesión son para el
+    seguimiento del grupo; los datos personales van en ITACA y Aules. Nada de este cuaderno sale del móvil
+    salvo las copias que tú mandes.</p>
+    <p class="nota"><b>Ver nombres.</b> En «Deberes para revisar» puedes abrir tu listado desde el OneDrive de la GVA:
+    un CSV con tres columnas, <i>grupo; número; nombre</i> (por ejemplo <i>1B; 7; García López, Lucía</i>), todos los
+    grupos en el mismo archivo. La app lo lee y lo olvida al cerrarse o tras 20 minutos fuera: no lo guarda, no va
+    en las copias ni en los informes. ${NOMBRES?`Ahora: cargados de «${esc(NOMBRES_DE)}». <button class="chip" data-a="olvidar">Olvidar</button>`:'Ahora: ninguno cargado.'}</p>
+    ${NOMBRES?'':'<button class="bloque-btn" data-a="nombres">Cargar el listado de nombres (CSV)</button>'}</div>
+  <button class="bloque-btn lleno" data-a="guardar-aj">Guardar ajustes</button>
+  <p class="nota" style="text-align:center;margin-top:14px">Cuaderno de aula · versión ${VERSION_APP}</p>`;
+  return h;
+}
+
+let borrador = null, abiertoId = null, base = null, recuperado = null, tBorr = null;
+function abrir(k, n){
+  const x = (franjasDe(k))[n];
+  if(!x) return;
+  abiertoId = idSes(k,n);
+  const s = store.ses[abiertoId];
+  borrador = s ? clon(s) : {
+    fecha:k, franja:n, grupo:x.g||null, otra:x.o||null, aula:x.aula||'',
+    estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', perdIni:'', perdFin:'', cambio:'', observacion:'', notas:'',
+    ...(x.pt ? {pt:'si', ptNotas:''} : {}),
+    unidad: x.g ? ultimaUnidad(x.g) : '',
+    reconstruido: diasHasta(k) <= -2, fuente:''
+  };
+  if(x.pt && borrador.pt===undefined){ borrador.pt='si'; borrador.ptNotas=''; }
+  base = clon(borrador); recuperado = null;
+  const d = borr.ses[abiertoId];
+  if(d && !mismos(d.b, base)){
+    recuperado = {t:d.t, cambiado:(d.base||null)!==(s?s.actualizado:null)};
+    borrador = Object.assign(clon(base), clon(d.b));
+  }
+  borr.abierto = abiertoId; guardarBorr();
+  pintarHoja();
+  $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{ const t = $('#hoja textarea'); if(t && !s && !recuperado) t.focus(); }, 250);
+}
+function guardarBorrador(){
+  if(!borrador || !abiertoId || !borrador.fecha || !base) return false;
+  if($('#hoja [data-f]')) leerCampos();
+  const ref = store.ses[abiertoId] || base;
+  if(mismos(borrador, ref)){ quitarBorrador(abiertoId); return false; }
+  const s = store.ses[abiertoId];
+  borr.ses[abiertoId] = {b:clon(borrador), t:new Date().toISOString(), base: s ? s.actualizado : null};
+  guardarBorr(); return true;
+}
+function borradorLuego(){ clearTimeout(tBorr); tBorr = setTimeout(guardarBorrador, 500); }
+function cerrar(){
+  clearTimeout(tBorr);
+  const quedo = guardarBorrador();
+  if(borr.abierto){ borr.abierto = null; guardarBorr(); }
+  if(quedo) toast('Guardado como borrador: aún no está registrado');
+  base = null; recuperado = null;
+  $('#velo').classList.remove('abierto'); $('#hoja').classList.remove('abierta');
+  document.body.style.overflow=''; borrador=null; abiertoId=null;
+  setTimeout(()=>{ if(!borrador) $('#hoja').innerHTML=''; }, 260);
+}
+let iaDictado = '', iaPreguntas = [], iaAviso = '', iaEnCurso = false, iaRiesgoVisto = '';
+function pintarHoja(){
+  const b = borrador, f = FR[b.franja];
+  const titulo = b.grupo ? GRUPOS[b.grupo].nombre : OTRAS[b.otra];
+  let h = `<div class="hoja-in"><div class="hoja-cab"><div>
+      <h2 id="hoja-titulo"><span class="grupo" style="--gc:${b.grupo?gc(b.grupo):'var(--gX)'}">${titulo}</span></h2>
+      <div class="quando">${larga(b.fecha)} · ${f.ini}–${f.fin}${b.aula?' · '+b.aula:''}${b.pt?' · con PT':''}</div></div>
+      <button class="cerrar" data-h="cerrar">Cerrar</button></div>`;
+  if(recuperado){
+    h += `<div class="recuperado">✎ <b>Borrador recuperado</b> (${fechaHora(recuperado.t)}). Aún no está registrado: revísalo y pulsa Guardar.
+      ${recuperado.cambiado?'<small>Ojo: el registro guardado de esta sesión ha cambiado después de escribir el borrador.</small>':''}
+      <button class="secundario" data-h="descartar">Descartar borrador</button></div>`;
+  }
+  if(!b.grupo){
+    h += `<div class="campo"><label for="h-notas">Notas <span class="ayuda">— incidencias, a quién se atendió…</span></label>
+      <textarea id="h-notas" data-f="notas">${esc(b.notas)}</textarea></div>`;
+  }else{
+    h += `<div class="campo"><span class="et">¿Se dio la clase?</span>
+      <div class="seg dos"><button data-h="estado" data-v="si" aria-pressed="${b.estado!=='no'}">Sí</button>
+      <button data-h="estado" data-v="no" aria-pressed="${b.estado==='no'}">No se impartió</button></div></div>`;
+    const hoyEv = fechasDe(b.grupo, b.fecha);
+    if(hoyEv.length) h += `<p class="leyenda" style="margin:-6px 0 0">Este día: ${hoyEv.map(e=>TIPOS[e.tipo]+' — '+esc(e.titulo)).join('; ')}</p>`;
+    if(b.reconstruido || diasHasta(b.fecha) <= -2){
+      h += `<div class="campo recons"><div class="deber-cab"><div><b>Registro reconstruido después</b><br>
+        <span class="leyenda">Se escribe más tarde, a partir de lo que consta.</span></div>
+        <button class="tog" data-h="recons" aria-pressed="${!!b.reconstruido}">${b.reconstruido?'Sí':'No'}</button></div>
+        ${b.reconstruido ? `<label for="h-fuente" style="display:block;margin-top:10px;font-weight:700">A partir de</label>
+          <input type="text" id="h-fuente" data-f="fuente" value="${esc(b.fuente||'')}" placeholder="Aules, fichas entregadas…">
+          <div class="chips">${FUENTES.map(x=>`<button class="chip" data-h="fuente" data-v="${x}">${x}</button>`).join('')}</div>
+          <p class="leyenda" style="margin-top:8px">Apunta solo lo que recuerdes con seguridad; lo demás, en blanco.</p>` : ''}
+      </div>`;
+    }
+    if(b.estado==='no'){
+      h += `<div class="campo"><span class="et">Motivo</span><div class="chips">
+        ${MOTIVOS.map(m=>`<button class="chip" data-h="motivo" data-v="${m}" aria-pressed="${b.motivo===m}" style="${b.motivo===m?'border-color:var(--tinta);color:var(--tinta);font-weight:700':''}">${m}</button>`).join('')}
+      </div></div>
+      <div class="campo"><label for="h-notas">Notas</label><textarea id="h-notas" data-f="notas">${esc(b.notas)}</textarea></div>`;
+    }else{
+      const iguales = igualQue(b.grupo, abiertoId), us = unidadesDe(b.grupo);
+      if(us.length) h += `<div class="campo"><span class="et">Unidad o situación de aprendizaje</span><div class="chips">
+        ${us.map(u=>`<button class="chip" data-h="unidad" data-v="${u.id}" aria-pressed="${b.unidad===u.id}" style="${b.unidad===u.id?'border-color:var(--tinta);color:var(--tinta);font-weight:700':''}">${esc(u.nombre)}</button>`).join('')}
+      </div></div>`;
+      if(iaCfg().clave) h += `<div class="campo ia-dicta"><label for="h-dicta">Dictar la sesión <span class="ayuda">— con el micrófono del teclado; la IA lo ordena abajo</span></label>
+        <textarea id="h-dicta" style="min-height:76px" placeholder="Qué habéis hecho, material, deberes, cómo ha ido… Lo de alumnos concretos, mejor en «Otras notas».">${esc(iaDictado)}</textarea>
+        ${iaPreguntas.length?`<div class="nota ia-preg"><b>Antes de guardar, aclárame:</b> ${iaPreguntas.map(esc).join(' · ')}<br>Díctalo arriba (o corrígelo en el campo) y vuelve a ordenar.</div>`:''}
+        ${iaAviso?`<div class="nota" style="color:var(--rojo)">${iaAviso}</div>`:''}
+        <button class="secundario" data-h="ia-ordena" ${iaEnCurso?'disabled':''}>${iaEnCurso?'Ordenando…':'Ordenar con IA'}</button>
+        <span class="priv">Sale solo lo dictado y lo que ya pone la sesión (sin lo privado). Nada se guarda hasta que pulses Guardar.</span></div>`;
+      h += `<div class="campo"><label for="h-cont">Qué se ha hecho</label>
+        <textarea id="h-cont" data-f="contenido" placeholder="Por ejemplo: corrección de la ficha 2; mcm con piezas en la pizarra">${esc(b.contenido)}</textarea>
+        ${iguales.length?`<div class="chips">${iguales.map(i=>`<button class="chip igual" data-h="igual" data-id="${i.id}">Igual que ${GRUPOS[i.g].nombre.replace(' ESO','')} (${corta(i.s.fecha)})</button>`).join('')}</div>`:''}
+      </div>
+      <div class="campo"><label for="h-mat">Material</label>
+        <input type="text" id="h-mat" data-f="material" value="${esc(b.material)}" placeholder="App, ficha, libro…">
+        <div class="chips">${store.cfg.materiales.map(m=>`<button class="chip" data-h="mat" data-v="${esc(m)}">${esc(m)}</button>`).join('')}</div>
+      </div>`;
+      const pd = deberesPendientes(b.grupo, abiertoId);
+      const yaRev = (b.revisiones||[]).map(r=>r.de);
+      const mostrar = pd.map(([id])=>id);
+      yaRev.forEach(id=>{ if(!mostrar.includes(id) && store.ses[id]) mostrar.push(id); });
+      if(mostrar.length){
+        h += `<div class="campo"><span class="et">Deberes para revisar</span>`;
+        for(const id of mostrar){
+          const s = store.ses[id]; const r = (b.revisiones||[]).find(x=>x.de===id);
+          h += `<div class="deber"><div class="deber-cab"><div><p>${esc(s.deberes)}</p><span class="de">Puestos el ${corta(s.fecha)}</span></div>
+            <button class="tog" data-h="rev" data-id="${id}" aria-pressed="${!!r}">${r?'Revisados':'Revisar hoy'}</button></div>`;
+          if(r){
+            const N = store.cfg.alumnos[b.grupo]||25, P = planoDe(b.grupo, b.aula), modo = P && (store.cfg.revModo||{})[b.grupo]!=='lista' ? 'plano' : 'lista';
+            if(P) h += `<div class="seg dos" style="margin-top:10px"><button data-h="modo" data-v="plano" aria-pressed="${modo==='plano'}">Plano</button><button data-h="modo" data-v="lista" aria-pressed="${modo==='lista'}">Lista</button></div>`;
+            const C = cuentaRev(r, b.grupo, b.fecha), crit = store.cfg.criterioMedias || DEF_MEDIAS;
+            if(modo==='plano'){
+              const pin = revPincel[id] || 'no';
+              h += `<div class="seg pincel" role="group" aria-label="Qué marca un toque">${Object.entries(EST).map(([k,v])=>`<button data-h="pincel" data-id="${id}" data-v="${k}" aria-pressed="${pin===k}">${v}</button>`).join('')}</div>`;
+              const mesa = (n, cls) => { const e = estadoDe(r,n), nom = nomDe(b.grupo,n);
+                if(!activo(b.grupo, n, b.fecha)) return `<button class="${cls} st-baja" disabled aria-label="Número ${n}: no está de alta">${n}</button>`;
+                return `<button class="${cls} st-${e}" data-h="est" data-id="${id}" data-i="${n}" aria-pressed="${e!=='si'}" aria-label="Número ${n}: ${e==='si'?'los trae':EST[e]}" title="${esc(nom)}">${n}${cls.includes('mesa')&&nom?`<small>${esc(nomCorto(nom))}</small>`:''}</button>`; };
+              h += rejillaPlano(P, (k,n)=> n ? mesa(n,'mesa llena') : `<button class="mesa" disabled></button>`, NOMBRES && NOMBRES[b.grupo] ? 'connom' : '');
+              const enMesa = new Set(Object.values(P.sitios)), sin = []; for(let i=1;i<=N;i++) if(!enMesa.has(i) && activo(b.grupo,i,b.fecha)) sin.push(i);
+              if(sin.length) h += `<div class="sin-mesa">Sin mesa: ${sin.map(i=>mesa(i,'')).join('')}</div>`;
+            }else{
+              const fil = revFiltro[id] || 'todos';
+              h += `<details class="revl" data-revl="${id}" ${revPlegadas.has(id)?'':'open'}>
+                <summary><span class="cuenta"><b>${C.si}</b> ✓ · <b style="color:#b7791f">${C.medias}</b> ½ · <b style="color:var(--rojo)">${C.no}</b> ✗ · <b>${C.falta}</b> faltan · de ${C.activos}</span></summary>
+                <div class="filtro seg">${[['todos','Todos'],['si','Los traen'],['exc','Excepciones']].map(([k,v])=>`<button data-h="rfil" data-id="${id}" data-v="${k}" aria-pressed="${fil===k}">${v}</button>`).join('')}</div>
+                <div class="filas" role="group" aria-label="Entrega de deberes por número de lista">`;
+              for(let i=1;i<=N;i++){
+                if(!activo(b.grupo, i, b.fecha)) continue;
+                const e = estadoDe(r,i); if((fil==='si' && e!=='si') || (fil==='exc' && e==='si')) continue;
+                const nom = nomDe(b.grupo,i);
+                h += `<div class="fila st-${e}" title="${esc(nom)}"><span class="n">${i}</span><span class="nom">${nom?esc(nomCorto(nom)):''}</span>
+                  ${e==='si'?'<span class="ok">✓</span>':''}<span class="bt">
+                  <button data-h="est" data-id="${id}" data-i="${i}" data-v="no" aria-pressed="${e==='no'}" aria-label="${i}: no los trae">✗</button>
+                  <button data-h="est" data-id="${id}" data-i="${i}" data-v="medias" aria-pressed="${e==='medias'}" aria-label="${i}: a medias">½</button>
+                  <button data-h="est" data-id="${id}" data-i="${i}" data-v="falta" aria-pressed="${e==='falta'}" aria-label="${i}: falta">Falta</button></span></div>`;
+              }
+              h += `</div></details>`;
+            }
+            h += `<div class="lista-nota"><span class="priv">🔒 La revisión por número no sale nunca del móvil.</span><br>Todos empiezan en <b>los trae</b>: marca solo ${modo==='plano'?'las mesas':'las filas'} que no; otro toque lo deshace.
+              <b>½</b> = ${esc(crit)} Los que faltan no cuentan en el porcentaje.<br>${revTxt(r, b.grupo)}.
+              ${bajasTxt(b.grupo, b.fecha)?`<br>No salen (no están de alta este día): ${bajasTxt(b.grupo, b.fecha)}.`:''}</div>`;
+            h += NOMBRES
+              ? `<div class="nombres">Nombres de «${esc(NOMBRES_DE)}», solo mientras la app está abierta.${NOMBRES[b.grupo]?'':' No hay ninguno de este grupo.'} <button class="chip" data-h="olvidar">Olvidar nombres</button></div>`
+              : `<div class="nombres"><button class="chip" data-h="nombres">Ver nombres</button> abre tu listado (CSV) del OneDrive de la GVA. No se guarda.</div>`;
+          }
+          h += `</div>`;
+        }
+        h += `</div>`;
+      }
+      h += `<div class="campo"><label for="h-deb">Deberes para la próxima <span class="ayuda">— si hay</span></label>
+        <input type="text" id="h-deb" data-f="deberes" value="${esc(b.deberes)}" placeholder="Por ejemplo: reverso de la ficha 3">
+      </div>
+      ${b.pt ? `<div class="campo"><span class="et">Apoyo de PT en el aula</span>
+        <div class="seg dos"><button data-h="pt" data-v="si" aria-pressed="${b.pt!=='no'}">Ha estado</button>
+        <button data-h="pt" data-v="no" aria-pressed="${b.pt==='no'}">No ha venido</button></div>
+        ${b.pt!=='no' ? `<span class="priv">🔒 solo en este móvil: no sale hacia ninguna IA</span><textarea id="h-pt" data-f="ptNotas" style="min-height:64px;margin-top:8px" placeholder="Qué se ha hecho con la PT: apoyo a un grupo, adaptación de la ficha…">${esc(b.ptNotas||'')}</textarea>` : ''}
+      </div>` : ''}
+      <div class="campo"><span class="et">¿Cómo ha ido el aula?</span><div class="seg">
+        ${Object.entries(CLIMA).map(([k,v])=>`<button data-h="clima" data-v="${k}" aria-pressed="${b.clima===k}">${v}</button>`).join('')}
+      </div></div>
+      <div class="campo"><span class="et">Minutos perdidos <span class="ayuda">— hasta poder empezar a trabajar, y antes del timbre</span></span>
+        <div class="perd"><span>Inicio</span>${PERD_INI.map(m=>`<button class="chip" data-h="pini" data-v="${m}" aria-pressed="${b.perdIni!=='' && b.perdIni!==undefined && Number(b.perdIni)===m}">${m===30?'30+':m}</button>`).join('')}</div>
+        <div class="perd"><span>Final</span>${PERD_FIN.map(m=>`<button class="chip" data-h="pfin" data-v="${m}" aria-pressed="${b.perdFin!=='' && b.perdFin!==undefined && Number(b.perdFin)===m}">${m}</button>`).join('')}</div>
+      </div>
+      ${b.grupo && b.estado!=='no' ? `<div class="campo"><span class="et">Billete de salida <span class="ayuda">— el recuento, cuando lo corrijas</span></span>
+        ${(()=>{ const sem = (store.cfg.billetes||[]).includes(slotDe(b.fecha,b.franja)), o = (store.cfg.billeteDia||{})[`${b.fecha}_${b.franja}`];
+          return `<div class="bil-sem"><span class="nota">En esta clase:</span>
+            <button class="chip" data-h="bil-sem" aria-pressed="${sem}">${icoBillete(false,'')} cada ${DIAS[deClave(b.fecha).getDay()]}</button>
+            ${sem ? `<button class="chip" data-h="bil-dia" data-v="${o===false?'':'no'}" aria-pressed="${o===false}">hoy no toca</button>`
+                  : `<button class="chip" data-h="bil-dia" data-v="${o===true?'':'si'}" aria-pressed="${o===true}">solo hoy</button>`}</div>`; })()}
+        ${!b.billete ? `<button class="chip" data-h="bil-on">${tocaBillete(b.fecha,b.franja)?'Tocaba billete: ¿lo has hecho? Apúntalo':'Hoy ha habido billete'}</button>` : (()=>{ const B = b.billete, n = bilN(B.n), s = ['bien','medias','mal'].reduce((a,k)=>a+(bilN(B[k])||0),0);
+          return `<input type="text" data-fb="pregunta" value="${esc(B.pregunta||'')}" placeholder="Qué preguntaba (por ejemplo: ¿mcd o mcm?)">
+          <div class="bil">${[['n','Entregados'],['bien','Bien'],['medias','A medias'],['mal','Mal']].map(([k,v])=>`<label>${v}<input type="number" min="0" max="40" inputmode="numeric" data-fb="${k}" value="${esc(B[k]??'')}"></label>`).join('')}</div>
+          ${n!==null && s && s!==n ? `<div class="nota" style="color:var(--rojo)">Bien + a medias + mal suman ${s}, pero se han entregado ${n}.</div>` : ''}
+          <textarea data-fb="error" style="min-height:52px;margin-top:8px" placeholder="Error que más se repite y qué harás la próxima sesión">${esc(B.error||'')}</textarea>
+          <button class="chip" data-h="bil-off" style="margin-top:6px">Quitar el billete</button>`; })()}
+      </div>` : ''}
+      <details ${b.cambio||b.observacion?'open':''}><summary>Pilotaje <span class="ayuda" style="font-weight:400">— para el diario de mejora</span></summary>
+        <div class="campo"><label for="h-camb">Qué cambié respecto al grupo anterior</label>
+          <textarea id="h-camb" data-f="cambio" style="min-height:64px">${esc(b.cambio)}</textarea></div>
+        <div class="campo"><label for="h-obs">Qué observé</label>
+          <textarea id="h-obs" data-f="observacion" style="min-height:64px" placeholder="Errores típicos, qué funcionó, qué no">${esc(b.observacion)}</textarea></div>
+      </details>
+      <div class="campo"><label for="h-notas">Otras notas <span class="priv">🔒 solo en este móvil</span></label><textarea id="h-notas" data-f="notas" style="min-height:56px">${esc(b.notas)}</textarea></div>`;
+    }
+  }
+  const orig = store.ses[abiertoId];
+  if(orig && orig.creado){
+    const hs = orig.historial||[];
+    h += `<p class="registro">Registrada el ${fechaHora(orig.creado)}${hs.length ? ` · ${hs.length} ${hs.length===1?'cambio':'cambios'}, el último el ${fechaHora(hs[hs.length-1].t)}` : ' · sin cambios'}</p>`;
+  }
+  h += `</div><div class="acciones"><div>
+    ${store.ses[abiertoId]?'<button class="secundario peligro" data-h="borrar">Borrar</button>':''}
+    <button class="primario" data-h="guardar">Guardar</button></div></div>`;
+  const hoja = $('#hoja');
+  const y = hoja.scrollTop;
+  hoja.innerHTML = h;
+  hoja.scrollTop = y;
+}
+function leerCampos(){
+  document.querySelectorAll('#hoja [data-f]').forEach(el=>{ borrador[el.dataset.f] = el.value; });
+  if(borrador.billete) document.querySelectorAll('#hoja [data-fb]').forEach(el=>{ borrador.billete[el.dataset.fb] = el.value.trim ? el.value.trim() : el.value; });
+}
+
+async function descargar(nombre, datos, tipo){
+  if(nativa()){
+    try{
+      const r = await capP('Filesystem').writeFile({path:nombre, data:datos, directory:'CACHE', encoding:'utf8'});
+      await capP('Share').share({title:nombre, files:[r.uri], dialogTitle:'Guardar o enviar'});
+      toast('Enviado'); return true;
+    }catch(e){ if(/cancel/i.test((e && e.message) || '')){ toast('Cancelado'); return false; } toast('No se ha podido compartir el archivo'); return false; }
+  }
+  const f = new File([datos], nombre, {type:tipo});
+  if(navigator.canShare && navigator.canShare({files:[f]})){
+    try{ await navigator.share({files:[f], title:nombre}); toast('Enviado'); return true; }
+    catch(e){ if(e && e.name==='AbortError'){ toast('Cancelado'); return false; } }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(f); a.download = nombre; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  toast('Descargado en Descargas'); return true;
+}
+async function copiaSeguridad(){
+  const t = new Date(), hm = String(t.getHours()).padStart(2,'0') + String(t.getMinutes()).padStart(2,'0');
+  const ok = await descargar(`cuaderno-de-aula_copia_${hoyK()}_${hm}.txt`, JSON.stringify({version:1, store}, null, 1), 'text/plain');
+  if(ok){ store.cfg.ultimaCopia = hoyK(); store.cfg.ultimaCopiaT = new Date().toISOString(); guardarLocal(); pintar(); }
+}
+function filasExport(){
+  const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
+  const sel = [...document.querySelectorAll('.ex-g:checked')].map(i=>i.value);
+  return Object.entries(store.ses)
+    .filter(([id,s])=> s.fecha>=desde && s.fecha<=hasta && (s.grupo ? sel.includes(s.grupo) : sel.includes('otras')))
+    .sort((a,b)=>a[0]<b[0]?-1:1).map(([id,s])=>({id,...s}));
+}
+const perdTxt = s => { const a = s.perdIni!==undefined && s.perdIni!=='', b = s.perdFin!==undefined && s.perdFin!=='';
+  return a||b ? `perdidos ${a?s.perdIni:'?'} + ${b?s.perdFin:'?'} min` : ''; };
+const textoRev = s => (s.revisiones||[]).map(r=>{
+  const o = store.ses[r.de]; return `Deberes del ${o?corta(o.fecha):corta(r.de.split('_')[0])} (nº de lista): ${revTxt(r)}`;
+}).join('; ');
+function textoIA(f){
+  return f.map(o=>[`${o.fecha} · ${o.grupo?GRUPOS[o.grupo].nombre:'Otras'}${o.grupo&&o.unidad?' · '+nombreUnidad(o.grupo,o.unidad):''}${o.estado==='no'?' · no impartida':''}`,
+    o.contenido?'Qué se hizo: '+o.contenido:'', o.material?'Material: '+o.material:'', o.deberes?'Deberes: '+o.deberes:'',
+    o.clima?'Clima: '+CLIMA[o.clima]:'', (o.perdIni!==undefined||o.perdFin!==undefined)?`Minutos perdidos: ${o.perdIni??'—'} al empezar, ${o.perdFin??'—'} al acabar`:'',
+    o.billete?`Billete de salida: ${o.billete.pregunta}${o.billete.entregados?` (${o.billete.entregados} entregados; bien ${o.billete.bien||'—'}, a medias ${o.billete.medias||'—'}, mal ${o.billete.mal||'—'})`:''}${o.billete.error?'. Error: '+o.billete.error:''}`:'',
+    o.cambio?'Cambio: '+o.cambio:'', o.observacion?'Observación: '+o.observacion:''].filter(Boolean).join('\n')).join('\n\n');
+}
+function csv(){
+  const f = filasExport();
+  const cab = ['Fecha','Día','Hora','Grupo','Aula','Impartida','Motivo','Unidad','Qué se ha hecho','Material','Deberes puestos','Revisión de deberes','Billete de salida','Clima del aula','Min. perdidos al empezar','Min. perdidos al acabar','PT en el aula','Trabajo con la PT','Cambio respecto al grupo anterior','Observación','Notas','Registrado el','Última modificación','Cambios','Reconstruido','A partir de'];
+  const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const filas = f.map(s=>[s.fecha, DIAS[deClave(s.fecha).getDay()], `${FR[s.franja].ini}-${FR[s.franja].fin}`,
+    s.grupo?GRUPOS[s.grupo].nombre:OTRAS[s.otra], s.aula||'', s.grupo?(s.estado==='no'?'No':'Sí'):'', s.motivo||'', s.grupo?nombreUnidad(s.grupo,s.unidad):'',
+    s.contenido||'', s.material||'', s.deberes||'', textoRev(s), bilTxt(s), s.clima?CLIMA[s.clima]:'', s.perdIni??'', s.perdFin??'', s.pt?(s.pt==='no'?'No ha venido':'Sí'):'', s.pt&&s.pt!=='no'?(s.ptNotas||''):'', s.cambio||'', s.observacion||'', s.notas||'', fechaHora(s.creado||s.actualizado), fechaHora(s.actualizado), (s.historial||[]).length, s.reconstruido?'Sí':'', s.reconstruido?(s.fuente||''):''].map(q).join(';'));
+  return '\ufeff' + [cab.map(q).join(';'), ...filas].join('\r\n');
+}
+function calendarioInforme(desde, hasta, gs){
+  const filas = [];
+  for(const [id,e] of Object.entries(store.ev||{})) for(const [g,k] of Object.entries(e.fechas||{}))
+    if(gs.includes(g) && k>=desde && k<=hasta) filas.push({g,k,e});
+  if(!filas.length) return '';
+  filas.sort((a,b)=>a.k<b.k?-1:1);
+  return `<h2>Calendario de pruebas y entregas</h2><table><thead><tr><th>Fecha</th><th>Grupo</th><th>Tipo</th><th>Qué</th><th>Fijada el</th></tr></thead><tbody>
+    ${filas.map(x=>`<tr><td>${corta(x.k)}</td><td>${GRUPOS[x.g].nombre}</td><td>${TIPOS[x.e.tipo]}</td><td>${esc(x.e.titulo)}${x.e.notas?`<div class="mat">${esc(x.e.notas)}</div>`:''}</td><td class="reg">${fechaHora(x.e.creado)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function informe(){
+  const f = filasExport(), c = store.cfg;
+  const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
+  const sel = [...document.querySelectorAll('.ex-g:checked')].map(i=>i.value);
+  const gs = Object.keys(GRUPOS).filter(g=>sel.includes(g));
+  let resumen = `<h2>Resumen</h2><table><thead><tr><th>Grupo</th><th>Previstas</th><th>Impartidas</th><th>No impartidas</th>
+    <th>Sin registrar</th><th>Entrega de deberes</th><th>Clima: bien / a ratos / no</th><th>Min. perdidos por sesión (inicio + final)</th><th>Con PT</th></tr></thead><tbody>`;
+  for(const g of gs){
+    const I = indicadores(g, desde, hasta);
+    resumen += `<tr><td>${GRUPOS[g].nombre}</td><td>${I.previstas}</td><td>${I.dadas}</td><td>${I.noDadas}</td><td>${I.sinRegistrar}</td>
+      <td>${I.entrega===null?'—':I.entrega+' % completos'+(I.entregaMedias?' + '+I.entregaMedias+' % a medias':'')+' ('+I.revisadas+' revisiones)'}</td>
+      <td>${I.climaN?`${pct(I.clima.bien,I.climaN)} / ${pct(I.clima.regular,I.climaN)} / ${pct(I.clima.mal,I.climaN)} %`:'—'}</td>
+      <td>${I.perd.n?`${I.perd.mIni} + ${I.perd.mFin} (${I.perd.n} ses.; total ${minTxt(I.perd.total)})`:'—'}</td>
+      <td>${I.pt?`${I.ptSi} de ${I.pt}`:'—'}</td></tr>`;
+  }
+  const nRec = f.filter(s=>s.reconstruido).length;
+  resumen += `</tbody></table>${nRec?`<p class="meta">${nRec} ${nRec===1?'sesión se registró después, reconstruida':'sesiones se registraron después, reconstruidas'} a partir de lo indicado en cada una.</p>`:''}<p class="meta">«Previstas»: sesiones del horario en días lectivos del periodo que ya han pasado.
+    «Entrega de deberes»: porcentaje del alumnado presente que los trae completos (y a medias), sobre las revisiones registradas; los ausentes no cuentan.</p>`;
+  const cf = climaPorFranja(desde, hasta);
+  const hayClima = Object.values(cf).some(x=>x.bien+x.regular+x.mal);
+  if(hayClima){
+    resumen += `<h2>Clima del aula por franja horaria</h2><table><thead><tr><th>Franja</th><th>Sesiones</th><th>Se ha podido trabajar</th><th>A ratos</th><th>No se ha podido</th></tr></thead><tbody>`;
+    for(const n of [1,2,3,4,5,6]){ const x = cf[n], t = x.bien+x.regular+x.mal; if(!t) continue;
+      resumen += `<tr><td>${FR[n].ini}–${FR[n].fin}</td><td>${t}</td><td>${pct(x.bien,t)} %</td><td>${pct(x.regular,t)} %</td><td>${pct(x.mal,t)} %</td></tr>`; }
+    resumen += `</tbody></table>`;
+  }
+  const pf = perdidoPorFranja(desde, hasta);
+  if(Object.values(pf).some(x=>x.n)){
+    resumen += `<h2>Tiempo perdido por franja horaria</h2><table><thead><tr><th>Franja</th><th>Sesiones anotadas</th><th>Al empezar (media)</th><th>Al acabar (media)</th><th>Útil de ${DUR} min</th></tr></thead><tbody>`;
+    for(const n of [1,2,3,4,5,6]){ const x = pf[n]; if(!x.n) continue; const a = Math.round(x.ini/x.n), b = Math.round(x.fin/x.n);
+      resumen += `<tr><td>${FR[n].ini}–${FR[n].fin}</td><td>${x.n}</td><td>${a} min</td><td>${b} min</td><td>${Math.max(0,DUR-a-b)} min</td></tr>`; }
+    resumen += `</tbody></table><p class="meta">Minutos hasta poder empezar a trabajar y antes del timbre, anotados al registrar cada sesión.</p>`;
+  }
+  let cuerpo = '';
+  for(const g of [...gs, 'otras']){
+    if(g==='otras' && !sel.includes('otras')) continue;
+    const filas = f.filter(s => g==='otras' ? !s.grupo : s.grupo===g);
+    if(!filas.length) continue;
+    const titulo = g==='otras' ? 'Guardias y otras tareas' : GRUPOS[g].nombre;
+    cuerpo += `<h2>${titulo}</h2>`;
+    if(g!=='otras'){
+      const I = indicadores(g, desde, hasta);
+      if(I.porUnidad.length){
+        cuerpo += `<table class="prog"><thead><tr><th>Unidad o situación de aprendizaje</th><th>Sesiones</th><th>Previstas</th><th>Cumplimiento</th></tr></thead><tbody>`;
+        I.porUnidad.forEach(u=>{ cuerpo += `<tr><td>${esc(u.nombre)}</td><td>${u.dadas}</td><td>${u.previstas||'—'}</td><td>${u.previstas?Math.min(100,pct(u.dadas,u.previstas))+' %':'—'}</td></tr>`; });
+        if(I.sinUnidad) cuerpo += `<tr><td><i>Sin unidad asignada</i></td><td>${I.sinUnidad}</td><td></td><td></td></tr>`;
+        cuerpo += `</tbody></table>`;
+      }
+    }
+    cuerpo += `<table><thead><tr><th>Fecha</th><th>Hora</th>${g==='otras'?'<th>Tarea</th><th>Notas</th>':'<th>Unidad</th><th>Qué se ha hecho</th><th>Deberes</th><th>Revisión</th><th>Clima</th>'}<th>Registro</th></tr></thead><tbody>`;
+    for(const s of filas){
+      const reg = `${fechaHora(s.creado||s.actualizado)}${(s.historial||[]).length?`<br>${s.historial.length} cambio${s.historial.length>1?'s':''}`:''}${s.reconstruido?`<br><i>reconstruido${s.fuente?' a partir de: '+esc(s.fuente):''}</i>`:''}`;
+      if(g==='otras'){
+        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${OTRAS[s.otra]}</td><td>${esc(s.notas)}</td><td class="reg">${reg}</td></tr>`;
+      }else if(s.estado==='no'){
+        cuerpo += `<tr class="no"><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td colspan="5">No impartida: ${esc(s.motivo)}${s.notas?' — '+esc(s.notas):''}</td><td class="reg">${reg}</td></tr>`;
+      }else{
+        cuerpo += `<tr><td>${corta(s.fecha)}</td><td>${FR[s.franja].ini}</td><td>${esc(nombreUnidad(g,s.unidad))}</td>
+          <td>${esc(s.contenido)}${s.material?`<div class="mat">${esc(s.material)}</div>`:''}${s.pt?`<div class="mat">PT: ${s.pt==='no'?'no ha venido':'en el aula'+(s.ptNotas?' — '+esc(s.ptNotas):'')}</div>`:''}${s.cambio?`<div class="mat">Cambio: ${esc(s.cambio)}</div>`:''}${s.observacion?`<div class="mat">Observación: ${esc(s.observacion)}</div>`:''}</td>
+          <td>${esc(s.deberes)}</td><td>${esc(textoRev(s))}${bilTxt(s)?`<div class="mat">${esc(bilTxt(s))}</div>`:''}</td><td>${s.clima?CLIMA[s.clima]:''}${perdTxt(s)?`<div class="mat">${perdTxt(s)}</div>`:''}</td><td class="reg">${reg}</td></tr>`;
+      }
+    }
+    cuerpo += `</tbody></table>`;
+  }
+  if(!cuerpo) cuerpo = '<p>No hay sesiones registradas en esas fechas.</p>';
+  const bor = (c.borrados||[]).filter(x=>x.fecha>=desde && x.fecha<=hasta);
+  let borr = '';
+  if(bor.length){
+    borr = `<h2>Registros borrados</h2><table><thead><tr><th>Sesión</th><th>Grupo o tarea</th><th>Borrado el</th><th>Contenido</th></tr></thead><tbody>`;
+    bor.forEach(x=>{ borr += `<tr><td>${corta(x.fecha)} ${FR[x.franja]?FR[x.franja].ini:''}</td><td>${GRUPOS[x.grupo]?GRUPOS[x.grupo].nombre:(OTRAS[x.grupo]||'')}</td><td>${fechaHora(x.t)}</td><td>${esc(x.resumen)}</td></tr>`; });
+    borr += `</tbody></table>`;
+  }
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Registro de aula</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;margin:18mm}
+h1{font-size:16pt;margin:0 0 2mm}h2{font-size:12pt;margin:7mm 0 2mm;border-bottom:1.5px solid #1D3A8A;color:#1D3A8A}
+.cab{color:#444;margin-bottom:3mm}.meta{color:#555;margin:1mm 0 0;font-size:8.5pt}
+table{width:100%;border-collapse:collapse;margin-bottom:3mm}tr{page-break-inside:avoid}
+th,td{border:1px solid #bbb;padding:3px 5px;text-align:left;vertical-align:top}th{background:#eef2f8;font-size:9pt}
+td:nth-child(1),td:nth-child(2){white-space:nowrap}.mat{color:#555;font-size:8.5pt;margin-top:2px}
+td.reg{font-size:8pt;color:#666;white-space:nowrap}table.prog{width:auto;min-width:60%}
+tr.no td{color:#777;font-style:italic}.pie{margin-top:8mm;color:#666;font-size:8.5pt}
+@page{size:A4;margin:12mm}@media print{body{margin:0}}</style></head><body>
+<h1>Registro de aula</h1>
+<div class="cab">${[c.docente, c.centro, c.curso?'Curso '+c.curso:''].filter(Boolean).map(esc).join(' · ')}<br>
+Del ${larga(desde)} al ${larga(hasta)}</div>${resumen}${calendarioInforme(desde, hasta, gs)}${cuerpo}${borr}
+<p class="pie">Generado el ${larga(hoyK())} a las ${fechaHora(new Date().toISOString()).split(' ')[1]} con el cuaderno de aula (versión ${VERSION_APP}).
+Cada sesión indica cuándo se registró y cuántas veces se ha modificado; los registros borrados quedan listados.</p></body></html>`;
+}
+
+document.getElementById('barra').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  planoB = null; vista = b.dataset.v; pintar(); window.scrollTo(0,0);
+});
+document.getElementById('app').addEventListener('click', async e=>{
+  const pz = e.target.closest('[data-pz]'); if(pz && planoB){ accionPlano(pz.dataset.pz, pz); return; }
+  const b = e.target.closest('[data-a]'); if(!b) return;
+  const a = b.dataset.a;
+  if(a==='prev' || a==='next'){
+    let d = deClave(dia);
+    do{ d = masDias(d, a==='prev'?-1:1); } while(d.getDay()===0 || d.getDay()===6);
+    dia = clave(d); pintar();
+  }
+  else if(a==='hoy'){ dia = hoyK(); pintar(); }
+  else if(a==='mes'){ mesSel = dia.slice(0,7); vista = 'mes'; pintar(); window.scrollTo(0,0); }
+  else if(a==='mes-mov'){ const [y,m] = mesSel.split('-').map(Number), d = new Date(y, m-1+Number(b.dataset.v), 1); mesSel = clave(d).slice(0,7); pintar(); }
+  else if(a==='mes-hoy'){ mesSel = hoyK().slice(0,7); pintar(); }
+  else if(a==='mes-dia'){ dia = b.dataset.k; vista = 'dia'; pintar(); window.scrollTo(0,0); }
+  else if(a==='mes-vuelve'){ vista = 'dia'; pintar(); }
+  else if(a==='resumen'){ semRes = dia || hoyK(); vista = 'resumen'; pintar(); window.scrollTo(0,0); }
+  else if(a==='res-mov'){ semRes = clave(masDias(deClave(semRes), Number(b.dataset.v))); pintar(); }
+  else if(a==='res-vuelve'){ vista = 'dia'; pintar(); }
+  else if(a==='res-copiar'){ try{ await navigator.clipboard.writeText(resumenTexto); toast('Resumen copiado'); }catch(e){ toast('No se ha podido copiar'); } }
+  else if(a==='pend-ver'){ verResueltos = !verResueltos; abiertos.add('g:pend'); pintar(); }
+  else if(a==='pend'){
+    const k = b.dataset.k;
+    if(k.startsWith('e|')){ const [, eid, g, paso] = k.split('|'); marcaPaso(eid, g, paso, hoyK()); toast(`${PASO_N[paso]}: apuntado con fecha de hoy`); }
+    else{ const H = store.cfg.pendHechos = store.cfg.pendHechos || {}; if(H[k]) delete H[k]; else H[k] = hoyK(); guardarCfg(); }
+    pintar();
+  }
+  else if(a==='ev-paso'){
+    const e = store.ev[b.dataset.id], g = b.dataset.g, paso = b.dataset.p, E = ((e&&e.estado)||{})[g] || {};
+    marcaPaso(b.dataset.id, g, paso, E[paso] ? '' : hoyK()); pintar();
+  }
+  else if(a==='abrir'){ abrir(dia, Number(b.dataset.n)); }
+  else if(a==='faltan'){ hojaFaltan(); }
+  else if(a==='nolectivo'){ if(!store.cfg.nolectivos.includes(dia)){ store.cfg.nolectivos.push(dia); guardarCfg(); toast('Día marcado como no lectivo'); pintar(); } }
+  else if(a==='lectivo'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==dia); guardarCfg(); pintar(); }
+  else if(a==='grupo'){ grupoSel = b.dataset.g; pintar(); }
+  else if(a==='plano'){ abrirPlano(b.dataset.g, b.dataset.aula); }
+  else if(a==='imprimir-plano'){ const g = b.dataset.g, au = b.dataset.aula||'';
+    await descargar(`plano_${GRUPOS[g].nombre.replace(/[^\wÀ-ÿ]+/g,'-')}${au?'_'+au:''}.html`, hojaPlano(g, au), 'text/html'); }
+  else if(a==='ir-grupo'){ grupoSel = b.dataset.g; vista = 'grupos'; pintar(); window.scrollTo(0,0); }
+  else if(a==='pi'){
+    const g = b.dataset.g, id = b.dataset.i, H = store.prog[g] = store.prog[g] || {};
+    if(H[id]) delete H[id]; else H[id] = hoyK();
+    guardarLocal(); const y = window.scrollY; pintar(); window.scrollTo(0, y);
+  }
+  else if(a==='pi-hasta'){
+    const g = b.dataset.g, E = estadoProg(g), H = store.prog[g] = store.prog[g] || {};
+    let n = 0; E.p.items.forEach(x=>{ if(x.fin < hoyK() && !H[x.it.id]){ H[x.it.id] = x.fin; n++; } });
+    guardarLocal(); toast(`${n} ${n===1?'actividad marcada':'actividades marcadas'}`); pintar();
+  }
+  else if(a==='px'){
+    const g = b.dataset.g, sa = (progDe(g)||[]).find(x=>x.id===b.dataset.sa);
+    abrirFecha(null, {tipo:'examen', titulo:'Prueba: '+(sa?sa.n:''), notas:'', sa:b.dataset.sa, fechas:{[g]:b.dataset.k}});
+  }
+  else if(a==='cargar-prog'){ leerUnidades(); ponerUnidadesProg(true); guardarCfg(); toast('Unidades de la programación puestas'); pintar(); }
+  else if(a==='nombres'){ const i = $('#archivo-nombres'); i.value=''; i.click(); }
+  else if(a==='baja' || a==='alta'){
+    const g = $('#mt-g').value, f = $('#mt-f').value || hoyK(), M = (store.cfg.matricula = store.cfg.matricula || {}), m = (M[g] = M[g] || {});
+    if(a==='baja'){
+      const n = parseInt($('#mt-n').value), N = store.cfg.alumnos[g]||25;
+      if(!(n>=1 && n<=N)){ toast(`Escribe un número de lista entre 1 y ${N}`); return; }
+      m[n] = Object.assign(m[n]||{}, {baja:f}); toast(`${GRUPOS[g].nombre}: nº ${n} de baja desde el ${corta(f)}`);
+    }else{
+      const n = (store.cfg.alumnos[g]||25) + 1; ponAlumnos(g, n); m[n] = {alta:f};
+      toast(`${GRUPOS[g].nombre}: nuevo nº ${n}, desde el ${corta(f)}. Ponlo también en tu listado.`);
+    }
+    abiertos.add('aj:Altas y bajas'); guardarCfg(); pintar();
+  }
+  else if(a==='quitar-mat'){
+    const g = b.dataset.g, n = Number(b.dataset.n), m = matr(g)[n]; if(!m) return;
+    if(m.alta && n===(store.cfg.alumnos[g]||25)) ponAlumnos(g, n-1);
+    delete store.cfg.matricula[g][n]; guardarCfg(); pintar();
+  }
+  else if(a==='aplicar-dif'){
+    const d = difListado[Number(b.dataset.i)]; if(!d) return;
+    if(d.tipo==='n') ponAlumnos(d.g, d.n);
+    else{ const M = (store.cfg.matricula = store.cfg.matricula || {}); (M[d.g] = M[d.g] || {})[d.n] = Object.assign(M[d.g][d.n]||{}, {baja:hoyK()}); }
+    difListado.splice(Number(b.dataset.i), 1); guardarCfg(); pintar();
+  }
+  else if(a==='bil-slot'){ const L = store.cfg.billetes = store.cfg.billetes || [], i = L.indexOf(b.dataset.v);
+    if(i>=0) L.splice(i,1); else L.push(b.dataset.v); abiertos.add('aj:Billete de salida'); guardarCfg(); pintar(); }
+  else if(a==='csv-deberes'){
+    const g = b.dataset.g, d = paDesde || store.cfg.inicio, hs = paHasta || hoyK(), D = deberesPorAlumno(g, d, hs);
+    let s = 'grupo;número;revisiones presente;completos;a medias;no;faltas;% completos\r\n';
+    for(let i=1;i<=D.N;i++){ const x = D.A[i], pres = x.si + x.medias + x.no;
+      s += [g, i, pres, x.si, x.medias, x.no, x.falta, pres?Math.round(100*x.si/pres):''].join(';') + '\r\n'; }
+    await descargar(`deberes-${g}_${d}_${hs}.csv`, '\uFEFF'+s, 'text/csv');
+  }
+  else if(a==='olvidar'){ olvidarNombres('Nombres olvidados'); pintar(); }
+  else if(a==='archivo-prog'){ const i = $('#archivo-prog'); i.value=''; i.click(); }
+  else if(a==='quitar-prog'){ if(confirm('¿Quitar la programación de este móvil? Lo marcado como hecho se conserva por si la vuelves a cargar.')){ store.programa = null; cachePlan = {}; guardarLocal(); pintar(); } }
+  else if(a==='restaurar'){ const i = $('#archivo-copia'); i.value=''; i.click(); }
+  else if(a==='nueva-fecha'){ abrirFecha(null); }
+  else if(a==='ir-fecha'){ abrirFecha(b.dataset.id); }
+  else if(a==='ir'){ const s = store.ses[b.dataset.id]; if(s){ dia = s.fecha; abrir(s.fecha, s.franja); } }
+  else if(a==='ex-html'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.html`, informe(), 'text/html'); }
+  else if(a==='ia-guardar'){
+    const clave = $('#ia-clave').value.replace(/\s+/g, '');
+    iaGuarda({clave, modelo: $('#ia-modelo').value, esfuerzo: $('#ia-esfuerzo').value});
+    if(clave && (!/^sk-ant-/.test(clave) || clave.length < 90)){ const c = iaCfg(); c.ok = false; c.probado = new Date().toISOString();
+      c.msg = !/^sk-ant-/.test(clave) ? 'la clave tiene que empezar por sk-ant-' : `la clave parece incompleta: tiene ${clave.length} caracteres y una entera tiene más de cien`;
+      iaGuarda(c); pintar(); toast('✗ ' + c.msg); return; }
+    toast('Probando la conexión…'); const c = await iaPrueba(); pintar();
+    toast(c.ok ? '✓ Conectada: ya puedes dictar' : '✗ No conecta: ' + (c.msg||'')); }
+  else if(a==='ia-criterios'){
+    const t = $('#ia-criterios').value.trim(), bq = bloqueosIA(t, nombresListado());
+    if(bq.length){ toast('No se guardan: llevan ' + [...new Set(bq.map(x=>x.que))].join(' y ') + '. Quítalo.', 5000); return; }
+    store.cfg.criteriosIA = t; guardarCfg(); toast(t ? 'Criterios guardados: se usan en cada dictado' : 'Sin criterios'); pintar(); }
+  else if(a==='ia-borrar'){ if(confirm('¿Borrar la clave de la API de este móvil?')){ const c = iaCfg(); c.clave = ''; iaGuarda(c); toast('Clave borrada'); pintar(); } }
+  else if(a==='ex-ia'){
+    const f = filasExport().map(paraIA), r = f.flatMap((o,i)=>riesgosIA(o).map(x=>({...x, fecha:o.fecha, grupo:o.grupo})));
+    const txt = textoIA(f);
+    const av = $('#ex-ia-aviso');
+    if(r.length && !(av && av.dataset.visto==='1')){
+      av.innerHTML = `<div class="nota" style="color:var(--rojo);margin-top:8px"><b>Antes de copiar, revisa ${r.length===1?'esto':'estas '+r.length+' cosas'}</b> (pueden señalar a un alumno concreto):<br>${r.slice(0,12).map(x=>`${x.fecha} · ${x.grupo?GRUPOS[x.grupo].nombre:''} · ${esc(x.campo)}: «${esc(x.palabra)}»`).join('<br>')}${r.length>12?'<br>…':''}<br>Corrígelo en esas sesiones, o vuelve a pulsar para copiar igualmente.</div>`;
+      av.dataset.visto = '1'; return; }
+    if(av){ av.innerHTML = ''; delete av.dataset.visto; }
+    try{ await navigator.clipboard.writeText(txt); toast(`Copiadas ${f.length} sesiones, sin lo privado`); }catch(e){ toast('No se ha podido copiar'); }
+  }
+  else if(a==='ex-csv'){ await descargar(`registro-de-aula_${$('#ex-desde').value}_${$('#ex-hasta').value}.csv`, csv(), 'text/csv'); }
+  else if(a==='ex-json' || a==='copia'){ await copiaSeguridad(); }
+  else if(a==='av-on'){ if(await avActivar(!avCfg().on)){ toast(avCfg().on?'Avisos activados':'Avisos desactivados'); abiertos.add('aj:Avisos'); pintar(); } }
+  else if(a==='av-guardar'){
+    store.cfg.avisos = Object.assign(avCfg(), {clase:$('#av-clase').checked, retraso:Number($('#av-retraso').value), dia:$('#av-dia').checked,
+      diaHora:$('#av-diahora').value || '14:30', copia:$('#av-copia').checked});
+    guardarCfg(); toast('Avisos guardados'); pintar();
+  }
+  else if(a==='instalar'){ if(instalable){ instalable.prompt(); instalable = null; } }
+  else if(a==='add-nl'){ const v = $('#aj-nl').value; if(v && !store.cfg.nolectivos.includes(v)){ store.cfg.nolectivos.push(v); guardarCfg(); pintar(); } }
+  else if(a==='cal'){ const n = CAL.dias.filter(k=>!store.cfg.nolectivos.includes(k)); store.cfg.nolectivos.push(...n); guardarCfg(); toast(`${n.length} días no lectivos añadidos`); pintar(); }
+  else if(a==='del-nl'){ store.cfg.nolectivos = store.cfg.nolectivos.filter(k=>k!==b.dataset.k); guardarCfg(); pintar(); }
+  else if(a==='add-u' || a==='del-u'){
+    leerUnidades();
+    const nv = b.dataset.nv, L = store.cfg.unidades[nv] = store.cfg.unidades[nv] || [];
+    if(a==='add-u') L.push({id:'u'+Date.now().toString(36), nombre:'', previstas:0});
+    else{
+      const u = L[Number(b.dataset.i)];
+      const usada = u && Object.values(store.ses).some(s=>s.grupo && GRUPOS[s.grupo].nivel==nv && s.unidad===u.id);
+      if(usada && !confirm('Hay sesiones registradas en esta unidad. Si la quitas, esas sesiones se quedarán sin unidad. ¿Quitarla?')) return;
+      L.splice(Number(b.dataset.i), 1);
+    }
+    guardarCfg(); pintar();
+  }
+  else if(a==='guardar-aj'){
+    const c = store.cfg;
+    leerUnidades();
+    c.copia = {dia: Number($('#aj-cdia').value), hora: $('#aj-chora').value || '14:10'};
+    c.docente = $('#aj-doc').value.trim(); c.centro = $('#aj-centro').value.trim(); c.curso = $('#aj-curso').value.trim();
+    if($('#aj-inicio').value) c.inicio = $('#aj-inicio').value;
+    { const v = $('#aj-medias').value.trim(); if(v && v!==DEF_MEDIAS) c.criterioMedias = v; else delete c.criterioMedias; }
+    document.querySelectorAll('.aj-n').forEach(i=>{ const n = numAlumnos(i.value, GRUPOS[i.dataset.g].nombre); if(n) c.alumnos[i.dataset.g] = n; });
+    guardarCfg(); if(!errNum) toast('Ajustes guardados'); errNum = false; pintar();
+  }
+});
+document.getElementById('archivo-prog').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
+  r.onload = ()=>{ e.target.value = ''; cargarProgramacion(r.result); }; r.readAsText(f);
+});
+document.getElementById('hoja').addEventListener('toggle', e=>{
+  const d = e.target; if(!d.matches || !d.matches('details[data-revl]')) return;
+  if(d.open) revPlegadas.delete(d.dataset.revl); else revPlegadas.add(d.dataset.revl);
+}, true);
+document.getElementById('app').addEventListener('change', e=>{
+  if(e.target.id==='pa-desde'){ paDesde = e.target.value; pintar(); }
+  else if(e.target.id==='pa-hasta'){ paHasta = e.target.value; pintar(); }
+});
+document.getElementById('archivo-nombres').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onerror = ()=> toast('No se ha podido leer el archivo');
+  r.onload = ()=>{
+    e.target.value = '';
+    let txt; try{ txt = new TextDecoder('utf-8',{fatal:true}).decode(r.result); }
+    catch(err){ txt = new TextDecoder('windows-1252').decode(r.result); }
+    const L = leerNombres(txt);
+    if(!L){ toast('No he encontrado filas «grupo; número; nombre»'); return; }
+    NOMBRES = L.out; NOMBRES_DE = f.name;
+    difListado = [];
+    for(const g in L.out){
+      const nums = Object.keys(L.out[g]).map(Number), max = Math.max(...nums), N = store.cfg.alumnos[g]||25;
+      if(max !== N) difListado.push({tipo:'n', g, n:max, txt:`${GRUPOS[g].nombre}: el listado llega al nº ${max} y el cuaderno tiene ${N}.`});
+      nums.forEach(n=>{ if(/\(\s*baja\s*\)/i.test(L.out[g][n]) && !(matr(g)[n]||{}).baja) difListado.push({tipo:'b', g, n, txt:`${GRUPOS[g].nombre}: el nº ${n} está marcado como baja en el listado.`}); });
+    }
+    const gs = Object.keys(L.out).map(g=>GRUPOS[g].nombre).join(', ');
+    toast(`${L.n} nombres (${gs})${L.malas>1?` · ${L.malas} filas sin leer`:''}${difListado.length?' · hay diferencias: míralas en Ajustes → Altas y bajas':''}`);
+    if(difListado.length) abiertos.add('aj:Altas y bajas');
+    if($('#hoja').classList.contains('abierta')) pintarHoja(); else pintar();
+  };
+  r.readAsArrayBuffer(f);
+});
+let copiaPendiente = null;
+document.getElementById('archivo-copia').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onerror = ()=> toast('No se ha podido leer el archivo');
+  r.onload = ()=>{
+    let j = null;
+    try{ j = JSON.parse(String(r.result).replace(/^﻿/, '')); }catch(err){}
+    e.target.value = '';
+    if(!j || !j.store || !j.store.ses){ toast('Ese archivo no es una copia del cuaderno'); return; }
+    copiaPendiente = j;
+    const ids = Object.keys(j.store.ses).sort(), n = ids.length;
+    const pisa = ids.filter(id=>store.ses[id]).length;
+    const f1 = n ? j.store.ses[ids[0]].fecha : '', f2 = n ? j.store.ses[ids[n-1]].fecha : '';
+    const nev = Object.keys(j.store.ev||{}).length;
+    $('#hoja').innerHTML = `<div class="hoja-in"><div class="hoja-cab"><div><h2 id="hoja-titulo">Restaurar una copia</h2>
+      <div class="quando">${esc(f.name)}</div></div><button class="cerrar" data-r="no">Cerrar</button></div>
+      <div class="panel" style="margin-top:14px"><p><b>La copia trae ${n} ${n===1?'sesión':'sesiones'}</b>${n?` (del ${corta(f1)} al ${corta(f2)})`:''}${nev?` y ${nev} ${nev===1?'fecha':'fechas'} de pruebas o entregas`:''}.</p>
+      <p class="nota">${pisa?`${pisa} ${pisa===1?'está':'están'} también en este móvil: se quedará la versión de la copia.`:'Ninguna está en este móvil: se añaden todas.'}
+      Las sesiones que solo estén en este móvil no se tocan.</p></div>
+      </div><div class="acciones"><div><button class="secundario" data-r="no">Cancelar</button>
+      <button class="primario" data-r="si">Restaurar</button></div></div>`;
+    $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
+  };
+  r.readAsText(f);
+});
+document.getElementById('hoja').addEventListener('click', e=>{
+  const b = e.target.closest('[data-r]'); if(!b) return;
+  if(b.dataset.r==='si' && copiaPendiente){
+    const j = copiaPendiente, n = Object.keys(j.store.ses).length;
+    for(const [id,s] of Object.entries(j.store.ses)){ store.ses[id]=s; }
+    store.ev = Object.assign(store.ev||{}, j.store.ev||{});
+    store.prog = store.prog || {};
+    for(const [g,H] of Object.entries(j.store.prog||{})) store.prog[g] = Object.assign(store.prog[g]||{}, H);
+    if(j.store.programa) store.programa = j.store.programa;
+    if(j.store.cfg){ store.cfg = Object.assign(cfgInicial(), j.store.cfg); store.cfg.alumnos = Object.assign(cfgInicial().alumnos, j.store.cfg.alumnos||{}); }
+    cachePlan = {}; guardarLocal(); copiaPendiente = null; cerrar(); pintar(); toast(`Copia restaurada: ${n} ${n===1?'sesión':'sesiones'}`);
+  }else{ copiaPendiente = null; cerrar(); toast('No se ha restaurado nada'); }
+});
+document.getElementById('velo').addEventListener('click', cerrar);
+document.getElementById('hoja').addEventListener('click', e=>{
+  const b = e.target.closest('[data-h]'); if(!b || !borrador) return;
+  const h = b.dataset.h;
+  leerCampos();
+  if(h==='cerrar'){ iaDictado = ''; iaPreguntas = []; iaAviso = ''; cerrar(); return; }
+  if(h==='ia-ordena'){
+    const t = ($('#h-dicta') ? $('#h-dicta').value : '').trim(); iaDictado = t;
+    if(!t){ iaAviso = 'Primero dicta o escribe lo que ha pasado.'; pintarHoja(); return; }
+    const bq = bloqueosIA(t, nombresListado());
+    if(bq.length){ iaAviso = `No se envía: lleva ${[...new Set(bq.map(x=>x.que+' («'+esc(x.palabra)+'»)'))].join(' y ')}. Quítalo del dictado (lo de un alumno va en «Otras notas», a mano) y vuelve a pulsar.`; pintarHoja(); return; }
+    const r = riesgosTexto(t);
+    if(r.length && iaRiesgoVisto !== t){ iaRiesgoVisto = t;
+      iaAviso = `Puede señalar a un alumno: ${[...new Set(r.map(x=>'«'+esc(x.palabra)+'»'))].join(', ')}. Quítalo (va en «Otras notas», a mano) o vuelve a pulsar para enviarlo igualmente.`;
+      pintarHoja(); return; }
+    iaAviso = ''; iaEnCurso = true; pintarHoja();
+    iaOrdena(t, borrador).then(({o, uso})=>{
+      ['contenido','material','deberes','cambio','observacion'].forEach(k=>{ if(typeof o[k]==='string' && o[k].trim()) borrador[k] = o[k].trim(); });
+      if(['bien','regular','mal'].includes(o.clima)) borrador.clima = o.clima;
+      if(o.unidad && unidadesDe(borrador.grupo).some(u=>u.id===o.unidad)) borrador.unidad = o.unidad;
+      if(typeof o.aparte==='string' && o.aparte.trim()) borrador.notas = (borrador.notas ? borrador.notas+'\n' : '') + o.aparte.trim();
+      iaPreguntas = Array.isArray(o.preguntas) ? o.preguntas.slice(0,3) : [];
+      toast(`Ordenado (${(uso.input_tokens||0)+(uso.output_tokens||0)} tokens): revísalo y guarda`);
+    }).catch(err=>{ iaAviso = esc(err.message||'No se ha podido conectar.'); })
+      .finally(()=>{ iaEnCurso = false; pintarHoja(); });
+    return;
+  }
+  if(h==='descartar'){
+    if(!confirm('¿Descartar el borrador? Se pierde lo que no se guardó.')) return;
+    quitarBorrador(abiertoId); borrador = clon(store.ses[abiertoId] || base); recuperado = null;
+    pintarHoja(); toast('Borrador descartado'); return;
+  }
+  if(h==='estado'){ borrador.estado = b.dataset.v; }
+  else if(h==='pt'){ borrador.pt = b.dataset.v; }
+  else if(h==='motivo'){ borrador.motivo = b.dataset.v; }
+  else if(h==='clima'){ borrador.clima = borrador.clima===b.dataset.v ? '' : b.dataset.v; }
+  else if(h==='pini'){ const v = Number(b.dataset.v); borrador.perdIni = borrador.perdIni!=='' && borrador.perdIni!==undefined && Number(borrador.perdIni)===v ? '' : v; }
+  else if(h==='pfin'){ const v = Number(b.dataset.v); borrador.perdFin = borrador.perdFin!=='' && borrador.perdFin!==undefined && Number(borrador.perdFin)===v ? '' : v; }
+  else if(h==='unidad'){ borrador.unidad = borrador.unidad===b.dataset.v ? '' : b.dataset.v; }
+  else if(h==='recons'){ borrador.reconstruido = !borrador.reconstruido; }
+  else if(h==='fuente'){
+    const v = b.dataset.v, cur = (borrador.fuente||'').trim();
+    borrador.fuente = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
+  }
+  else if(h==='mat'){
+    const v = b.dataset.v; const cur = (borrador.material||'').trim();
+    borrador.material = cur ? (cur.split(/,\s*/).includes(v) ? cur : cur+', '+v) : v;
+  }
+  else if(h==='nombres'){ const i = $('#archivo-nombres'); i.value=''; i.click(); return; }
+  else if(h==='olvidar'){ olvidarNombres('Nombres olvidados'); }
+  else if(h==='igual'){
+    const o = store.ses[b.dataset.id];
+    if(o){ borrador.contenido = o.contenido||''; borrador.material = o.material||''; borrador.deberes = o.deberes||'';
+      if(o.unidad && unidadesDe(borrador.grupo).some(u=>u.id===o.unidad)) borrador.unidad = o.unidad;
+      toast('Copiado: revísalo antes de guardar'); }
+  }
+  else if(h==='rev'){
+    const id = b.dataset.id; borrador.revisiones = borrador.revisiones||[];
+    const i = borrador.revisiones.findIndex(r=>r.de===id);
+    if(i>=0){ const r = borrador.revisiones.splice(i,1)[0], m = (r.no||[]).length + (r.medias||[]).length + (r.falta||[]).length;
+      if(m){ revQuitadas[id] = r; toast(`Revisión quitada. Si ha sido sin querer, toca «Revisar hoy» y vuelven las ${m} marcas`); } }
+    else{ borrador.revisiones.push(revQuitadas[id] || {de:id, no:[]}); delete revQuitadas[id]; }
+  }
+  else if(h==='rfil'){ revFiltro[b.dataset.id] = b.dataset.v; }
+  else if(h==='modo'){ store.cfg.revModo = store.cfg.revModo || {}; store.cfg.revModo[borrador.grupo] = b.dataset.v; guardarCfg(); }
+  else if(h==='est'){
+    const r = borrador.revisiones.find(x=>x.de===b.dataset.id); const n = Number(b.dataset.i);
+    if(r){ ponEstado(r, n, b.dataset.v || revPincel[b.dataset.id] || 'no'); if(!(r.medias||[]).length) delete r.medias; if(!(r.falta||[]).length) delete r.falta; }
+  }
+  else if(h==='bil-on'){ borrador.billete = {pregunta:'', n:'', bien:'', medias:'', mal:'', error:''};
+    const m = (borrador.material||'').split(/,\s*/).filter(Boolean); if(!m.some(x=>/billete/i.test(x))){ m.push('Billete de salida'); borrador.material = m.join(', '); } }
+  else if(h==='bil-off'){ delete borrador.billete; }
+  else if(h==='bil-sem'){ const sl = slotDe(borrador.fecha, borrador.franja), L = store.cfg.billetes = store.cfg.billetes || [];
+    const i = L.indexOf(sl); if(i>=0) L.splice(i,1); else L.push(sl);
+    delete (store.cfg.billeteDia||{})[`${borrador.fecha}_${borrador.franja}`]; guardarCfg();
+    toast(i>=0 ? 'Ya no se marca cada semana' : `Billete cada ${DIAS[deClave(borrador.fecha).getDay()]} en esta clase`); }
+  else if(h==='bil-dia'){ const D = store.cfg.billeteDia = store.cfg.billeteDia || {}, k = `${borrador.fecha}_${borrador.franja}`;
+    if(b.dataset.v==='si') D[k] = true; else if(b.dataset.v==='no') D[k] = false; else delete D[k]; guardarCfg(); }
+  else if(h==='pincel'){ revPincel[b.dataset.id] = b.dataset.v; }
+  else if(h==='guardar'){
+    const b2 = borrador;
+    if(b2.grupo && b2.estado==='no' && !b2.motivo){ toast('Elige el motivo'); return; }
+    if(b2.grupo && b2.estado!=='no' && !b2.contenido.trim() && !b2.material.trim()){ toast('Escribe qué se ha hecho'); return; }
+    { const NOM = {contenido:'Qué se ha hecho', deberes:'Deberes', cambio:'Qué cambié', observacion:'Observación', notas:'Notas', ptNotas:'Trabajo con la PT'};
+      const sosp = Object.keys(NOM).find(k=>{ const v = String(b2[k]||'').trim(); return /(^|[\s.,;:])[a-zñ]$/i.test(v) && !/(^|\s)[yoeuaYOEUA]$/.test(v) || /[a-záéíóúñ]w$/i.test(v); });
+      if(sosp && avisoLetra !== abiertoId+sosp){ avisoLetra = abiertoId+sosp;
+        const v = String(b2[sosp]).trim(); toast(`«${NOM[sosp]}» acaba en «${v.slice(-1)}»: ¿se ha colado? Corrígelo o pulsa Guardar otra vez`, 5000);
+        const el = document.querySelector(`#hoja [data-f="${sosp}"]`); if(el){ el.focus(); try{ el.setSelectionRange(el.value.length, el.value.length); }catch(e){} }
+        return; }
+      avisoLetra = ''; }
+    if(b2.material){
+      const nuevos = b2.material.split(/,\s*/).map(x=>x.trim()).filter(Boolean);
+      const m = store.cfg.materiales; let cambio = false;
+      nuevos.forEach(x=>{ if(!m.includes(x)){ m.unshift(x); cambio = true; } });
+      if(cambio){ store.cfg.materiales = m.slice(0,12); guardarCfg(); }
+    }
+    const hubo = guardarSesion(abiertoId, clon(b2)); quitarBorrador(abiertoId); cerrar(); toast(hubo ? 'Sesión guardada' : 'Sin cambios'); pintar(); return;
+  }
+  else if(h==='borrar'){
+    if(confirm('¿Borrar el registro de esta sesión? Quedará constancia de que se borró.')){ borrarSesion(abiertoId); quitarBorrador(abiertoId); base = null; cerrar(); toast('Registro borrado'); pintar(); }
+    return;
+  }
+  pintarHoja(); guardarBorrador();
+});
+document.getElementById('hoja').addEventListener('input', e=>{ if(e.target.closest('[data-f],[data-fb]') && abiertoId) borradorLuego(); });
+function hojaFaltan(){
+  const lista = sinRegistrar();
+  borrador = {}; abiertoId = null;
+  let h = `<div class="hoja-in"><div class="hoja-cab"><div><h2 id="hoja-titulo">Sin registrar</h2>
+    <div class="quando">${lista.length} ${lista.length===1?'sesión':'sesiones'} desde el ${larga(store.cfg.inicio)}</div></div>
+    <button class="cerrar" data-f2="cerrar">Cerrar</button></div><ul class="hist" style="margin-top:12px">`;
+  for(const x of [...lista].reverse()){
+    h += `<li><button data-f2="ir" data-k="${x.k}" data-n="${x.n}"><div class="f">${larga(x.k)} · ${FR[x.n].ini}</div>
+      <p class="c"><span class="grupo" style="--gc:${gc(x.g)}">${GRUPOS[x.g].nombre}</span></p></button></li>`;
+  }
+  h += `</ul><p class="nota">Si un día fue festivo, márcalo como no lectivo desde Día o Ajustes y dejará de salir aquí.</p></div>`;
+  $('#hoja').innerHTML = h;
+  $('#velo').classList.add('abierto'); $('#hoja').classList.add('abierta'); document.body.style.overflow='hidden';
+}
+document.getElementById('hoja').addEventListener('click', e=>{
+  const b = e.target.closest('[data-f2]'); if(!b) return;
+  if(b.dataset.f2==='cerrar'){ cerrar(); return; }
+  const k = b.dataset.k, n = Number(b.dataset.n);
+  dia = k; vista='dia'; pintar(); abrir(k, n);
+});
+document.getElementById('hoja').addEventListener('click', ev=>{
+  const b = ev.target.closest('[data-e]'); if(!b || !evBorr) return;
+  const a = b.dataset.e; leerFecha();
+  if(a==='cerrar'){ evBorr=null; cerrar(); return; }
+  if(a==='tipo') evBorr.tipo = b.dataset.v;
+  else if(a==='grupo'){
+    const g = b.dataset.g;
+    if(evBorr.fechas[g]) delete evBorr.fechas[g];
+    else evBorr.fechas[g] = siguienteClase(g, clave(masDias(deClave(hoyK()), 7)));
+  }
+  else if(a==='guardar'){
+    if(!evBorr.titulo.trim()){ toast('Escribe qué es'); return; }
+    if(!Object.keys(evBorr.fechas).length){ toast('Elige al menos un grupo'); return; }
+    const ahora = new Date().toISOString(), prev = store.ev[evId];
+    evBorr.creado = prev ? (prev.creado||ahora) : ahora; evBorr.actualizado = ahora;
+    store.ev[evId] = clon(evBorr); guardarLocal(); evBorr = null; cerrar(); toast('Fecha guardada'); pintar(); return;
+  }
+  else if(a==='borrar'){
+    if(confirm('¿Borrar esta fecha?')){ delete store.ev[evId]; guardarLocal(); evBorr=null; cerrar(); toast('Fecha borrada'); pintar(); }
+    return;
+  }
+  pintarHojaFecha();
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hoja').classList.contains('abierta')) cerrar(); });
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ clearTimeout(tBorr); guardarBorrador(); tOculto = Date.now(); return; }
+  if(NOMBRES && tOculto && Date.now() - tOculto > 20*60000){
+    olvidarNombres('Nombres olvidados tras 20 minutos fuera de la app');
+    if($('#hoja').classList.contains('abierta')) pintarHoja();
+  }
+  if(!borrador && !copiaPendiente) pintar();
+});
+window.addEventListener('pagehide', ()=>{ clearTimeout(tBorr); guardarBorrador(); });
+setInterval(()=>{ if(!borrador && !copiaPendiente && vista==='dia') pintar(); }, 60000);
+
+leerLocal();
+if(!esLectivo(dia) && [0,6].includes(deClave(dia).getDay())){
+  let d = deClave(dia); while(d.getDay()===0||d.getDay()===6) d = masDias(d,1); dia = clave(d);
+}
+pintar();
+if(borr.abierto && borr.ses[borr.abierto]){
+  const d = borr.ses[borr.abierto].b;
+  if(d && d.fecha && franjasDe(d.fecha)[d.franja]){ dia = d.fecha; vista = 'dia'; pintar(); abrir(d.fecha, d.franja); }
+}else if(borr.abierto){ borr.abierto = null; guardarBorr(); }
+conectar();
+</script>
+</body>
+</html>
