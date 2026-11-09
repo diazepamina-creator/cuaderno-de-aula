@@ -575,7 +575,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.15.2';
+const VERSION_APP = '1.15.3';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -715,7 +715,12 @@ async function iaOrdena(dictado, ses){
     unidades: ses.grupo ? unidadesDe(ses.grupo).map(u=>({id:u.id, nombre:u.nombre})) : [],
     materiales: store.cfg.materiales, sesion_anterior_del_grupo: anterior ? paraIA(anterior) : null,
     lo_que_ya_hay: paraIA(ses)};
-  const cuerpo = {model:c.modelo, max_tokens:4000, output_config:{effort:c.esfuerzo}, system:IA_INSTRUCCIONES,
+  /* «Mis criterios» (1.15.3): las reglas del profesor, detrás de las fijas; no pueden saltarse ni lo de
+     los alumnos ni la fidelidad, y se miran como el dictado (sin nombres ni números de lista) */
+  const crit = (store.cfg.criteriosIA || '').trim();
+  if(crit && bloqueosIA(crit, nombresListado()).length) throw new Error('Tus criterios para la IA llevan un nombre o un número de lista: quítalo en Ajustes → La IA.');
+  const sistema = IA_INSTRUCCIONES + (crit ? '\n\nCRITERIOS DEL PROFESOR (síguelos; si chocan con lo de arriba, mandan ellos, salvo la fidelidad y lo de los alumnos, que no se tocan):\n' + crit : '');
+  const cuerpo = {model:c.modelo, max_tokens:4000, output_config:{effort:c.esfuerzo}, system:sistema,
       messages:[{role:'user', content:'Contexto (JSON):\n'+JSON.stringify(contexto)+'\n\nLo que he dictado:\n'+dictado}]};
   vigilaIA(cuerpo, nombresListado());   // la última puerta (1.15.1)
   const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json', 'x-api-key':c.clave,
@@ -1799,6 +1804,10 @@ function vAjustes(){
       ${INTENSIDAD_IA.map(([v,t])=>`<option value="${v}" ${ia.esfuerzo===v?'selected':''}>${t}</option>`).join('')}</select></label></div>
     <p class="nota">Para ordenar una sesión basta Sonnet con intensidad baja: rápido y barato. Más intensidad piensa más, tarda más y gasta más.</p>
     <button class="bloque-btn" data-a="ia-guardar">Guardar y probar la conexión</button>
+    <div class="campo" style="margin-top:14px"><label for="ia-criterios">Mis criterios para la IA</label>
+      <textarea id="ia-criterios" rows="4" placeholder="Con tus palabras, una regla por línea. Por ejemplo: «Proyectar una ficha es corregirla en la pizarra.» «El carril siempre tiene partes A y B.» «Los ejercicios del libro son de clase, salvo que diga para casa.»">${esc(store.cfg.criteriosIA||'')}</textarea></div>
+    <p class="nota">Se añaden a las instrucciones de «Ordenar con IA» cada vez. Van en la copia de seguridad. Nada de alumnos: con un nombre del listado o un número de lista no se guardan.</p>
+    <button class="chip" data-a="ia-criterios">Guardar mis criterios</button>
     ${ia.clave?'<button class="chip" data-a="ia-borrar" style="margin-top:8px">Borrar la clave de este móvil</button>':''}
   </div>`; })()}
   <div class="panel"><p><b>Aviso de copia de seguridad</b><br><span class="nota">Cada semana, a partir de ese momento, el cuaderno te pide la copia hasta que la hagas.</span></p>
@@ -2365,6 +2374,10 @@ document.getElementById('app').addEventListener('click', async e=>{
       iaGuarda(c); pintar(); toast('✗ ' + c.msg); return; }
     toast('Probando la conexión…'); const c = await iaPrueba(); pintar();
     toast(c.ok ? '✓ Conectada: ya puedes dictar' : '✗ No conecta: ' + (c.msg||'')); }
+  else if(a==='ia-criterios'){
+    const t = $('#ia-criterios').value.trim(), bq = bloqueosIA(t, nombresListado());
+    if(bq.length){ toast('No se guardan: llevan ' + [...new Set(bq.map(x=>x.que))].join(' y ') + '. Quítalo.', 5000); return; }
+    store.cfg.criteriosIA = t; guardarCfg(); toast(t ? 'Criterios guardados: se usan en cada dictado' : 'Sin criterios'); pintar(); }
   else if(a==='ia-borrar'){ if(confirm('¿Borrar la clave de la API de este móvil?')){ const c = iaCfg(); c.clave = ''; iaGuarda(c); toast('Clave borrada'); pintar(); } }
   else if(a==='ex-ia'){
     const f = filasExport().map(paraIA), r = f.flatMap((o,i)=>riesgosIA(o).map(x=>({...x, fecha:o.fecha, grupo:o.grupo})));
