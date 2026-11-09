@@ -575,7 +575,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.15.1';
+const VERSION_APP = '1.15.2';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -677,10 +677,23 @@ const MODELOS_IA = [['claude-haiku-5-5','Haiku · rápido y barato'],['claude-so
 const INTENSIDAD_IA = [['low','Baja'],['medium','Media'],['high','Alta']];
 const iaCfg = () => { try{ return Object.assign({clave:'', modelo:'claude-sonnet-5-5', esfuerzo:'low'}, JSON.parse(localStorage.getItem(LSIA)||'{}')); }catch(e){ return {clave:'', modelo:'claude-sonnet-5-5', esfuerzo:'low'}; } };
 const iaGuarda = c => { try{ localStorage.setItem(LSIA, JSON.stringify(c)); }catch(e){} };
-const IA_INSTRUCCIONES = `Eres el ayudante del cuaderno de aula de un profesor de matemáticas de ESO. Te dicta, deprisa y al acabar la clase, lo que ha pasado en una sesión. Tu trabajo es ordenarlo en los campos del registro, en castellano, con frases claras y cortas, en primera persona («He…», «Hemos…») como escribe él, sin inventar nada que no haya dicho.
-Campos: contenido (qué se ha hecho), material (apps, fichas, libro…; usa los nombres de la lista de materiales cuando coincidan), deberes (los que ha puesto, o vacío), clima («bien» si se ha podido trabajar, «regular» si a ratos, «mal» si no se ha podido, o vacío si no lo dice), cambio (qué ha cambiado respecto a otro grupo o a lo previsto), observacion (qué ha observado del grupo: errores típicos, qué ha funcionado), unidad (el id de la unidad de la lista, si se deduce; si no, vacío).
+/* 1.15.2: más fiel a lo dictado. Con «ordénalo» a secas juntaba acciones («hemos repasado la ficha 3
+   y la hemos empezado»: o se repasa o se empieza), metía relleno («Hemos repasado.») y lo echaba
+   casi todo en «contenido». Ahora: sus verbos y sus hechos tal cual, cada cosa en su campo, y si
+   algo no cuadra o no se sabe (¿de clase o de casa?), pregunta en vez de elegir. */
+const IA_INSTRUCCIONES = `Eres el ayudante del cuaderno de aula de un profesor de matemáticas de ESO. Te dicta, deprisa y al acabar la clase, lo que ha pasado en una sesión. Tu trabajo es repartir lo que dice en los campos del registro, en castellano, con frases claras y cortas, en primera persona («He…», «Hemos…») como escribe él.
+FIDELIDAD, lo primero: usa sus verbos y sus hechos tal cual. No inventes nada, no juntes dos acciones en una, no cambies una acción por otra (proyectar, repasar, corregir, empezar y terminar son cosas distintas) y no añadas frases de relleno ni resúmenes que no haya dicho. Si dice algo dos veces, una sola vez. Si se corrige al dictar («la 2, digo la 3»), vale lo último.
+SI ALGO NO CUADRA O NO SE SABE, PREGUNTA en vez de elegir: dos cosas contradictorias (repasar y empezar la misma ficha), una ficha o un número que no se entiende, o si unos ejercicios son de clase o para casa. Deja esa parte fuera de los campos y pregúntala en «preguntas».
+Campos (cada cosa en el suyo; lo que no dice, vacío):
+- contenido: lo que se ha HECHO en clase, en el orden en que lo cuenta. Sin material repetido, sin deberes, sin lo previsto que no se hizo.
+- material: lo que se ha usado (apps, fichas, carril, libro…), separado por comas; con los nombres de la lista de materiales cuando coincidan.
+- deberes: solo lo que ha mandado para CASA, dicho así («para casa», «de deberes»…). Si no lo dice, vacío; si no está claro, pregunta.
+- clima: «bien» si se ha podido trabajar, «regular» si a ratos, «mal» si no se ha podido; vacío si no lo dice.
+- cambio: qué ha cambiado respecto a lo previsto o a otro grupo («Había previsto las dos caras; solo ha dado tiempo a una»).
+- observacion: lo que ha observado del grupo: el ritmo (cuánto han tardado), errores típicos, qué ha funcionado.
+- unidad: el id de la unidad de la lista, si se deduce; si no, vacío.
 Nunca escribas en esos campos nada de un alumno concreto (nombres, números de lista, necesidades educativas, incidencias de convivencia, familias): si lo ha dictado, ponlo SOLO en «aparte», que se queda en su móvil.
-Si falta algo importante para el registro (qué se ha hecho, deberes o clima), escribe hasta tres preguntas cortas en «preguntas».
+«preguntas»: hasta tres, cortas y concretas, con las dudas de arriba y, si falta, lo importante para el registro (qué se ha hecho, deberes o clima).
 Responde SOLO con un objeto JSON: {"contenido":"","material":"","deberes":"","clima":"","cambio":"","observacion":"","unidad":"","aparte":"","preguntas":[]}`;
 /* la prueba de conexión (1.14.1): una llamada mínima, sin nada del cuaderno; guarda si fue bien */
 async function iaPrueba(){
@@ -1961,7 +1974,7 @@ function pintarHoja(){
       </div></div>`;
       if(iaCfg().clave) h += `<div class="campo ia-dicta"><label for="h-dicta">Dictar la sesión <span class="ayuda">— con el micrófono del teclado; la IA lo ordena abajo</span></label>
         <textarea id="h-dicta" style="min-height:76px" placeholder="Qué habéis hecho, material, deberes, cómo ha ido… Lo de alumnos concretos, mejor en «Otras notas».">${esc(iaDictado)}</textarea>
-        ${iaPreguntas.length?`<div class="nota ia-preg"><b>Te falta:</b> ${iaPreguntas.map(esc).join(' · ')}<br>Díctaselo arriba y vuelve a ordenar.</div>`:''}
+        ${iaPreguntas.length?`<div class="nota ia-preg"><b>Antes de guardar, aclárame:</b> ${iaPreguntas.map(esc).join(' · ')}<br>Díctalo arriba (o corrígelo en el campo) y vuelve a ordenar.</div>`:''}
         ${iaAviso?`<div class="nota" style="color:var(--rojo)">${iaAviso}</div>`:''}
         <button class="secundario" data-h="ia-ordena" ${iaEnCurso?'disabled':''}>${iaEnCurso?'Ordenando…':'Ordenar con IA'}</button>
         <span class="priv">Sale solo lo dictado y lo que ya pone la sesión (sin lo privado). Nada se guarda hasta que pulses Guardar.</span></div>`;
