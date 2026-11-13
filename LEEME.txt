@@ -49,6 +49,13 @@ OJO: el repositorio es público, así que el horario (grupos y aulas) se puede
 leer en el código. Ningún dato de alumnos ni de sesiones está ahí.
 
 VERSIONES
+1.16    «Deberes que mandé y no apunté». En «Deberes para revisar» de cualquier sesión hay un botón:
+       escribes los deberes («ejercicios 3 y 4 de la ficha 5»), eliges qué día los mandaste (sale la
+       última clase del grupo y las tres anteriores) y quedan abiertos para revisarlos ya. Se apuntan en
+       la clase de ese día: si estaba registrada, se le añaden (queda en su historial, con la hora); si
+       no, se crea un registro con solo los deberes, marcado como reconstruido, que sigue contando como
+       sin registrar hasta que lo completes. Unos deberes ya revisados en otra sesión no se tocan.
+       Prueba: node pruebas/deberes-abiertos.cjs. Pedido por Andrés.
 1.15.4  El número de lista, escrito como sea. Ahora BLOQUEAN también «n°» (el signo de grados, el
        que sale en muchos teclados), «núm. 12», «nro 12», «#12», «alumno 12», «la 7 de la lista» y
        «el 12» / «la 7» / «al 12» seguidos de lo que hace una persona («el 12 va aquí o allá», «la 7

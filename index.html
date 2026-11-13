@@ -198,6 +198,7 @@ textarea:focus,input:focus{border-color:var(--tinta);outline:none}
 .seg button[aria-pressed="true"]{border-color:var(--tinta);background:var(--tinta);color:var(--hoja);font-weight:700}
 .seg.dos{grid-template-columns:repeat(2,1fr)}
 .deber{border:1px solid var(--linea);background:var(--hoja);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.deber.abre{border-style:dashed}.deber.abre .chip.sel{border-color:var(--tinta);color:var(--tinta);font-weight:700}.chip.abre-deb{margin-top:2px}
 .deber-cab{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .deber-cab p{margin:0}
 .deber-cab .de{font-size:13px;color:var(--gris)}
@@ -575,7 +576,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.15.4';
+const VERSION_APP = '1.16';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -621,7 +622,7 @@ function guardarLocal(){
    convivencia, «el n.º 12», «un alumno con…») y se avisan antes de copiar.
    Cualquier función que mande algo a una IA tiene que pasar por paraIA(). */
 const IA_SI = ['fecha','franja','grupo','unidad','estado','contenido','material','deberes','clima','perdIni','perdFin','cambio','observacion'];
-const IA_PRIVADO = ['revisiones','pt','ptNotas','notas','motivo','aula','historial','creado','actualizado'];
+const IA_PRIVADO = ['soloDeberes','revisiones','pt','ptNotas','notas','motivo','aula','historial','creado','actualizado'];
 const IA_RIESGO = [/(?<![\p{L}\d])(ACIS|ACI|NEAE|NESE|NEE|TDAH|TEA)(?![\p{L}\d])/gu,   // las siglas, en mayúsculas
   /(?<![\p{L}\d])(dislexia|orientaci[oó]n|convivencia|expulsi[oó]n|expulsad[oa]s?|parte de (?:incidencia|disciplina)|familia|madre|padre|n\.?\s?º\s?\d+|n[uú]mero\s+\d+|(?:un|una|el|la)\s+alumn[oa]|(?:un|una|el|la)\s+chic[oa])(?![\p{L}\d])/giu];
 function paraIA(s){
@@ -761,7 +762,7 @@ async function iaOrdena(dictado, ses){
   const o = JSON.parse(m[0]);
   return {o, uso: d.usage||{}};
 }
-const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','billete','reconstruido','fuente'];
+const CAMPOS = ['estado','motivo','unidad','contenido','material','deberes','revisiones','clima','perdIni','perdFin','pt','ptNotas','cambio','observacion','notas','billete','reconstruido','fuente','soloDeberes'];
 function guardarSesion(id, datos){
   const ahora = new Date().toISOString(), prev = store.ses[id];
   const hist = prev ? clon(prev.historial||[]) : [];
@@ -854,7 +855,7 @@ async function avHaz(){
       const k = clave(d); if(!esLectivo(k)) continue; dias++;
       const h = franjasDe(k), faltan = [];
       for(const n in h){
-        if(!h[n].g || store.ses[idSes(k,n)]) continue;
+        if(!h[n].g || registrada(store.ses[idSes(k,n)])) continue;
         faltan.push(Number(n));
         const t = cuando(k, FR[n].fin, Number(c.retraso)||0);
         if(c.clase && t > ahora) L.push({id:avId(k,Number(n)), title:`${GRUPOS[h[n].g].nombre} ha acabado`,
@@ -911,7 +912,7 @@ function sinRegistrar(){
     if(esLectivo(k)){
       const h = franjasDe(k);
       for(const n in h){
-        if(h[n].g && haTerminado(k, Number(n)) && !store.ses[idSes(k,n)]) out.push({k, n:Number(n), g:h[n].g});
+        if(h[n].g && haTerminado(k, Number(n)) && !registrada(store.ses[idSes(k,n)])) out.push({k, n:Number(n), g:h[n].g});
       }
     }
     d = masDias(d,1);
@@ -929,6 +930,36 @@ function deberesPendientes(g, actual){
     (s.revisiones||[]).forEach(r=>revisados.add(r.de));
   }
   return sesionesDe(g).filter(([id,s])=> id<actual && s.deberes && s.deberes.trim() && !revisados.has(id));
+}
+/* ── ABRIR DEBERES QUE NO SE APUNTARON (1.16) ──
+   Si un día se mandan deberes y no se apuntan, al día siguiente no salen en «Deberes para revisar» y no se
+   pueden revisar. Desde la sesión de hoy se abren: se escriben y se cuelgan de una clase anterior del grupo
+   (por defecto, la última), que es cuando se mandaron, y quedan ya en «Revisar hoy».
+   · Si esa clase está registrada, se le añaden los deberes con guardarSesion: queda en su historial, con la
+     hora en que se apuntaron (lo que pide una auditoría).
+   · Si no lo está, se crea un registro con solo los deberes, marcado como reconstruido («Deberes apuntados el
+     … al revisarlos») y con soloDeberes: sigue contando como sesión sin registrar hasta que se guarde entera.
+   · Unos deberes ya revisados en otra sesión no se tocan: se elige otra clase. */
+const registrada = s => !!s && !s.soloDeberes;
+function clasesAnteriores(g, k, n, cuantas){
+  const out = []; let d = deClave(k);
+  for(let i = 0; i < 40 && out.length < cuantas; i++, d = masDias(d, -1)){
+    const kk = clave(d); if(store.cfg.inicio && kk < store.cfg.inicio) break; if(!esLectivo(kk)) continue;
+    const h = franjasDe(kk);
+    Object.keys(h).map(Number).sort((a,b)=>b-a).forEach(nn=>{ if(out.length < cuantas && h[nn].g===g && (kk < k || nn < Number(n))) out.push({k:kk, n:nn}); });
+  }
+  return out;
+}
+function abreDeberes(g, k, n, txt){
+  const id = idSes(k, n), s = store.ses[id];
+  const rev = Object.entries(store.ses).find(([oid,o])=>oid!==abiertoId && (o.revisiones||[]).some(r=>r.de===id));
+  if(rev) return {error:`Los deberes del ${corta(k)} ya se revisaron el ${corta(rev[1].fecha)}: elige otra clase.`};
+  const datos = s ? clon(s) : {fecha:k, franja:n, grupo:g, otra:null, aula:(franjasDe(k)[n]||{}).aula||'',
+    estado:'si', motivo:'', contenido:'', material:'', deberes:'', revisiones:[], clima:'', perdIni:'', perdFin:'', cambio:'', observacion:'', notas:'',
+    unidad:'', soloDeberes:true, reconstruido:true, fuente:`Deberes apuntados el ${corta(hoyK())} al revisarlos`};
+  datos.deberes = datos.deberes && datos.deberes.trim() ? datos.deberes.trim() + ' · ' + txt : txt;
+  guardarSesion(id, datos);
+  return {id};
 }
 function igualQue(g, actual){
   const nivel = GRUPOS[g].nivel, out = [];
@@ -982,7 +1013,7 @@ function indicadores(g, desde, hasta){
     mIni: conP.length ? Math.round(pIni/conP.length) : 0, mFin: conP.length ? Math.round(pFin/conP.length) : 0};
   const porUnidad = unidadesDe(g).map(u=>({...u, dadas: dadas.filter(s=>s.unidad===u.id).length}));
   const sinUnidad = dadas.filter(s=>!s.unidad).length;
-  return {previstas, registradas: ses.filter(s=>s.fecha<=fin).length, dadas: dadas.length, noDadas: ses.length - dadas.length,
+  return {previstas, registradas: ses.filter(s=>s.fecha<=fin && !s.soloDeberes).length, dadas: dadas.length, noDadas: ses.length - dadas.length,
     sinRegistrar: sinRegistrar().filter(x=>x.g===g && x.k>=desde && x.k<=hasta).length,
     puestos: dadas.filter(s=>s.deberes && s.deberes.trim()).length, revisadas,
     entrega: total ? Math.round(100*traen/total) : null, entregaMedias: total ? Math.round(100*medias/total) : null, clima, climaN: clima.bien+clima.regular+clima.mal,
@@ -1352,7 +1383,7 @@ function vMes(){
     if(lect){
       const fr = franjasDe(k);
       for(const n of Object.keys(fr).map(Number).sort((a,b)=>a-b)){ const x = fr[n]; if(!x || !x.g) continue;
-        const s = store.ses[idSes(k,n)], st = s ? (s.estado==='no' ? 'no' : 'ok') : haTerminado(k,n) ? 'pend' : 'fut';
+        const s = store.ses[idSes(k,n)], st = registrada(s) ? (s.estado==='no' ? 'no' : 'ok') : haTerminado(k,n) ? 'pend' : 'fut';
         if(!fuera){ if(st==='ok') reg++; else if(st==='pend') pend++; else if(st==='fut') prev++; }
         const bil = (s && s.billete) || (st!=='no' && tocaBillete(k,n));
         marcas += `<i class="m-c st-${st}${bil?' bil':''}" style="--gc:${gc(x.g)}" title="${esc(GRUPOS[x.g].nombre)}"></i>`; }
@@ -1428,6 +1459,7 @@ function vDia(){
       // la PT, junto al grupo: se ve también con la sesión registrada; translúcida si no ha venido
       const ptHoy = (x.pt || (s && s.pt)) && !(s && s.estado==='no') ? icoPT(s && s.pt==='no') : '';
       if(s && s.estado==='no'){ marca = `<span class="marca no">no impartida</span>`; sub = esc(s.motivo||''); }
+      else if(s && s.soloDeberes){ marca = `<span class="marca pend">por registrar</span>`; sub = 'Solo los deberes: ' + esc(s.deberes); }
       else if(s){ marca = `<span class="marca ok">✓ registrada</span>`; sub = esc(s.contenido || s.material || 'Sin descripción'); }
       if(borr.ses[id]){ marca = `<span class="marca borr">✎ borrador</span>`; }
       else if(!s && haTerminado(dia,f.n)){ marca = `<span class="marca pend">por registrar</span>`; }
@@ -1537,7 +1569,7 @@ function vGrupos(){
         return `Deberes del ${f}: ${revTxt(r)}`;
       }).join(' · ');
       h += `<li><button data-a="ir" data-id="${id}">
-        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${perdTxt(s)?' · '+perdTxt(s):''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}</div>
+        <div class="f">${corta(s.fecha)} · ${FR[s.franja].ini}${s.clima?' · '+CLIMA[s.clima]:''}${perdTxt(s)?' · '+perdTxt(s):''}${s.unidad?' · '+esc(nombreUnidad(g,s.unidad)):''}${s.reconstruido?' · reconstruido':''}${s.soloDeberes?' · <b style="color:var(--rojo)">solo los deberes, falta el registro</b>':''}</div>
         <p class="c">${s.estado==='no' ? '<s>No impartida</s> — '+esc(s.motivo||'') : esc(s.contenido||'')}</p>
         ${s.material?`<div class="f">${esc(s.material)}</div>`:''}
         ${s.cambio?`<div class="f">Cambio: ${esc(s.cambio)}</div>`:''}
@@ -1919,10 +1951,24 @@ function vAjustes(){
 
 /* ═══════════════════════════ LA HOJA DE UNA SESIÓN ═══════════════════════════ */
 let borrador = null, abiertoId = null, base = null, recuperado = null, tBorr = null;
+// «Deberes que no apunté» (1.16): estado de pantalla, no se guarda
+let abreDeb = null;
+function abreDebHTML(b){
+  if(!abreDeb) return `<button class="chip abre-deb" data-h="abdeb">＋ Deberes que mandé y no apunté</button>`;
+  const L = clasesAnteriores(b.grupo, b.fecha, b.franja, 4);
+  if(!L.length) return `<p class="leyenda">No hay clases anteriores de este grupo. <button class="chip" data-h="abdeb-no">Cerrar</button></p>`;
+  const sel = abreDeb.k ? abreDeb : L[0], dos = k => L.filter(x=>x.k===k).length > 1;
+  return `<div class="deber abre"><label for="ab-txt" style="display:block;font-weight:700;margin-bottom:6px">Deberes que mandé y no apunté</label>
+    <input type="text" id="ab-txt" value="${esc(abreDeb.txt||'')}" placeholder="Por ejemplo: ejercicios 3 y 4 de la ficha 5">
+    <span class="de" style="display:block;margin-top:8px">Los mandé el</span>
+    <div class="chips">${L.map(x=>`<button class="chip${x.k===sel.k && x.n===sel.n?' sel':''}" data-h="abdeb-dia" data-k="${x.k}" data-n="${x.n}">${corta(x.k)}${dos(x.k)?' · '+FR[x.n].ini:''}${registrada(store.ses[idSes(x.k,x.n)])?'':' · sin registrar'}</button>`).join('')}</div>
+    ${abreDeb.aviso?`<p class="leyenda tarde">${esc(abreDeb.aviso)}</p>`:''}
+    <div class="chips"><button class="chip sel" data-h="abdeb-ok">Abrir y revisar hoy</button><button class="chip" data-h="abdeb-no">Cancelar</button></div></div>`;
+}
 function abrir(k, n){
   const x = (franjasDe(k))[n];
   if(!x) return;
-  abiertoId = idSes(k,n);
+  abiertoId = idSes(k,n); abreDeb = null;
   const s = store.ses[abiertoId];
   borrador = s ? clon(s) : {
     fecha:k, franja:n, grupo:x.g||null, otra:x.o||null, aula:x.aula||'',
@@ -2028,7 +2074,7 @@ function pintarHoja(){
       const yaRev = (b.revisiones||[]).map(r=>r.de);
       const mostrar = pd.map(([id])=>id);
       yaRev.forEach(id=>{ if(!mostrar.includes(id) && store.ses[id]) mostrar.push(id); });
-      if(mostrar.length){
+      {
         h += `<div class="campo"><span class="et">Deberes para revisar</span>`;
         for(const id of mostrar){
           const s = store.ses[id]; const r = (b.revisiones||[]).find(x=>x.de===id);
@@ -2076,7 +2122,7 @@ function pintarHoja(){
           }
           h += `</div>`;
         }
-        h += `</div>`;
+        h += abreDebHTML(b) + `</div>`;
       }
       h += `<div class="campo"><label for="h-deb">Deberes para la próxima <span class="ayuda">— si hay</span></label>
         <input type="text" id="h-deb" data-f="deberes" value="${esc(b.deberes)}" placeholder="Por ejemplo: reverso de la ficha 3">
@@ -2611,6 +2657,18 @@ document.getElementById('hoja').addEventListener('click', e=>{
   else if(h==='bil-dia'){ const D = store.cfg.billeteDia = store.cfg.billeteDia || {}, k = `${borrador.fecha}_${borrador.franja}`;
     if(b.dataset.v==='si') D[k] = true; else if(b.dataset.v==='no') D[k] = false; else delete D[k]; guardarCfg(); }
   else if(h==='pincel'){ revPincel[b.dataset.id] = b.dataset.v; }
+  else if(h==='abdeb'){ abreDeb = {txt:''}; }
+  else if(h==='abdeb-no'){ abreDeb = null; }
+  else if(h==='abdeb-dia'){ abreDeb.txt = $('#ab-txt') ? $('#ab-txt').value : abreDeb.txt; abreDeb.k = b.dataset.k; abreDeb.n = Number(b.dataset.n); abreDeb.aviso = ''; }
+  else if(h==='abdeb-ok'){
+    const t = ($('#ab-txt') ? $('#ab-txt').value : '').trim(); abreDeb.txt = t;
+    const L = clasesAnteriores(borrador.grupo, borrador.fecha, borrador.franja, 4), x = abreDeb.k ? abreDeb : L[0];
+    if(!t) abreDeb.aviso = 'Escribe qué deberes eran.';
+    else if(x){ const r = abreDeberes(borrador.grupo, x.k, x.n, t);
+      if(r.error) abreDeb.aviso = r.error;
+      else{ borrador.revisiones = borrador.revisiones||[]; if(!borrador.revisiones.some(q=>q.de===r.id)) borrador.revisiones.push({de:r.id, no:[]});
+        abreDeb = null; toast(`Deberes del ${corta(x.k)} apuntados: márcalos y guarda esta sesión`); } }
+  }
   else if(h==='guardar'){
     const b2 = borrador;
     if(b2.grupo && b2.estado==='no' && !b2.motivo){ toast('Elige el motivo'); return; }
@@ -2630,6 +2688,7 @@ document.getElementById('hoja').addEventListener('click', e=>{
       nuevos.forEach(x=>{ if(!m.includes(x)){ m.unshift(x); cambio = true; } });
       if(cambio){ store.cfg.materiales = m.slice(0,12); guardarCfg(); }
     }
+    delete b2.soloDeberes;   // al guardarla entera deja de ser «solo deberes»
     const hubo = guardarSesion(abiertoId, clon(b2)); quitarBorrador(abiertoId); cerrar(); toast(hubo ? 'Sesión guardada' : 'Sin cambios'); pintar(); return;
   }
   else if(h==='borrar'){
