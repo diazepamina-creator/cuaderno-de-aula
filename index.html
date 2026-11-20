@@ -576,7 +576,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.16';
+const VERSION_APP = '1.17';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -1831,6 +1831,7 @@ function vExportar(){
   <div class="panel">
     <p>Una copia de todo el cuaderno. Los datos solo están en este móvil: guárdala cada semana en el OneDrive corporativo de la GVA (Microsoft).
       Sirve para recuperarlo si cambias de móvil o se borra el navegador.</p>
+    ${nativa() ? `<p class="nota">La copia se guarda también en el móvil, en <b>Documentos › ${CARPETA_COPIAS}</b>. Si al elegir OneDrive en el menú se queda en blanco, ciérralo y súbela desde la app de OneDrive: <b>+ › Subir</b> › Documentos › ${CARPETA_COPIAS}.</p>` : ''}
     <button class="bloque-btn lleno" data-a="ex-json">Guardar copia de seguridad</button>
     <button class="bloque-btn" data-a="restaurar">Restaurar una copia</button>
     <p class="nota" style="margin-top:10px">También restaura las copias del cuaderno de Claude.</p>
@@ -2201,12 +2202,25 @@ async function descargar(nombre, datos, tipo){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   toast('Descargado en Descargas'); return true;
 }
+/* 1.17 · en la APK, la copia se guarda ANTES en el propio móvil, en Documentos › Cuaderno de aula, y después se abre
+   el menú de compartir. Andrés (20 nov 2026): al elegir OneDrive en el menú, OneDrive se queda en blanco (el
+   OneDrive corporativo de la GVA no recoge bien el archivo que le pasa la APK). Con la copia en Documentos, se sube
+   desde la propia app de OneDrive: + → Subir → Documentos › Cuaderno de aula. En Android 13 o más no pide permiso. */
+const CARPETA_COPIAS = 'Cuaderno de aula';
+async function copiaEnDocumentos(nombre, datos){
+  if(!nativa()) return false;
+  try{ await capP('Filesystem').writeFile({path:CARPETA_COPIAS + '/' + nombre, data:datos, directory:'DOCUMENTS', encoding:'utf8', recursive:true}); return true; }
+  catch(e){ return false; }
+}
 async function copiaSeguridad(){
   // .txt porque Android no deja compartir archivos .json; dentro va el cuaderno entero
   // con la hora en el nombre (1.3.1): OneDrive da error al subir un archivo que ya existe con el mismo nombre
   const t = new Date(), hm = String(t.getHours()).padStart(2,'0') + String(t.getMinutes()).padStart(2,'0');
-  const ok = await descargar(`cuaderno-de-aula_copia_${hoyK()}_${hm}.txt`, JSON.stringify({version:1, store}, null, 1), 'text/plain');
-  if(ok){ store.cfg.ultimaCopia = hoyK(); store.cfg.ultimaCopiaT = new Date().toISOString(); guardarLocal(); pintar(); }
+  const nombre = `cuaderno-de-aula_copia_${hoyK()}_${hm}.txt`, datos = JSON.stringify({version:1, store}, null, 1);
+  const enMovil = await copiaEnDocumentos(nombre, datos);
+  const ok = await descargar(nombre, datos, 'text/plain');
+  if(enMovil) toast('Guardada también en Documentos › ' + CARPETA_COPIAS + (ok ? '' : '. Súbela desde OneDrive: + › Subir'));
+  if(ok || enMovil){ store.cfg.ultimaCopia = hoyK(); store.cfg.ultimaCopiaT = new Date().toISOString(); guardarLocal(); pintar(); }
 }
 function filasExport(){
   const desde = $('#ex-desde').value, hasta = $('#ex-hasta').value;
