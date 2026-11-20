@@ -49,6 +49,8 @@ OJO: el repositorio es público, así que el horario (grupos y aulas) se puede
 leer en el código. Ningún dato de alumnos ni de sesiones está ahí.
 
 VERSIONES
+1.17.1  Los textos de la copia ya dicen el camino que funciona (probado por Andrés, 20 nov): se guarda en
+        Documentos › Cuaderno de aula y se sube desde la app de OneDrive (+ › Subir). (cuaderno-v39)
 1.17    La copia de seguridad, también en el móvil. En la APK, «Guardar copia de seguridad» la escribe
         primero en Documentos › Cuaderno de aula y después abre el menú de compartir. Si al elegir
         OneDrive se queda en blanco (pasó con el OneDrive de la GVA, 20 nov 2026), se sube desde la

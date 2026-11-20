@@ -576,7 +576,7 @@ const cfgInicial = () => ({
             2:[{id:'u1', nombre:'Divisibilidad · Las piezas de Miut', previstas:8}],
             4:[]},
 });
-const VERSION_APP = '1.17';
+const VERSION_APP = '1.17.1';
 // CALENDARIO ESCOLAR 2026-27 del centro (días de lunes a viernes sin clase).
 // Se cargan con un botón en Ajustes; después se pueden quitar uno a uno.
 // Después del fin del periodo lectivo no se cuentan sesiones pendientes.
@@ -1420,7 +1420,7 @@ function vDia(){
   }
   if(tocaCopia()){
     h += `<button class="aviso copia" data-a="copia"><span>Toca la copia de seguridad de la semana
-      <small>Un toque: elige OneDrive y la carpeta de copias</small></span><span aria-hidden="true">›</span></button>
+      <small>${nativa() ? 'Se guarda en Documentos › ' + CARPETA_COPIAS + '; súbela desde OneDrive: + › Subir' : 'Un toque: elige OneDrive y la carpeta de copias'}</small></span><span aria-hidden="true">›</span></button>
       <button class="aviso" data-a="resumen"><span>Antes, mira el resumen de la semana
       <small>Clases, minutos, deberes, billetes y pendientes</small></span><span aria-hidden="true">›</span></button>`;
   }
@@ -1831,7 +1831,7 @@ function vExportar(){
   <div class="panel">
     <p>Una copia de todo el cuaderno. Los datos solo están en este móvil: guárdala cada semana en el OneDrive corporativo de la GVA (Microsoft).
       Sirve para recuperarlo si cambias de móvil o se borra el navegador.</p>
-    ${nativa() ? `<p class="nota">La copia se guarda también en el móvil, en <b>Documentos › ${CARPETA_COPIAS}</b>. Si al elegir OneDrive en el menú se queda en blanco, ciérralo y súbela desde la app de OneDrive: <b>+ › Subir</b> › Documentos › ${CARPETA_COPIAS}.</p>` : ''}
+    ${nativa() ? `<p class="nota">La copia se guarda en el móvil, en <b>Documentos › ${CARPETA_COPIAS}</b>. Para subirla al OneDrive de la GVA, desde la app de OneDrive: <b>+ › Subir</b> › Documentos › ${CARPETA_COPIAS} (el menú de compartir se puede cerrar: OneDrive se queda en blanco si se elige desde ahí).</p>` : ''}
     <button class="bloque-btn lleno" data-a="ex-json">Guardar copia de seguridad</button>
     <button class="bloque-btn" data-a="restaurar">Restaurar una copia</button>
     <p class="nota" style="margin-top:10px">También restaura las copias del cuaderno de Claude.</p>
